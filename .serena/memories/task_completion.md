@@ -1,0 +1,1 @@
+No test, lint, or format scripts are configured. After changes, use npm run build as the main validation step. For gameplay or scene-flow changes, also run npm run dev and verify the affected path manually in the browser. The workspace is not currently a git repository, so do not rely on git status/diff.

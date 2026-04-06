@@ -1,0 +1,1 @@
+Source uses plain JavaScript ES modules with import/export, not TypeScript. Scene classes live in separate files and are default exports. Naming is PascalCase for scene classes and scene files. Existing source uses double quotes. .editorconfig specifies space indentation with size 4 and CRLF line endings.

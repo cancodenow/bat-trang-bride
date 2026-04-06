@@ -1,0 +1,1 @@
+Vite + Phaser JavaScript game project. Entry point is src/main.js, which registers the Phaser scenes in runtime order. Main folders: src/game/scenes for scene classes, src/game/UIHelpers.js for shared UI utilities, public/assets for static images. The README describes it as 'Phaser's Revenge', while the current opening scene text says 'Becoming a Bát Tràng Bride'.
