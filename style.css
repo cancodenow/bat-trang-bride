@@ -1,3 +1,19 @@
+@font-face {
+    font-family: "SVN-Pequena Neo";
+    src: url("/assets/SVN-Pequena Neo (2 fonts)/SVN-Pequena Neo Regular.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "SVN-Pequena Neo";
+    src: url("/assets/SVN-Pequena Neo (2 fonts)/SVN-Pequena Neo Black.otf") format("opentype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 body {
     margin: 0;
     padding: 0;
