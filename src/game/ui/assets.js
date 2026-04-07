@@ -180,6 +180,8 @@ const LEVEL_ASSETS = {
         { key: "lv3-how-to-play-2", file: "level-3/how-to-play-lv3-2.png" },
     ],
     4: [
+        // intro background
+        { key: "lv4-intro-bg", file: "level-4/bg-lv4/bg-eating-room.png" },
         // finish screen
         { key: "lv4-finish", file: "level-4/finish-level-4.png" },
         { key: "lv4-bg", file: "level-4/bg-lv4/bg-lv4.png" },
