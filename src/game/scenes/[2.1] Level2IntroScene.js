@@ -1,57 +1,68 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createDialogueBox, createImageButton , createDevSkipButton , createBackButton, getResponsiveMetrics } from "../UIHelpers";
+import {
+    preloadUIAssets,
+    preloadLevelAssets,
+    DialogueRunner,
+    preloadCharacters,
+    createDevSkipButton,
+    createBackButton,
+    getResponsiveMetrics,
+    addCoverBg,
+} from "../UIHelpers";
 
 export default class Level2IntroScene extends Phaser.Scene {
-  constructor() {
-    super("Level2IntroScene");
-  }
+    constructor() {
+        super("Level2IntroScene");
+    }
 
-  preload() {
-    preloadUIAssets(this);
-  }
+    preload() {
+        preloadUIAssets(this);
+        preloadLevelAssets(this, 2);
+        preloadCharacters(this);
+    }
 
-  create() {
-    const metrics = getResponsiveMetrics(this);
-    const { width, height, fs, dpr } = metrics;
+    create() {
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, dpr } = metrics;
 
-    this.cameras.main.setBackgroundColor("#1a2a3a");
+        addCoverBg(this, "lv2-intro-bg");
 
-    // Dialogue box
-    createDialogueBox(this, width / 2, height / 2 - Math.round(40 * dpr), width - Math.round(200 * dpr), Math.round(180 * dpr), {
-      fillColor: 0x141e2b,
-      fillAlpha: 0.9,
-      strokeColor: 0x5a8aaa,
-    });
+        this.cameras.main.setBackgroundColor("#3a3a4a");
 
-    // Speaker
-    this.add
-      .text(Math.round(130 * dpr), height / 2 - Math.round(120 * dpr), "Mom", {
-        fontSize: fs(18),
-        color: "#ffcc00",
-        fontFamily: "SVN-Pequena Neo",
-        fontStyle: "bold",
-      });
+        this.dialogueLines = [
+            {
+                text: "Mom: Cooking isn't hard, dear. Here — let's do it together!",
+                charLeft: "char-wife-curious",
+                charRight: "char-mom-cook",
+            },
+        ];
 
-    // Dialogue
-    this.add
-      .text(width / 2, height / 2 - 40, "Cooking isn't hard, dear. Here — let's do it together!", {
-        fontSize: fs(22),
-        color: "#000000",
-        fontFamily: "SVN-Pequena Neo",
-        align: "center",
-        wordWrap: { width: width - Math.round(300 * dpr) },
-        lineSpacing: Math.round(8 * dpr),
-      })
-      .setOrigin(0.5);
+        this.runner = new DialogueRunner(this, {
+            box: {
+                x: width / 2,
+                y: height - Math.round(120 * dpr),
+                w: Math.round(700 * dpr),
+                h: Math.round(150 * dpr),
+            },
+            chars: {
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
+            },
+            lines: this.dialogueLines,
+            onComplete: () => this.showEndScreen(),
+        });
 
-    // Continue button
-    createImageButton(this, width / 2, height / 2 + Math.round(100 * dpr), "Begin Level 2", {
-      fontSize: fs(20),
-      bgColor: "#ffcc00",
-      hoverBgColor: "#ffee00",
-      onClick: () => this.scene.start("Level2CookingGuidedScene"),
-    });
-    createDevSkipButton(this, "Level2CookingGuidedScene");
-    createBackButton(this);
-  }
+        createDevSkipButton(this, "Level2CookingGuidedScene");
+        createBackButton(this);
+    }
+
+    showEndScreen() {
+        this.runner.destroy();
+
+        this.cameras.main.fadeOut(1500, 0, 0, 0);
+
+        this.time.delayedCall(1500, () => {
+            this.scene.start("Level2CookingGuidedScene");
+        });
+    }
 }
