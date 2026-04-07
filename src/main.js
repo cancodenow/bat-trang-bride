@@ -91,8 +91,7 @@ game.events.once("ready", () => {
         game.scene.start("RotateDeviceOverlayScene");
         game.scene.bringToTop("RotateDeviceOverlayScene");
     } else {
-        // game.scene.start("OpeningScene");
-        game.scene.start("MarketIngredientSelectionScene")
+        game.scene.start("OpeningScene");
     }
 });
 
