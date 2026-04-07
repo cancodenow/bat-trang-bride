@@ -3,7 +3,7 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     preloadCharacters,
-    createBox,
+    DialogueRunner,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
@@ -27,66 +27,25 @@ export default class IntroScene extends Phaser.Scene {
 
         addCoverBg(this, "introBg");
 
-        // Story lines
-        this.storyLines = [
-            "After seven years together, you and Sơn Tùng finally got married!",
-            "The wedding was held in his hometown - a traditional ceramic village near Hanoi.",
-        ];
-
-        this.currentLine = 0;
-
-        // Textbox background
-        createBox(this, width / 2, height - 130, {
-            textureKey: "ui-box-textbox",
-            width: 830,
-            height: 150,
+        this.runner = new DialogueRunner(this, {
+            box: { x: width / 2, y: height - 130, w: 830, h: 150 },
+            lines: [
+                {
+                    text: "After seven years together, you and Sơn Tùng finally got married!",
+                },
+                {
+                    text: "The wedding was held in his hometown - a traditional ceramic village near Hanoi.",
+                },
+            ],
+            onComplete: () => this.showContinueButton(),
         });
 
-        // Display area
-        this.storyText = this.add
-            .text(width / 2, height - 130, "", {
-                fontSize: "24px",
-                color: "#000000",
-                fontFamily: "SVN-Pequena Neo",
-                align: "center",
-                wordWrap: { width: 700 },
-            })
-            .setOrigin(0.5);
-
-        // Instruction text
-        this.add
-            .text(width / 2, height - 40, "Click to continue...", {
-                fontSize: "16px",
-                color: "#aaaaaa",
-                fontFamily: "SVN-Pequena Neo",
-            })
-            .setOrigin(0.5);
-
-        // Show first line
-        this.showNextLine();
-
-        // Click to advance
-        this.input.on("pointerdown", () => {
-            this.showNextLine();
-        });
         createDevSkipButton(this, "MorningScene01");
         createBackButton(this);
     }
 
-    showNextLine() {
-        if (this.currentLine < this.storyLines.length) {
-            this.storyText.setText(this.storyLines[this.currentLine]);
-            this.currentLine++;
-        } else {
-            // All lines shown, show continue button
-            this.showContinueButton();
-        }
-    }
-
     showContinueButton() {
         const { width, height } = this.scale;
-
-        this.input.off("pointerdown");
 
         const BUTTON_SCALE = 0.15;
         this.add

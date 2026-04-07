@@ -2,10 +2,9 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
-    createDialogueBox,
+    DialogueRunner,
     createDevSkipButton,
     preloadCharacters,
-    createCharacter,
     createBackButton,
     addCoverBg,
 } from "../UIHelpers";
@@ -54,96 +53,31 @@ export default class BargainScene extends Phaser.Scene {
                 charRight: "char-seller-annoyed",
             },
         ];
-        this.dialogueStep = 0;
 
-        // Left character (wife / Taylor) — listens, faces right
-        this.charLeft = createCharacter(
-            this,
-            width * 0.2,
-            height + 70,
-            "char-wife",
-            { scale: 0.5 },
-        );
-        // Right character (seller) — speaks, flipped to face left
-        this.charRight = createCharacter(
-            this,
-            width * 0.8,
-            height + 50,
-            "char-seller",
-            { scale: 0.5, flipX: true },
-        );
-
-        // Dialogue box
-        this.dialogueBox = createDialogueBox(
-            this,
-            width / 2,
-            height - 160,
-            width - 100,
-            240,
-            {
-                fillColor: 0x1a2a3a,
-                fillAlpha: 0.92,
-                strokeColor: 0x5a8aaa,
+        // Runner handles initial 3-line dialogue
+        this.runner = new DialogueRunner(this, {
+            box: { x: width / 2, y: height - 160, w: width - 100, h: 240 },
+            chars: {
+                left:  { x: width * 0.2, y: height + 70, scale: 0.5 },
+                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
             },
-        );
-
-        // Dialogue text
-        this.dialogueText = this.add
-            .text(width / 2, height - 180, "", {
-                fontSize: "20px",
-                color: "#000000",
-                fontFamily: "SVN-Pequena Neo",
-                align: "center",
-                wordWrap: { width: width - 200 },
-                lineSpacing: 8,
-            })
-            .setOrigin(0.5)
-            .setScale(1);
-
-        // "Click to continue" hint
-        this.continueHint = this.add
-            .text(width / 2, height - 60, "▼ Click to continue", {
-                fontSize: "14px",
-                color: "#888888",
-                fontFamily: "SVN-Pequena Neo",
-            })
-            .setOrigin(0.5)
-            .setScale(1);
+            lines: this.dialogueLines,
+            onComplete: () => this.showChoices(),
+        });
 
         // Choice buttons container (hidden initially)
         this.choiceContainer = this.add.container(0, 0).setVisible(false);
         this.createChoiceButtons();
 
+        // skipToChoice support: if retry from bad ending, skip to choices immediately
         const skipToChoice = this.scene.settings.data?.skipToChoice;
         if (skipToChoice) {
+            this.runner.destroy();
             this.showChoices();
-        } else {
-            this.showCurrentDialogue();
         }
-
-        // Click to advance dialogue
-        this.input.on("pointerdown", () => {
-            if (this.choiceContainer.visible) return;
-
-            this.dialogueStep++;
-            if (this.dialogueStep < this.dialogueLines.length) {
-                this.showCurrentDialogue();
-            } else {
-                this.continueHint.setVisible(false);
-                this.showChoices();
-            }
-        });
 
         createDevSkipButton(this, "Level1PassScene");
         createBackButton(this);
-    }
-
-    showCurrentDialogue() {
-        const line = this.dialogueLines[this.dialogueStep];
-        this.dialogueText.setText(line.text);
-        this.dialogueText.setColor("#000000");
-        this.charLeft.setTexture(line.charLeft);
-        this.charRight.setTexture(line.charRight);
     }
 
     createChoiceButtons() {
@@ -181,37 +115,19 @@ export default class BargainScene extends Phaser.Scene {
 
     showChoices() {
         this.choiceContainer.setVisible(true);
-        this.dialogueText.setText("What will you do?");
-        this.dialogueText.setColor("#000000");
+        this.runner.setText("What will you do?");
+        this.runner.hintObj.setVisible(false);
     }
 
     onCorrectChoice() {
-        this.input.removeAllListeners();
+        this.runner.destroy();
         this.choiceContainer.setVisible(false);
 
-        // Walk-away dialogue — charLeft: wife, charRight: seller
         this.walkAwayDialogue = [
-            {
-                text: "Taylor: If that's the price, then I'll pass.",
-                charLeft: "char-wife",
-                charRight: "char-seller-annoyed",
-            },
-            {
-                text: "* footsteps... *",
-                charLeft: "char-wife",
-                charRight: "char-seller-annoyed",
-                color: "#888888",
-            },
-            {
-                text: "Seller: WAIT! You're Ms. Hang's daughter-in-law, right?\nFine, take it — I'm giving you that price because I like your family.",
-                charLeft: "char-wife",
-                charRight: "char-seller",
-            },
-            {
-                text: "Taylor: Thank you.",
-                charLeft: "char-wife-giggle",
-                charRight: "char-seller",
-            },
+            { text: "Taylor: If that's the price, then I'll pass.", charLeft: "char-wife", charRight: "char-seller-annoyed" },
+            { text: "* footsteps... *", charLeft: "char-wife", charRight: "char-seller-annoyed", color: "#888888" },
+            { text: "Seller: WAIT! You're Ms. Hang's daughter-in-law, right?\nFine, take it — I'm giving you that price because I like your family.", charLeft: "char-wife", charRight: "char-seller" },
+            { text: "Taylor: Thank you.", charLeft: "char-wife-giggle", charRight: "char-seller" },
         ];
 
         this.walkStep = 0;
@@ -229,10 +145,9 @@ export default class BargainScene extends Phaser.Scene {
 
     showWalkDialogue() {
         const line = this.walkAwayDialogue[this.walkStep];
-        this.dialogueText.setText(line.text);
-        this.dialogueText.setColor(line.color || "#000000");
-        this.charLeft.setTexture(line.charLeft);
-        this.charRight.setTexture(line.charRight);
-        this.continueHint.setVisible(true);
+        this.runner.setText(line.text, line.color);
+        if (this.runner.charLeft && line.charLeft) this.runner.charLeft.setTexture(line.charLeft);
+        if (this.runner.charRight && line.charRight) this.runner.charRight.setTexture(line.charRight);
+        this.runner.hintObj.setVisible(true);
     }
 }

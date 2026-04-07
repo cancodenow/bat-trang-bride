@@ -2,12 +2,11 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
-    createBox,
     preloadCharacters,
-    createCharacter,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
+    DialogueRunner,
 } from "../UIHelpers";
 
 export default class MorningScene01 extends Phaser.Scene {
@@ -73,82 +72,26 @@ export default class MorningScene01 extends Phaser.Scene {
         ];
 
         const skipToChoice = this.scene.settings.data?.skipToChoice;
-        this.currentLine = skipToChoice ? this.dialogueLines.length - 1 : 0;
 
-        // Dialogue box background
-        createBox(this, width / 2, height - 100, {
-            textureKey: "ui-box-textbox",
-            width: 780,
-            height: 130,
+        this.runner = new DialogueRunner(this, {
+            box: { x: width / 2, y: height - 100, w: 780, h: 130 },
+            chars: {
+                left: { x: width * 0.2, y: height + 70, scale: 0.5 },
+                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+            },
+            lines: this.dialogueLines,
+            onComplete: () => this.showChoiceButtons(),
+            skipTo: skipToChoice ? this.dialogueLines.length - 1 : 0,
         });
 
-        // Left character (wife) — faces right (default)
-        this.charLeft = createCharacter(
-            this,
-            width * 0.2,
-            height + 70,
-            "char-wife-giggle",
-            { scale: 0.5 },
-        );
-        // Right character (husband / mom) — flipped to face left
-        this.charRight = createCharacter(
-            this,
-            width * 0.8,
-            height + 50,
-            "char-husband-sleepy",
-            { scale: 0.5, flipX: true },
-        );
-
-        // Dialogue text
-        this.dialogueText = this.add
-            .text(width / 2, height - 120, "", {
-                fontSize: "22px",
-                color: "#111010",
-                fontFamily: "SVN-Pequena Neo",
-                align: "center",
-                wordWrap: { width: 650 },
-            })
-            .setOrigin(0.5);
-
-        // Instruction text
-        this.instructionText = this.add
-            .text(width / 2, height - 40, "Click to continue...", {
-                fontSize: "14px",
-                color: "#aaaaaa",
-                fontFamily: "SVN-Pequena Neo",
-            })
-            .setOrigin(0.5);
-
-        // Show first line
-        this.showNextDialogueLine();
-
-        // Click to advance
-        this.input.on("pointerdown", () => {
-            this.showNextDialogueLine();
-            createDevSkipButton(this, "Scene02MarketInvite");
-            createBackButton(this);
-        });
-    }
-
-    showNextDialogueLine() {
-        if (this.currentLine < this.dialogueLines.length) {
-            const { text, charLeft, charRight } =
-                this.dialogueLines[this.currentLine];
-            this.dialogueText.setText(text);
-            this.charLeft.setTexture(charLeft);
-            this.charRight.setTexture(charRight);
-            this.currentLine++;
-        } else {
-            // All lines shown, show choice buttons
-            this.showChoiceButtons();
-        }
+        createDevSkipButton(this, "Scene02MarketInvite");
+        createBackButton(this);
     }
 
     showChoiceButtons() {
         const { width, height } = this.scale;
 
-        this.input.off("pointerdown");
-        this.instructionText.setText("Make a choice:");
+        this.runner.hintObj.setText("Make a choice:");
 
         const BUTTON_SCALE = 0.15;
 

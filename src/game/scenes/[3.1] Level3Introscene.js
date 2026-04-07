@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, createBox, preloadCharacters, createCharacter, createDevSkipButton , createBackButton } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton } from "../UIHelpers";
 
 export default class Level3IntroScene extends Phaser.Scene {
   constructor() {
@@ -22,67 +22,24 @@ export default class Level3IntroScene extends Phaser.Scene {
     // Dialogue lines — charLeft: Tùng, charRight: mom speaking
     this.dialogueLines = [
       {
-        text: 'Mom: "You two set the table. Tùng, remember what I told you. Guide Taylor, okay? Don\'t get it wrong."',
+        text: "Mom: \"You two set the table. Tùng, remember what I told you. Guide Taylor, okay? Don't get it wrong.\"",
         charLeft: "char-husband",
         charRight: "char-mom-cook",
       },
     ];
 
-    this.currentLine = 0;
-
-    // Left character (Tùng) — listens, faces right
-    this.charLeft = createCharacter(this, width * 0.2, height + 70, "char-husband", { scale: 0.5 });
-    // Right character (mom) — speaks, flipped to face left
-    this.charRight = createCharacter(this, width * 0.8, height + 50, "char-mom-cook", { scale: 0.5, flipX: true });
-
-    // Dialogue box background
-    this.dialogueBox = createBox(this, width / 2, height - 120, {
-      textureKey: "ui-box-textbox",
-      width: 750,
-      height: 150,
-    });
-
-    // Dialogue text
-    this.dialogueText = this.add
-      .text(width / 2, height - 120, "", {
-        fontSize: "22px",
-        color: "#000000",
-        fontFamily: "SVN-Pequena Neo",
-        align: "center",
-        wordWrap: { width: 650 },
-      })
-      .setOrigin(0.5);
-
-    // Instruction text
-    this.instructionText = this.add
-      .text(width / 2, height - 40, "Click to continue...", {
-        fontSize: "14px",
-        color: "#aaaaaa",
-        fontFamily: "SVN-Pequena Neo",
-      })
-      .setOrigin(0.5);
-
-    // Show first line
-    this.showNextDialogueLine();
-
-    // Click to advance
-    this.input.on("pointerdown", () => {
-      this.showNextDialogueLine();
+    // Initialize DialogueRunner with dialogue configuration
+    this.runner = new DialogueRunner(this, {
+      box: { x: width / 2, y: height - 120, w: 750, h: 150 },
+      chars: {
+        left: { x: width * 0.2, y: height + 70, scale: 0.5 },
+        right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+      },
+      lines: this.dialogueLines,
+      onComplete: () => this.scene.start("Level3MainChallengeScene"),
     });
 
     createDevSkipButton(this, "Level3mainchallenge");
     createBackButton(this);
-  }
-
-  showNextDialogueLine() {
-    if (this.currentLine < this.dialogueLines.length) {
-      const { text, charLeft, charRight } = this.dialogueLines[this.currentLine];
-      this.dialogueText.setText(text);
-      this.charLeft.setTexture(charLeft);
-      this.charRight.setTexture(charRight);
-      this.currentLine++;
-    } else {
-      this.scene.start("Level3MainChallengeScene");
-    }
   }
 }
