@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createImageButton } from "../UIHelpers";
+import { preloadUIAssets, createImageButton , createDevSkipButton , createBackButton } from "../UIHelpers";
 
 export default class BargainBadEndingScene extends Phaser.Scene {
   constructor() {
@@ -20,7 +20,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
       .text(width / 2, height / 2 - 100, "BAD ENDING", {
         fontSize: "48px",
         color: "#ff4444",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
@@ -31,7 +31,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
       .text(width / 2, height / 2, "You do not know how to bargain.\nYou spend all your pocket money on the ribs.", {
         fontSize: "22px",
         color: "#cccccc",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
         wordWrap: { width: 600 },
         lineSpacing: 10,
@@ -43,5 +43,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
       fontSize: "20px",
       onClick: () => this.scene.start("BuyRibsIntroScene"),
     });
+    createDevSkipButton(this, "BuyRibsIntroScene");
+    createBackButton(this);
   }
 }

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createDialogueBox, createImageButton } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, createDialogueBox, createDevSkipButton, preloadCharacters, createCharacter , createBackButton } from "../UIHelpers";
 
 export default class BuyRibsIntroScene extends Phaser.Scene {
   constructor() {
@@ -9,6 +9,8 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
   preload() {
     this.load.image("marketBg", "/assets/background/market-bg.png");
     preloadUIAssets(this);
+    preloadLevelAssets(this, 1);
+    preloadCharacters(this);
   }
 
   create() {
@@ -19,6 +21,10 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     // Market background
     this.add.image(width / 2, height / 2, "marketBg").setDisplaySize(width, height);
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.4);
+
+    // Characters
+    createCharacter(this, width * 0.2, height - 20, "char-wife", { scale: 0.5 });
+    createCharacter(this, width * 0.8, height - 20, "char-mom-happy", { scale: 0.5, flipX: true });
 
     // Dialogue box
     createDialogueBox(this, width / 2, height - 140, width - 100, 200, {
@@ -32,7 +38,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
       .text(80, height - 230, "Mom", {
         fontSize: "18px",
         color: "#ffcc00",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
       });
 
@@ -40,8 +46,8 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     this.add
       .text(width / 2, height - 150, "Oh, you're so capable — you bought everything correctly.\nGo buy 1kg of pork ribs for me, then we'll head home.", {
         fontSize: "20px",
-        color: "#ffffff",
-        fontFamily: "Arial",
+        color: "#000000",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
         wordWrap: { width: width - 200 },
         lineSpacing: 8,
@@ -49,11 +55,15 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Button
-    createImageButton(this, width / 2, height - 50, "Yes mom, let me go buy it", {
-      fontSize: "18px",
-      bgColor: "#ffcc00",
-      hoverBgColor: "#ffee00",
-      onClick: () => this.scene.start("PorkRibSelectionScene"),
-    });
+    const BUTTON_SCALE = 0.15;
+    this.add
+      .image(width / 2, height - 50, "lv1-opt-tasks-of-course")
+      .setScale(BUTTON_SCALE)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
+      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
+      .on("pointerdown", () => this.scene.start("PorkRibSelectionScene"));
+    createDevSkipButton(this, "PorkRibSelectionScene");
+    createBackButton(this);
   }
 }

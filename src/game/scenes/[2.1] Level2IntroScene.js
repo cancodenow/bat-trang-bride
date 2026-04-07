@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createDialogueBox, createImageButton } from "../UIHelpers";
+import { preloadUIAssets, createDialogueBox, createImageButton , createDevSkipButton , createBackButton } from "../UIHelpers";
 
 export default class Level2IntroScene extends Phaser.Scene {
   constructor() {
@@ -27,7 +27,7 @@ export default class Level2IntroScene extends Phaser.Scene {
       .text(130, height / 2 - 120, "Mom", {
         fontSize: "18px",
         color: "#ffcc00",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
       });
 
@@ -35,8 +35,8 @@ export default class Level2IntroScene extends Phaser.Scene {
     this.add
       .text(width / 2, height / 2 - 40, "Cooking isn't hard, dear. Here — let's do it together!", {
         fontSize: "22px",
-        color: "#ffffff",
-        fontFamily: "Arial",
+        color: "#000000",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
         wordWrap: { width: width - 300 },
         lineSpacing: 8,
@@ -48,7 +48,9 @@ export default class Level2IntroScene extends Phaser.Scene {
       fontSize: "20px",
       bgColor: "#ffcc00",
       hoverBgColor: "#ffee00",
-      onClick: () => this.scene.start("Level2InstructionScene"),
+      onClick: () => this.scene.start("Level2CookingGuidedScene"),
     });
+    createDevSkipButton(this, "Level2CookingGuidedScene");
+    createBackButton(this);
   }
 }

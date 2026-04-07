@@ -14,7 +14,7 @@ export default class CookingChallengePlaceholderScene extends Phaser.Scene {
       .text(width / 2, height / 2, "Next scene: Cooking Challenge", {
         fontSize: "40px",
         color: "#ffcc00",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
       })
       .setOrigin(0.5);

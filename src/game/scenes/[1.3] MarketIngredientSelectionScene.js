@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createImageButton, createPanel, createModalFrame, createDialogueBox } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, createImageButton, createModalFrame, createFrame, createDishCard, createDevSkipButton , createBackButton } from "../UIHelpers";
 
 export default class MarketIngredientSelectionScene extends Phaser.Scene {
   constructor() {
@@ -20,7 +20,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       "Dried lotus seeds",
       "Dried bamboo shoots",
       "Dried pork skin",
-      "Shiitake mushrooms"
+      "Shiitake mushrooms",
+      "Pork ribs"
     ];
 
     ingredients.forEach(ingredient => {
@@ -29,6 +30,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     });
 
     preloadUIAssets(this);
+    preloadLevelAssets(this, 1);
   }
 
   create() {
@@ -36,7 +38,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     this.width = width;
     this.height = height;
 
-    this.cameras.main.setBackgroundColor("#103c5a");
+    this.cameras.main.setBackgroundColor("#ffffff");
 
     // Layout constants
     this.SIDEBAR_W = 400;
@@ -51,6 +53,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     this.allDishes = [
       {
         id: 1,
+        cardKey: "lv1-dish-card-chicken",
         vietnameseName: "Gà hấp lá chanh",
         englishName: "Poached Chicken with Lime Leaves",
         budget: 130,
@@ -61,6 +64,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       },
       {
         id: 2,
+        cardKey: "lv1-dish-card-kohlrabi",
         vietnameseName: "Su hào xào mực",
         englishName: "Stir-fried Kohlrabi with Squid",
         budget: 95,
@@ -71,6 +75,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       },
       {
         id: 3,
+        cardKey: "lv1-dish-card-shrimp-rolls",
         vietnameseName: "Nem tôm",
         englishName: "Crispy Shrimp Rolls",
         budget: 120,
@@ -81,6 +86,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       },
       {
         id: 4,
+        cardKey: "lv1-dish-card-pigeon",
         vietnameseName: "Chim hầm hạt sen",
         englishName: "Slow-braised Pigeon with Lotus Seeds",
         budget: 130,
@@ -91,6 +97,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       },
       {
         id: 5,
+        cardKey: "lv1-dish-card-bamboo",
         vietnameseName: "Canh măng mực",
         englishName: "Bamboo Shoot & Shredded Squid Soup",
         budget: 120,
@@ -101,6 +108,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       },
       {
         id: 6,
+        cardKey: "lv1-dish-card-pork-puff",
         vietnameseName: "Canh bóng",
         englishName: "Pork Puff Skin Soup",
         budget: 95,
@@ -122,21 +130,38 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       { name: "Dried lotus seeds", price: 35 },
       { name: "Dried bamboo shoots", price: 40 },
       { name: "Dried pork skin", price: 60 },
-      { name: "Shiitake mushrooms", price: 35 }
+      { name: "Shiitake mushrooms", price: 35 },
+      { name: "Pork ribs", price: 32 }
+
     ];
 
     this.stalls = [
       {
         title: "Stall 1",
-        items: ["Dried bamboo shoots", "Kohlrabi", "Lime leaves", "Carrot"]
+        items: [
+          { name: "Dried bamboo shoots", yOffset: 40, xOffset: 520 },
+          { name: "Kohlrabi",            yOffset: -70,  xOffset: 150  },
+          { name: "Lime leaves",         yOffset: -130,  xOffset: 340   },
+          { name: "Carrot",              yOffset: -70,  xOffset: -270   },
+        ]
       },
       {
         title: "Stall 2",
-        items: ["Dried squid", "Dried pork skin", "Shiitake mushrooms"]
+        items: [
+          { name: "Dried squid",         yOffset: 40,  xOffset: 40  },
+          { name: "Dried pork skin",     yOffset: -100,  xOffset: -5   },
+          { name: "Shiitake mushrooms",  yOffset: 20,  xOffset: -820   },
+          { name: "Pork ribs",   yOffset: -70,  xOffset: 150   },
+        ]
       },
       {
         title: "Stall 3",
-        items: ["Fresh shrimp", "Vietnamese chicken", "Pigeon", "Dried lotus seeds"]
+        items: [
+          { name: "Fresh shrimp",        yOffset: -70,  xOffset: 20   },
+          { name: "Vietnamese chicken",  yOffset: -70,  xOffset: -380   },
+          { name: "Pigeon",              yOffset: -70,  xOffset: -590   },
+          { name: "Dried lotus seeds",   yOffset: 20,  xOffset: -1600  },
+        ]
       }
     ];
 
@@ -145,7 +170,11 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     this.selectedIngredients = {};
     this.completedDishes = {};
 
-    this.showInstructionModal();
+    // Background visible behind the instruction modal
+    this.add.image(width / 2, height / 2, "marketBg").setDisplaySize(width, height).setDepth(0);
+
+    this.showInstructionModal(); // TEMP: skipped
+    this.createGameUI();
   }
 
   // ===================== INSTRUCTION MODAL =====================
@@ -153,42 +182,26 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
   showInstructionModal() {
     const { width, height } = this.scale;
 
-    const { container } = createModalFrame(this, 600, 300, {
-      fillColor: 0x334455,
-      strokeColor: 0xffffff,
-      strokeWidth: 2,
-    });
+    const { container } = createModalFrame(this, 0, 0, { overlayAlpha: 0.7 });
     this.instructionModal = container;
 
-    const title = this.add
-      .text(width / 2, height / 2 - 80, "Market Shopping Challenge", {
-        fontSize: "28px",
-        color: "#ffffff",
-        fontFamily: "Arial",
-        align: "center",
-      })
-      .setOrigin(0.5);
+    // How-to-play image centred on screen
+    const howToPlay = this.add.image(width / 2, height / 2 - 40, "lv1-how-to-play")
+      .setDisplaySize(700, 420);
 
-    const desc = this.add
-      .text(width / 2, height / 2 - 10, "Choose ingredients for all 6 dishes.\nMove your mouse to the edges to browse stalls.\nStay within each dish's budget.", {
-        fontSize: "18px",
-        color: "#ffffff",
-        fontFamily: "Arial",
-        align: "center",
-        wordWrap: { width: 550 },
-        lineSpacing: 8,
-      })
-      .setOrigin(0.5);
-
-    const { bg: startButton } = createImageButton(this, width / 2, height / 2 + 100, "Start Shopping", {
-      fontSize: "22px",
-      onClick: () => {
+    const BUTTON_SCALE = 0.2;
+    const startButton = this.add
+      .image(width / 2, height / 2 + 230, "continue_button")
+      .setScale(BUTTON_SCALE)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
+      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
+      .on("pointerdown", () => {
         this.instructionModal.destroy();
         this.createGameUI();
-      },
-    });
+      });
 
-    this.instructionModal.add([title, desc, startButton]);
+    this.instructionModal.add([howToPlay, startButton]);
   }
 
   // ===================== MAIN GAME UI =====================
@@ -200,6 +213,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     this.setupHoverScrolling();
     this.updateSidebar();
     this.updateBasketPanel();
+    createDevSkipButton(this, "BuyRibsIntroScene");
+    createBackButton(this);
   }
 
   // ===================== LEFT SIDEBAR =====================
@@ -208,132 +223,139 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     const { height } = this.scale;
     const sw = this.SIDEBAR_W;
 
+    // ── SIDEBAR LAYOUT CONSTANTS ──────────────────────────────
+    // Adjust these Y values to reposition each block.
+    const TITLE_Y        = 16;   // "Đi chợ" header
+    const DIVIDER_1_Y    = 46;   // line under title
+    const DISH_VIET_Y    = 56;   // current dish Vietnamese name
+    const DISH_ENG_Y     = 76;   // current dish English name
+    const BUDGET_Y       = 96;   // budget / selected total row
+    const DIVIDER_2_Y    = 120;  // line under budget
+    const PROGRESS_LBL_Y = 128;  // "Dish Progress" label
+    const DISH_START_Y   = 150;  // first dish row top
+    const DISH_ROW_H     = 58;   // height of each dish row
+    // afterDishY is computed from DISH_START_Y + 6 rows
+    const BASKET_LBL_OFF = 8;    // offset from afterDishY → "Basket" label
+    const BASKET_ITEM_OFF= 28;   // offset from afterDishY → basket items list
+    const BASKET_TTL_OFF = 140;  // offset from afterDishY → total line
+    // ─────────────────────────────────────────────────────────
+
     // Sidebar background
     this.add.rectangle(sw / 2, height / 2, sw, height, 0x141e2b);
     this.add.rectangle(sw, height / 2, 2, height, 0x3a5a7a);
 
     // --- Title block ---
     this.add
-      .text(sw / 2, 16, "Đi chợ / Market Challenge", {
-        fontSize: "17px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
+      .text(sw / 2, TITLE_Y, "Đi chợ / Market Challenge", {
+        fontSize: "21px",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
       .setOrigin(0.5, 0);
 
     // Divider
-    this.add.rectangle(sw / 2, 46, sw - 30, 1, 0x3a5a7a);
+    this.add.rectangle(sw / 2, DIVIDER_1_Y, sw - 30, 1, 0x3a5a7a);
 
     // --- Current dish block ---
     this.sidebarDishViet = this.add
-      .text(15, 56, "", { fontSize: "15px", color: "#ffffff", fontFamily: "Arial", fontStyle: "bold" });
+      .text(15, DISH_VIET_Y, "", { fontSize: "19px", color: "#ffffff", fontFamily: "SVN-Pequena Neo", fontStyle: "bold" });
     this.sidebarDishEng = this.add
-      .text(15, 76, "", { fontSize: "12px", color: "#aaaaaa", fontFamily: "Arial" });
+      .text(15, DISH_ENG_Y, "", { fontSize: "16px", color: "#bb9882", fontFamily: "SVN-Pequena Neo" });
     this.sidebarBudget = this.add
-      .text(15, 96, "", { fontSize: "13px", color: "#66ccff", fontFamily: "Arial" });
+      .text(15, BUDGET_Y, "", { fontSize: "17px", color: "#ffffff", fontFamily: "SVN-Pequena Neo" });
     this.sidebarTotal = this.add
-      .text(sw - 15, 96, "", { fontSize: "13px", color: "#ffcc00", fontFamily: "Arial" })
+      .text(sw - 15, BUDGET_Y, "", { fontSize: "17px", color: "#bb9882", fontFamily: "SVN-Pequena Neo" })
       .setOrigin(1, 0);
 
     // Divider
-    this.add.rectangle(sw / 2, 120, sw - 30, 1, 0x3a5a7a);
+    this.add.rectangle(sw / 2, DIVIDER_2_Y, sw - 30, 1, 0x3a5a7a);
 
     // --- Dish progress block ---
     this.add
-      .text(15, 128, "Dish Progress", {
-        fontSize: "13px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
+      .text(15, PROGRESS_LBL_Y, "Dish Progress", {
+        fontSize: "17px",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
       });
 
     this.dishProgressTexts = [];
     this.dishProgressBoxes = [];
-    const dishStartY = 150;
-    const dishRowH = 34;
 
     this.allDishes.forEach((dish, i) => {
-      const y = dishStartY + i * dishRowH;
+      const y = DISH_START_Y + i * DISH_ROW_H;
 
-      const box = this.add.rectangle(sw / 2, y + dishRowH / 2, sw - 24, dishRowH - 4, 0x222e3c);
-      box.setInteractive({ useHandCursor: true });
-      box.on("pointerdown", () => this.setCurrentDish(dish));
-      box.on("pointerover", () => box.setFillStyle(0x2a3a4e));
-      box.on("pointerout", () => {
-        const done = this.completedDishes[dish.id];
-        box.setFillStyle(done ? 0x264026 : 0x222e3c);
-      });
+      const box = this.add
+        .image(sw / 2 - 10, y + DISH_ROW_H / 2, "ui-box-infobox")
+        .setDisplaySize(sw + 40, DISH_ROW_H + 2)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerover", function () { this.setTint(0xaaccff); })
+        .on("pointerout",  function () { this.clearTint(); })
+        .on("pointerdown", () => this.showDishHoverCard(dish));
       this.dishProgressBoxes.push(box);
 
       const nameT = this.add
-        .text(24, y + 5, dish.vietnameseName, {
-          fontSize: "12px",
+        .text(sw * 0.3, y + DISH_ROW_H / 2, dish.vietnameseName, {
+          fontSize: "18px",
           color: "#ffffff",
-          fontFamily: "Arial",
-        });
+          fontFamily: "SVN-Pequena Neo",
+        })
+        .setOrigin(0.5, 0.5);
 
       const statusT = this.add
-        .text(sw - 24, y + 5, "NOT STARTED", {
-          fontSize: "11px",
-          color: "#777777",
-          fontFamily: "Arial",
+        .text(sw * 0.78, y + DISH_ROW_H / 2, "NOT STARTED", {
+          fontSize: "17px",
+          color: "#ffffff",
+          fontFamily: "SVN-Pequena Neo",
         })
-        .setOrigin(1, 0);
+        .setOrigin(0.5, 0.5);
 
       this.dishProgressTexts.push({ nameT, statusT, box });
     });
 
     // Divider after dish list
-    const afterDishY = dishStartY + 6 * dishRowH + 6;
+    const afterDishY = DISH_START_Y + 6 * DISH_ROW_H + 6;
     this.add.rectangle(sw / 2, afterDishY, sw - 30, 1, 0x3a5a7a);
 
     // --- Basket block ---
     this.add
-      .text(15, afterDishY + 8, "Basket", {
-        fontSize: "13px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
+      .text(15, afterDishY + BASKET_LBL_OFF, "Basket", {
+        fontSize: "17px",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
       });
 
     this.sidebarBasketItems = this.add
-      .text(15, afterDishY + 28, "(empty)", {
-        fontSize: "12px",
-        color: "#cccccc",
-        fontFamily: "Arial",
+      .text(15, afterDishY + BASKET_ITEM_OFF, "(empty)", {
+        fontSize: "16px",
+        color: "#ffffff",
+        fontFamily: "SVN-Pequena Neo",
         wordWrap: { width: sw - 30 },
         lineSpacing: 4,
       });
 
     this.sidebarBasketTotal = this.add
-      .text(15, afterDishY + 140, "Total: 0K", {
-        fontSize: "14px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
+      .text(15, afterDishY + BASKET_TTL_OFF, "Total: 0K", {
+        fontSize: "18px",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
       });
 
-    // --- Action buttons ---
+    // --- Action button ---
     const btnY = height - 60;
+    const BUTTON_SCALE = 0.2;
 
-    this.confirmButton = createImageButton(this, sw / 2, btnY, "Check Ingredients", {
-      fontSize: "15px",
-      onClick: () => this.validateSelection(),
-    }).bg;
-
-    // Dish details button
-    this.add
-      .text(sw / 2, btnY + 32, "View Dish Details", {
-        fontSize: "12px",
-        fontFamily: "Arial",
-        color: "#aaccee",
-        align: "center",
-      })
-      .setOrigin(0.5)
+    this.confirmButton = this.add
+      .image(sw / 2, btnY, "lv1-opt-buy-check")
+      .setScale(BUTTON_SCALE)
       .setInteractive({ useHandCursor: true })
-      .on("pointerdown", () => this.openDishListModal());
+      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
+      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
+      .on("pointerdown", () => this.validateSelection());
   }
 
   // ===================== MARKET WORLD =====================
@@ -355,9 +377,6 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     bgImg.setDisplaySize(this.MARKET_WORLD_W, height);
     this.marketWorld.add(bgImg);
 
-    // Light overlay for readability
-    const overlay = this.add.rectangle(this.MARKET_WORLD_W / 2, height / 2, this.MARKET_WORLD_W, height, 0x000000, 0.2);
-    this.marketWorld.add(overlay);
 
     // Clip mask so only the viewport right of sidebar is visible
     const maskShape = this.make.graphics();
@@ -378,9 +397,9 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       // Stall sign — small label floating above the counter area
       const stallSign = this.add
         .text(centerX, height * 0.48, stall.title, {
-          fontSize: "20px",
-          color: "#ffdd44",
-          fontFamily: "Arial",
+          fontSize: "24px",
+          color: "#bb9882",
+          fontFamily: "SVN-Pequena Neo",
           fontStyle: "bold",
           align: "center",
         })
@@ -392,12 +411,12 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       const spacing = this.STALL_W / (itemCount + 1);
       const baseY = height * 0.62;
 
-      stall.items.forEach((itemName, i) => {
-        const ingredientData = this.availableIngredients.find(ing => ing.name === itemName);
-        const ix = stallX + spacing * (i + 1);
-        const iy = baseY;
+      stall.items.forEach((item, i) => {
+        const ingredientData = this.availableIngredients.find(ing => ing.name === item.name);
+        const ix = stallX + spacing * (i + 1) + (item.xOffset ?? 0);
+        const iy = baseY + (item.yOffset ?? 0);
 
-        const entry = this.createIngredientEntry(ix, iy, itemName, ingredientData);
+        const entry = this.createIngredientEntry(ix, iy, item.name, ingredientData);
         this.ingredientEntries.push(entry);
       });
 
@@ -424,9 +443,9 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     // Name label
     const nameT = this.add
       .text(cx, cy + imgSize * 0.75 / 2 + 8, itemName, {
-        fontSize: "12px",
+        fontSize: "16px",
         color: isSelected ? "#aaffaa" : "#ffffff",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
         wordWrap: { width: 120 },
       })
@@ -435,10 +454,10 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
     // Price label
     const priceT = this.add
-      .text(cx, cy + imgSize * 0.75 / 2 + 26, ingredientData.price + "K", {
-        fontSize: "13px",
-        color: isSelected ? "#ffff66" : "#ffcc00",
-        fontFamily: "Arial",
+      .text(cx, cy + imgSize * 0.75 / 2 + 50, ingredientData.price + "K", {
+        fontSize: "17px",
+        color: isSelected ? "#ffff66" : "#ffffff",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
@@ -483,7 +502,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     this.ingredientEntries = [];
 
     // Remove everything except bg image and overlay (first 2 children)
-    const keep = 2;
+    const keep = 1; // only the bg image remains
     while (this.marketWorld.list.length > keep) {
       this.marketWorld.list[keep].destroy();
     }
@@ -570,7 +589,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     let total = 0;
     for (const price of Object.values(this.selectedIngredients)) total += price;
     this.sidebarTotal.setText("Selected: " + total + "K");
-    this.sidebarTotal.setColor(total > dish.budget ? "#ff6666" : "#ffcc00");
+    this.sidebarTotal.setColor(total > dish.budget ? "#ff6666" : "#bb9882");
 
     // Dish progress
     this.allDishes.forEach((d, i) => {
@@ -578,9 +597,11 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       const done = this.completedDishes[d.id];
       const isCurrent = d.id === this.currentDish.id;
       entry.statusT.setText(done ? "DONE ✓" : "NOT STARTED");
-      entry.statusT.setColor(done ? "#66ff66" : "#777777");
-      entry.nameT.setColor(isCurrent ? "#66ccff" : "#ffffff");
-      entry.box.setFillStyle(done ? 0x264026 : isCurrent ? 0x1c3350 : 0x222e3c);
+      entry.statusT.setColor(done ? "#bb9882" : "#ffffff");
+      entry.nameT.setColor(isCurrent ? "#bb9882" : "#ffffff");
+      entry.box.clearTint();
+      if (done) entry.box.setTint(0x66ff66);
+      else if (isCurrent) entry.box.setTint(0x66ccff);
     });
   }
 
@@ -599,11 +620,83 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     if (total > this.currentDish.budget) {
       this.sidebarBasketTotal.setColor("#ff6666");
     } else {
-      this.sidebarBasketTotal.setColor("#ffcc00");
+      this.sidebarBasketTotal.setColor("#bb9882");
     }
   }
 
   // ===================== DISH SWITCHING =====================
+
+  // ===================== DISH HOVER CARD =====================
+
+  showDishHoverCard(dish) {
+    const { width, height } = this.scale;
+
+    // Dismiss any existing card first
+    if (this._dishCard) {
+      this._dishCard.destroy();
+      this._dishCard = null;
+    }
+
+    const cardX = this.SIDEBAR_W + (width - this.SIDEBAR_W) / 2;
+    const cardY = height / 2;
+
+    const container = this.add.container(0, 0).setDepth(300);
+
+    // Dim overlay — click anywhere to close
+    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.5)
+      .setInteractive();
+    overlay.on("pointerdown", () => {
+      container.destroy();
+      this._dishCard = null;
+    });
+    container.add(overlay);
+
+    // Dish card image — scaled to native PNG size
+    const cardImg = createDishCard(this, cardX, cardY - 40, dish.cardKey, { scale: 0.2 });
+    container.add(cardImg);
+
+    // Dish name
+    const nameViet = this.add.text(cardX, cardY + 150, dish.vietnameseName, {
+      fontSize: "22px",
+      color: "#bb9882",
+      fontFamily: "SVN-Pequena Neo",
+      fontStyle: "bold",
+      align: "center",
+    }).setOrigin(0.5);
+    container.add(nameViet);
+
+    const nameEng = this.add.text(cardX, cardY + 180, dish.englishName, {
+      fontSize: "15px",
+      color: "#ffffff",
+      fontFamily: "SVN-Pequena Neo",
+      align: "center",
+    }).setOrigin(0.5);
+    container.add(nameEng);
+
+    // Budget + ingredients
+    const ingredientList = dish.correctIngredients.map(i => `${i.name}  ${i.price}K`).join("   •   ");
+    const info = this.add.text(cardX, cardY + 210, `Budget: ${dish.budget}K  |  ${ingredientList}`, {
+      fontSize: "13px",
+      color: "#bb9882",
+      fontFamily: "SVN-Pequena Neo",
+      align: "center",
+      wordWrap: { width: 480 },
+    }).setOrigin(0.5);
+    container.add(info);
+
+    // "Select this dish" button
+    const { bg: selectBtn } = createImageButton(this, cardX, cardY + 270, "Select this dish", {
+      fontSize: "18px",
+      onClick: () => {
+        container.destroy();
+        this._dishCard = null;
+        this.setCurrentDish(dish);
+      },
+    });
+    container.add(selectBtn);
+
+    this._dishCard = container;
+  }
 
   setCurrentDish(dish) {
     this.currentDish = dish;
@@ -685,7 +778,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       .text(cx, 60, message, {
         fontSize: "24px",
         color: color,
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         backgroundColor: "#000000",
         padding: { left: 20, right: 20, top: 10, bottom: 10 },
@@ -707,14 +800,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     const { container: modalContainer } = createModalFrame(this, 520, 480, {
-      strokeColor: 0x5a8aaa,
+      textureKey: "ui-success-modal",
     });
 
     const title = this.add
       .text(width / 2, height / 2 - 210, "Dish Details", {
         fontSize: "22px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
@@ -731,7 +824,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
       const row = this.add
         .text(width / 2, yPos, label, {
           fontSize: "13px",
-          fontFamily: "Arial",
+          fontFamily: "SVN-Pequena Neo",
           color: isCompleted ? "#66ff66" : "#ffffff",
           backgroundColor: isCompleted ? "#264026" : "#2a3a50",
           padding: { left: 12, right: 12, top: 6, bottom: 6 },
@@ -758,8 +851,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     const infoText = this.add
       .text(width / 2, yPos + 10, budgetInfo, {
         fontSize: "10px",
-        color: "#888888",
-        fontFamily: "Arial",
+        color: "#bb9882",
+        fontFamily: "SVN-Pequena Neo",
         align: "left",
         wordWrap: { width: 480 },
         lineSpacing: 4,
@@ -780,39 +873,20 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
     this.confirmButton.disableInteractive();
 
-    const { container: modal } = createModalFrame(this, 550, 300, {
-      textureKey: "ui-success-modal",
-      strokeColor: 0xffcc00,
-    });
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6).setDepth(199);
 
-    const title = this.add
-      .text(width / 2, height / 2 - 90, "Market Challenge Complete", {
-        fontSize: "26px",
-        color: "#ffcc00",
-        fontFamily: "Arial",
-        fontStyle: "bold",
-        align: "center",
-      })
-      .setOrigin(0.5);
+    createFrame(this, width / 2, height / 2, {
+      textureKey: "lv1-finish", scale: 0.5,
+    }).setDepth(200);
 
-    const msg = this.add
-      .text(width / 2, height / 2 - 10, "You found the ingredients for all six dishes.\nLet's bring them home and start cooking.", {
-        fontSize: "18px",
-        color: "#ffffff",
-        fontFamily: "Arial",
-        align: "center",
-        wordWrap: { width: 500 },
-        lineSpacing: 8,
-      })
-      .setOrigin(0.5);
-
-    const { bg: continueButton } = createImageButton(this, width / 2, height / 2 + 90, "Continue Home", {
-      fontSize: "20px",
-      bgColor: "#ffcc00",
-      hoverBgColor: "#ffee00",
-      onClick: () => this.scene.start("BuyRibsIntroScene"),
-    });
-
-    modal.add([title, msg, continueButton]);
+    const BUTTON_SCALE = 0.15;
+    this.add
+      .image(width / 2, height / 2 + 90, "continue_button")
+      .setScale(BUTTON_SCALE)
+      .setDepth(201)
+      .setInteractive({ useHandCursor: true })
+      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
+      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
+      .on("pointerdown", () => this.scene.start("BuyRibsIntroScene"));
   }
 }

@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { createDevSkipButton , createBackButton } from "../UIHelpers";
 
 export default class Level2CookingChallengeScene extends Phaser.Scene {
   constructor() {
@@ -70,6 +71,8 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     this.filledAnswers = {};
     this.selectedBlank = null;
 
+    createDevSkipButton(this, "CookingChallengeCompleteScene");
+    createBackButton(this);
     this.loadDish(0);
   }
 
@@ -92,7 +95,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .text(this.W - 30, 20, "Dish " + (index + 1) + " / " + this.dishes.length, {
         fontSize: "16px",
         color: "#888888",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
       })
       .setOrigin(1, 0);
 
@@ -101,7 +104,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .text(this.W / 2, 36, dish.title, {
         fontSize: "26px",
         color: "#ffcc00",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
@@ -120,7 +123,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     this.checkBtn = this.add
       .text(this.W / 2, this.H - 50, "Check Recipe", {
         fontSize: "18px",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         color: "#000000",
         backgroundColor: "#ffffff",
         padding: { left: 25, right: 25, top: 10, bottom: 10 },
@@ -138,7 +141,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .text(this.W / 2, this.H - 95, "", {
         fontSize: "16px",
         color: "#ff9999",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "italic",
         align: "center",
       })
@@ -199,7 +202,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
             this.add.text(curX, curY, word, {
               fontSize: fontSize + "px",
               color: "#cccccc",
-              fontFamily: "Arial",
+              fontFamily: "SVN-Pequena Neo",
             });
           }
           curX += wordW;
@@ -236,7 +239,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
           .text(slotX + slotW / 2, slotY + slotH / 2, "[" + blankIdx + "]", {
             fontSize: "14px",
             color: "#5a8aaa",
-            fontFamily: "Arial",
+            fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
             align: "center",
           })
@@ -277,7 +280,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .text(this.W / 2, optionY - 30, "Answer Options (click a blank, then click an option)", {
         fontSize: "13px",
         color: "#888888",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         align: "center",
       })
       .setOrigin(0.5);
@@ -331,7 +334,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
           .text(rx + opt.w / 2, rowY, opt.text, {
             fontSize: fontSize + "px",
             color: "#ffffff",
-            fontFamily: "Arial",
+            fontFamily: "SVN-Pequena Neo",
             align: "center",
           })
           .setOrigin(0.5);
@@ -511,7 +514,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .text(this.W / 2, this.H / 2 - 80, "Nicely Done", {
         fontSize: "30px",
         color: "#ffcc00",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
         align: "center",
       })
@@ -524,8 +527,8 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
         "The dish is ready.\nOne more step closer to the family feast.",
         {
           fontSize: "18px",
-          color: "#ffffff",
-          fontFamily: "Arial",
+          color: "#000000",
+          fontFamily: "SVN-Pequena Neo",
           align: "center",
           lineSpacing: 8,
         }
@@ -535,7 +538,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     const btn = this.add
       .text(this.W / 2, this.H / 2 + 80, "Continue", {
         fontSize: "20px",
-        fontFamily: "Arial",
+        fontFamily: "SVN-Pequena Neo",
         color: "#000000",
         backgroundColor: "#ffcc00",
         padding: { left: 30, right: 30, top: 10, bottom: 10 },
