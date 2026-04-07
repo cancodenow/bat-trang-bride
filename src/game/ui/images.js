@@ -53,6 +53,38 @@ export function createUIImage(scene, x, y, key, opts = {}) {
   return img;
 }
 
+/**
+ * Add a full-screen background image using "cover" scaling.
+ * This preserves the texture aspect ratio and crops overflow instead
+ * of stretching the asset to fit the canvas.
+ *
+ * @param {Phaser.Scene} scene
+ * @param {string} key
+ * @param {object} opts
+ * @param {number} [opts.x]
+ * @param {number} [opts.y]
+ * @param {number} [opts.width]
+ * @param {number} [opts.height]
+ * @param {number} [opts.depth]
+ * @returns {Phaser.GameObjects.Image|null}
+ */
+export function addCoverBg(scene, key, opts = {}) {
+  if (!hasTexture(scene, key)) return null;
+
+  const { width: sceneWidth, height: sceneHeight } = scene.scale;
+  const x = opts.x ?? sceneWidth / 2;
+  const y = opts.y ?? sceneHeight / 2;
+  const width = opts.width ?? sceneWidth;
+  const height = opts.height ?? sceneHeight;
+
+  const frame = scene.textures.getFrame(key);
+  const coverScale = Math.max(width / frame.realWidth, height / frame.realHeight);
+
+  const img = scene.add.image(x, y, key).setScale(coverScale);
+  if (opts.depth !== undefined) img.setDepth(opts.depth);
+  return img;
+}
+
 // ─────────────────────────────────────────────────────────────
 // Option button  (lv1-opt-*, lv3-dish-opt-*, lv3-opt-cl1-*, etc.)
 // ─────────────────────────────────────────────────────────────
