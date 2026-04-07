@@ -3,6 +3,7 @@ const PORTRAIT_GAME_SIZE = Object.freeze({ width: 900, height: 1600 });
 const PHONE_SMALL_MAX = 430;
 const PHONE_LARGE_MAX = 820;
 const LANDSCAPE_MODAL_BASE_SIZE = Object.freeze({ width: 860, height: 498 });
+const RESPONSIVE_CHANGE_DEBOUNCE_MS = 120;
 
 export const DPR = window.devicePixelRatio || 1;
 
@@ -94,14 +95,33 @@ function getScaleManager(sceneOrScale) {
     return sceneOrScale?.scale ? sceneOrScale.scale : sceneOrScale;
 }
 
+function getViewportSize(scale) {
+    return {
+        width: Math.round(scale.parentSize?.width || window.innerWidth || scale.width),
+        height: Math.round(scale.parentSize?.height || window.innerHeight || scale.height),
+    };
+}
+
+function getResponsiveChangeSignature(sceneOrScale) {
+    const scale = getScaleManager(sceneOrScale);
+    const { width: viewportWidth, height: viewportHeight } = getViewportSize(scale);
+    const { bucket } = getResponsiveMetrics(scale);
+
+    return [
+        viewportWidth,
+        viewportHeight,
+        bucket,
+        shouldShowRotateOverlay(scale) ? "rotate" : "game",
+    ].join(":");
+}
+
 export function getOrientationGameSize() {
     return LANDSCAPE_GAME_SIZE;
 }
 
 export function shouldShowRotateOverlay(sceneOrScale) {
     const scale = getScaleManager(sceneOrScale);
-    const viewportWidth = scale.parentSize?.width || window.innerWidth || scale.width;
-    const viewportHeight = scale.parentSize?.height || window.innerHeight || scale.height;
+    const { width: viewportWidth, height: viewportHeight } = getViewportSize(scale);
     const viewportShortSide = Math.min(viewportWidth, viewportHeight);
 
     return viewportHeight > viewportWidth && viewportShortSide <= PHONE_LARGE_MAX;
@@ -111,8 +131,7 @@ export function getResponsiveMetrics(sceneOrScale) {
     const scale = getScaleManager(sceneOrScale);
     const width = scale.width;
     const height = scale.height;
-    const viewportWidth = scale.parentSize?.width || width;
-    const viewportHeight = scale.parentSize?.height || height;
+    const { width: viewportWidth, height: viewportHeight } = getViewportSize(scale);
     const isPortrait = height > width;
     const shortSide = Math.min(width, height);
     const viewportShortSide = Math.min(viewportWidth, viewportHeight);
@@ -249,12 +268,62 @@ export function getResponsiveMetrics(sceneOrScale) {
 }
 
 export function bindResponsiveScene(scene, onChange) {
-    const handler = () => onChange();
+    let rafId = null;
+    let timeoutId = null;
+    let disposed = false;
+    let lastSignature = getResponsiveChangeSignature(scene);
+
+    const flush = () => {
+        if (disposed) {
+            return;
+        }
+
+        const nextSignature = getResponsiveChangeSignature(scene);
+
+        if (nextSignature === lastSignature) {
+            return;
+        }
+
+        lastSignature = nextSignature;
+        onChange();
+    };
+
+    const handler = () => {
+        if (disposed) {
+            return;
+        }
+
+        if (rafId != null) {
+            window.cancelAnimationFrame(rafId);
+        }
+
+        if (timeoutId != null) {
+            window.clearTimeout(timeoutId);
+        }
+
+        rafId = window.requestAnimationFrame(() => {
+            rafId = null;
+            timeoutId = window.setTimeout(() => {
+                timeoutId = null;
+                flush();
+            }, RESPONSIVE_CHANGE_DEBOUNCE_MS);
+        });
+    };
 
     scene.scale.on("resize", handler);
     scene.scale.on("orientationchange", handler);
 
     const cleanup = () => {
+        disposed = true;
+
+        if (rafId != null) {
+            window.cancelAnimationFrame(rafId);
+        }
+
+        if (timeoutId != null) {
+            window.clearTimeout(timeoutId);
+        }
+
         scene.scale.off("resize", handler);
         scene.scale.off("orientationchange", handler);
     };

@@ -20,13 +20,14 @@ body {
     color: rgba(255, 255, 255, 0.87);
     background-color: #1c172e;
     min-height: 100vh;
+    min-height: 100svh;
     overscroll-behavior: none;
 }
 
 #app {
     width: 100%;
     min-height: 100vh;
-    min-height: 100dvh;
+    min-height: 100svh;
     overflow: hidden;
     display: flex;
     justify-content: center;
@@ -35,9 +36,8 @@ body {
 
 #phaser-container {
     width: 100vw;
-    width: 100dvw;
     height: 100vh;
-    height: 100dvh;
+    height: 100svh;
     max-width: 100%;
     max-height: 100%;
     overflow: hidden;

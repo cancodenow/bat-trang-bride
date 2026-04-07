@@ -27,16 +27,11 @@ import RotateDeviceOverlayScene from "./game/scenes/RotateDeviceOverlayScene";
 import { getOrientationGameSize } from "./game/UIHelpers";
 
 const dpr = window.devicePixelRatio || 1;
-
-const getViewportGameSize = () => {
-    const base = getOrientationGameSize(window.innerWidth, window.innerHeight);
-    return {
-        width: Math.round(base.width * dpr),
-        height: Math.round(base.height * dpr),
-    };
+const baseGameSize = getOrientationGameSize();
+const initialGameSize = {
+    width: Math.round(baseGameSize.width * dpr),
+    height: Math.round(baseGameSize.height * dpr),
 };
-
-const initialGameSize = getViewportGameSize();
 
 const config = {
     type: Phaser.AUTO,
@@ -94,17 +89,3 @@ game.events.once("ready", () => {
         game.scene.start("OpeningScene");
     }
 });
-
-const syncGameSizeToViewport = () => {
-    const nextSize = getViewportGameSize();
-    const { width, height } = game.scale.gameSize;
-
-    if (width !== nextSize.width || height !== nextSize.height) {
-        game.scale.setGameSize(nextSize.width, nextSize.height);
-    }
-
-    game.scale.refresh();
-};
-
-window.addEventListener("resize", syncGameSizeToViewport);
-window.addEventListener("orientationchange", syncGameSizeToViewport);
