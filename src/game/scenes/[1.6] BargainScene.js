@@ -114,8 +114,12 @@ export default class BargainScene extends Phaser.Scene {
         this.choiceContainer = this.add.container(0, 0).setVisible(false);
         this.createChoiceButtons();
 
-        // Show first dialogue
-        this.showCurrentDialogue();
+        const skipToChoice = this.scene.settings.data?.skipToChoice;
+        if (skipToChoice) {
+            this.showChoices();
+        } else {
+            this.showCurrentDialogue();
+        }
 
         // Click to advance dialogue
         this.input.on("pointerdown", () => {
