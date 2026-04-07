@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createDevSkipButton } from "../UIHelpers";
+import { preloadUIAssets, createDevSkipButton, getResponsiveMetrics } from "../UIHelpers";
 
 export default class BadEndingScene extends Phaser.Scene {
   constructor() {
@@ -11,14 +11,15 @@ export default class BadEndingScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height } = this.scale;
+    const metrics = getResponsiveMetrics(this);
+    const { width, height, fs, dpr } = metrics;
 
     this.cameras.main.setBackgroundColor("#000000");
 
     // Title
     this.add
-      .text(width / 2, height / 2 - 100, "BAD ENDING", {
-        fontSize: "48px",
+      .text(width / 2, height / 2 - Math.round(100 * dpr), "BAD ENDING", {
+        fontSize: fs(48),
         color: "#ff4444",
         fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
@@ -29,12 +30,12 @@ export default class BadEndingScene extends Phaser.Scene {
     // Body
     this.add
       .text(width / 2, height / 2, "You accidentally watched TikTok for 5 hours\nand failed to wake up in time to help with lunch.", {
-        fontSize: "22px",
+        fontSize: fs(22),
         color: "#cccccc",
         fontFamily: "SVN-Pequena Neo",
         align: "center",
-        wordWrap: { width: 600 },
-        lineSpacing: 10,
+        wordWrap: { width: Math.round(600 * dpr) },
+        lineSpacing: Math.round(10 * dpr),
       })
       .setOrigin(0.5);
 

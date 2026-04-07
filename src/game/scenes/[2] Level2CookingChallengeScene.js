@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { createDevSkipButton , createBackButton } from "../UIHelpers";
+import { createDevSkipButton , createBackButton, getResponsiveMetrics } from "../UIHelpers";
 
 export default class Level2CookingChallengeScene extends Phaser.Scene {
   constructor() {
@@ -8,6 +8,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    this.metrics = getResponsiveMetrics(this);
     this.W = width;
     this.H = height;
 
@@ -92,8 +93,8 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
     // Progress
     this.add
-      .text(this.W - 30, 20, "Dish " + (index + 1) + " / " + this.dishes.length, {
-        fontSize: "16px",
+      .text(this.W - Math.round(30 * this.metrics.dpr), Math.round(20 * this.metrics.dpr), "Dish " + (index + 1) + " / " + this.dishes.length, {
+        fontSize: this.metrics.fs(16),
         color: "#888888",
         fontFamily: "SVN-Pequena Neo",
       })
@@ -101,8 +102,8 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
     // Title
     this.add
-      .text(this.W / 2, 36, dish.title, {
-        fontSize: "26px",
+      .text(this.W / 2, Math.round(36 * this.metrics.dpr), dish.title, {
+        fontSize: this.metrics.fs(26),
         color: "#ffcc00",
         fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
@@ -121,12 +122,17 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
     // Check button
     this.checkBtn = this.add
-      .text(this.W / 2, this.H - 50, "Check Recipe", {
-        fontSize: "18px",
+      .text(this.W / 2, this.H - Math.round(50 * this.metrics.dpr), "Check Recipe", {
+        fontSize: this.metrics.fs(18),
         fontFamily: "SVN-Pequena Neo",
         color: "#000000",
         backgroundColor: "#ffffff",
-        padding: { left: 25, right: 25, top: 10, bottom: 10 },
+        padding: {
+          left: Math.round(25 * this.metrics.dpr),
+          right: Math.round(25 * this.metrics.dpr),
+          top: Math.round(10 * this.metrics.dpr),
+          bottom: Math.round(10 * this.metrics.dpr),
+        },
         fontStyle: "bold",
       })
       .setOrigin(0.5)
@@ -138,8 +144,8 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
     // Feedback text area
     this.feedbackText = this.add
-      .text(this.W / 2, this.H - 95, "", {
-        fontSize: "16px",
+      .text(this.W / 2, this.H - Math.round(95 * this.metrics.dpr), "", {
+        fontSize: this.metrics.fs(16),
         color: "#ff9999",
         fontFamily: "SVN-Pequena Neo",
         fontStyle: "italic",
@@ -172,11 +178,11 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
     // Render as flowing text with inline blank slots
     // We'll use a word-wrapping approach: render word by word
-    const startX = 60;
-    const startY = 85;
-    const maxWidth = this.W - 120;
-    const lineHeight = 36;
-    const fontSize = 17;
+    const startX = Math.round(60 * this.metrics.dpr);
+    const startY = Math.round(85 * this.metrics.dpr);
+    const maxWidth = this.W - Math.round(120 * this.metrics.dpr);
+    const lineHeight = Math.round(36 * this.metrics.dpr);
+    const fontSize = Math.round(17 * this.metrics.dpr);
 
     let curX = startX;
     let curY = startY;
@@ -210,7 +216,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       } else if (seg.type === "blank") {
         const blankIdx = seg.index;
         const answerText = dish.answers[blankIdx];
-        const blankW = Math.max(answerText.length * fontSize * 0.5, 100);
+        const blankW = Math.max(answerText.length * fontSize * 0.5, Math.round(100 * this.metrics.dpr));
 
         // Wrap if needed
         if (curX + blankW + 20 > startX + maxWidth) {
@@ -220,9 +226,9 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
 
         // Blank slot background
         const slotX = curX;
-        const slotY = curY - 2;
-        const slotW = blankW + 16;
-        const slotH = 28;
+        const slotY = curY - Math.round(2 * this.metrics.dpr);
+        const slotW = blankW + Math.round(16 * this.metrics.dpr);
+        const slotH = Math.round(28 * this.metrics.dpr);
 
         const bg = this.add.rectangle(
           slotX + slotW / 2,
@@ -231,13 +237,13 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
           slotH,
           0x2a3a50
         );
-        bg.setStrokeStyle(2, 0x5a8aaa);
+        bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x5a8aaa);
         bg.setInteractive({ useHandCursor: true });
 
         // Blank label — shows index or filled answer
         const label = this.add
           .text(slotX + slotW / 2, slotY + slotH / 2, "[" + blankIdx + "]", {
-            fontSize: "14px",
+            fontSize: this.metrics.fs(14),
             color: "#5a8aaa",
             fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
@@ -248,15 +254,15 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
         // Click to select this blank
         bg.on("pointerdown", () => this.selectBlank(blankIdx));
         bg.on("pointerover", () => {
-          if (this.selectedBlank !== blankIdx) bg.setStrokeStyle(2, 0x88aacc);
+          if (this.selectedBlank !== blankIdx) bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x88aacc);
         });
         bg.on("pointerout", () => {
-          if (this.selectedBlank !== blankIdx) bg.setStrokeStyle(2, 0x5a8aaa);
+          if (this.selectedBlank !== blankIdx) bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x5a8aaa);
         });
 
         this.blankObjects[blankIdx] = { bg, label, slotW, slotH };
 
-        curX += slotW + 6;
+        curX += slotW + Math.round(6 * this.metrics.dpr);
       }
     });
   }
@@ -274,11 +280,11 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     }
 
     // Render options at bottom area
-    const optionY = this.H - 190;
+    const optionY = this.H - Math.round(190 * this.metrics.dpr);
 
     this.add
-      .text(this.W / 2, optionY - 30, "Answer Options (click a blank, then click an option)", {
-        fontSize: "13px",
+      .text(this.W / 2, optionY - Math.round(30 * this.metrics.dpr), "Answer Options (click a blank, then click an option)", {
+        fontSize: this.metrics.fs(13),
         color: "#888888",
         fontFamily: "SVN-Pequena Neo",
         align: "center",
@@ -286,16 +292,16 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Layout options in rows
-    const maxRowW = this.W - 120;
-    const padding = 12;
-    const gap = 10;
-    const fontSize = 14;
+    const maxRowW = this.W - Math.round(120 * this.metrics.dpr);
+    const padding = Math.round(12 * this.metrics.dpr);
+    const gap = Math.round(10 * this.metrics.dpr);
+    const fontSize = Math.round(14 * this.metrics.dpr);
     const charW = fontSize * 0.55;
 
     // Calculate option sizes
     const optionSizes = shuffled.map((text) => ({
       text,
-      w: text.length * charW + padding * 2 + 16,
+      w: text.length * charW + padding * 2 + Math.round(16 * this.metrics.dpr),
     }));
 
     // Arrange into rows
@@ -324,10 +330,10 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
           rx + opt.w / 2,
           rowY,
           opt.w,
-          32,
+          Math.round(32 * this.metrics.dpr),
           0x2a4a6a
         );
-        chipBg.setStrokeStyle(1, 0x5a8aaa);
+        chipBg.setStrokeStyle(Math.round(1 * this.metrics.dpr), 0x5a8aaa);
         chipBg.setInteractive({ useHandCursor: true });
 
         const chipText = this.add
@@ -351,7 +357,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
         rx += opt.w + gap;
       });
 
-      rowY += 40;
+      rowY += Math.round(40 * this.metrics.dpr);
     });
   }
 
@@ -360,14 +366,14 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
   selectBlank(blankIdx) {
     // Deselect previous
     if (this.selectedBlank !== null && this.blankObjects[this.selectedBlank]) {
-      this.blankObjects[this.selectedBlank].bg.setStrokeStyle(2, 0x5a8aaa);
+      this.blankObjects[this.selectedBlank].bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x5a8aaa);
     }
 
     this.selectedBlank = blankIdx;
 
     // Highlight selected blank
     if (this.blankObjects[blankIdx]) {
-      this.blankObjects[blankIdx].bg.setStrokeStyle(2, 0xffcc00);
+      this.blankObjects[blankIdx].bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0xffcc00);
     }
 
     this.feedbackText.setText("");
@@ -410,7 +416,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     if (this.blankObjects[blankIdx]) {
       this.blankObjects[blankIdx].label.setText(answerText);
       this.blankObjects[blankIdx].label.setColor("#aaddff");
-      this.blankObjects[blankIdx].label.setFontSize(13);
+      this.blankObjects[blankIdx].label.setFontSize(this.metrics.fs(13));
       this.blankObjects[blankIdx].bg.setFillStyle(0x1c3350);
     }
 
@@ -436,7 +442,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       this.selectBlank(nextBlank);
     } else {
       // All filled — deselect
-      this.blankObjects[blankIdx].bg.setStrokeStyle(2, 0x66ff66);
+      this.blankObjects[blankIdx].bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x66ff66);
       this.selectedBlank = null;
     }
 
@@ -485,11 +491,11 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     const dish = this.dishes[this.currentDishIndex];
     for (let i = 1; i <= Object.keys(dish.answers).length; i++) {
       if (this.filledAnswers[i] !== dish.answers[i] && this.blankObjects[i]) {
-        this.blankObjects[i].bg.setStrokeStyle(2, 0xff4444);
+        this.blankObjects[i].bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0xff4444);
         // Reset after 1.5 seconds
         this.time.delayedCall(1500, () => {
           if (this.blankObjects[i]) {
-            this.blankObjects[i].bg.setStrokeStyle(2, 0x5a8aaa);
+            this.blankObjects[i].bg.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x5a8aaa);
           }
         });
       }
@@ -505,14 +511,14 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       .rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.6)
       .setInteractive();
 
-    const box = this.add.rectangle(this.W / 2, this.H / 2, 520, 280, 0x16213e);
+    const box = this.add.rectangle(this.W / 2, this.H / 2, Math.round(520 * this.metrics.dpr), Math.round(280 * this.metrics.dpr), 0x16213e);
     const border = this.add
-      .rectangle(this.W / 2, this.H / 2, 520, 280, 0xffffff, 0)
-      .setStrokeStyle(3, 0xffcc00);
+      .rectangle(this.W / 2, this.H / 2, Math.round(520 * this.metrics.dpr), Math.round(280 * this.metrics.dpr), 0xffffff, 0)
+      .setStrokeStyle(Math.round(3 * this.metrics.dpr), 0xffcc00);
 
     const title = this.add
-      .text(this.W / 2, this.H / 2 - 80, "Nicely Done", {
-        fontSize: "30px",
+      .text(this.W / 2, this.H / 2 - Math.round(80 * this.metrics.dpr), "Nicely Done", {
+        fontSize: this.metrics.fs(30),
         color: "#ffcc00",
         fontFamily: "SVN-Pequena Neo",
         fontStyle: "bold",
@@ -523,25 +529,30 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     const body = this.add
       .text(
         this.W / 2,
-        this.H / 2 - 10,
+        this.H / 2 - Math.round(10 * this.metrics.dpr),
         "The dish is ready.\nOne more step closer to the family feast.",
         {
-          fontSize: "18px",
+          fontSize: this.metrics.fs(18),
           color: "#000000",
           fontFamily: "SVN-Pequena Neo",
           align: "center",
-          lineSpacing: 8,
+          lineSpacing: Math.round(8 * this.metrics.dpr),
         }
       )
       .setOrigin(0.5);
 
     const btn = this.add
-      .text(this.W / 2, this.H / 2 + 80, "Continue", {
-        fontSize: "20px",
+      .text(this.W / 2, this.H / 2 + Math.round(80 * this.metrics.dpr), "Continue", {
+        fontSize: this.metrics.fs(20),
         fontFamily: "SVN-Pequena Neo",
         color: "#000000",
         backgroundColor: "#ffcc00",
-        padding: { left: 30, right: 30, top: 10, bottom: 10 },
+        padding: {
+          left: Math.round(30 * this.metrics.dpr),
+          right: Math.round(30 * this.metrics.dpr),
+          top: Math.round(10 * this.metrics.dpr),
+          bottom: Math.round(10 * this.metrics.dpr),
+        },
         fontStyle: "bold",
       })
       .setOrigin(0.5)

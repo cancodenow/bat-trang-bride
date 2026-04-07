@@ -7,7 +7,9 @@ import {
     preloadCharacters,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
 } from "../UIHelpers";
+import { createImageButton } from "../ui/buttons.js";
 
 export default class BargainScene extends Phaser.Scene {
     constructor() {
@@ -22,7 +24,8 @@ export default class BargainScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, dpr } = metrics;
 
         this.cameras.main.setBackgroundColor("#103c5a");
         addCoverBg(this, "marketBg");
@@ -56,10 +59,15 @@ export default class BargainScene extends Phaser.Scene {
 
         // Runner handles initial 3-line dialogue
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - 160, w: width - 100, h: 240 },
+            box: {
+                x: width / 2,
+                y: height - Math.round(160 * dpr),
+                w: width - Math.round(100 * dpr),
+                h: Math.round(240 * dpr),
+            },
             chars: {
-                left:  { x: width * 0.2, y: height + 70, scale: 0.5 },
-                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showChoices(),
@@ -82,33 +90,25 @@ export default class BargainScene extends Phaser.Scene {
 
     createChoiceButtons() {
         const { width, height } = this.scale;
-        const BUTTON_SCALE = 0.15;
+        const { dpr, buttonScale } = getResponsiveMetrics(this);
 
         // Button 1 — correct: bargain
-        const btn1 = this.add
-            .image(width / 2 - 180, height - 100, "lv1-opt-bargain")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.onCorrectChoice());
+        const { bg: btn1 } = createImageButton(
+            this,
+            width / 2 - Math.round(180 * dpr),
+            height - Math.round(220 * dpr),
+            "",
+            { textureKey: "lv1-opt-bargain", scale: buttonScale, onClick: () => this.onCorrectChoice() },
+        );
 
         // Button 2 — wrong: accept price
-        const btn2 = this.add
-            .image(width / 2 + 180, height - 100, "lv1-opt-no-bargain")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("BargainBadEndingScene"));
+        const { bg: btn2 } = createImageButton(
+            this,
+            width / 2 + Math.round(180 * dpr),
+            height - Math.round(220 * dpr),
+            "",
+            { textureKey: "lv1-opt-no-bargain", scale: buttonScale, onClick: () => this.scene.start("BargainBadEndingScene") },
+        );
 
         this.choiceContainer.add([btn1, btn2]);
     }

@@ -7,6 +7,9 @@ import {
     createDevSkipButton,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
+    bindResponsiveScene,
+    createContinueButton,
 } from "../UIHelpers";
 
 export default class IntroScene extends Phaser.Scene {
@@ -22,13 +25,18 @@ export default class IntroScene extends Phaser.Scene {
         preloadCharacters(this);
     }
 
-    create() {
-        const { width, height } = this.scale;
+    create(data = {}) {
+        const metrics = getResponsiveMetrics(this);
 
         addCoverBg(this, "introBg");
 
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - 130, w: 830, h: 150 },
+            box: {
+                x: metrics.dialogue.x,
+                y: metrics.dialogue.y,
+                w: metrics.dialogue.width,
+                h: metrics.dialogue.height,
+            },
             lines: [
                 {
                     text: "After seven years together, you and Sơn Tùng finally got married!",
@@ -37,27 +45,40 @@ export default class IntroScene extends Phaser.Scene {
                     text: "The wedding was held in his hometown - a traditional ceramic village near Hanoi.",
                 },
             ],
+            skipTo: data.lineIndex || 0,
             onComplete: () => this.showContinueButton(),
         });
 
+        if (data.showContinueButton) {
+            this.showContinueButton();
+        }
+
         createDevSkipButton(this, "MorningScene01");
         createBackButton(this);
+        bindResponsiveScene(this, () =>
+            this.scene.restart({
+                lineIndex: this.runner?._completed
+                    ? this.runner.lines.length
+                    : this.runner?.lineIndex || 0,
+                showContinueButton: Boolean(this.continueButton),
+            }),
+        );
     }
 
     showContinueButton() {
-        const { width, height } = this.scale;
+        if (this.continueButton) {
+            this.continueButton.destroy();
+        }
+        const {
+            buttonScale: BUTTON_SCALE,
+            width,
+            height,
+            bottomInset,
+        } = getResponsiveMetrics(this);
 
-        const BUTTON_SCALE = 0.15;
-        this.add
-            .image(width / 2, height - 50, "continue_button")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("MorningScene01"));
+        this.continueButton = createContinueButton(this, width / 2, height - bottomInset, {
+            scale: BUTTON_SCALE,
+            onClick: () => this.scene.start("MorningScene01"),
+        });
     }
 }

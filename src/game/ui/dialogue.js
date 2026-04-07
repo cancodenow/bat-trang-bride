@@ -3,6 +3,7 @@
 
 import { createBox } from "./containers.js";
 import { createCharacter } from "./characters.js";
+import { getResponsiveMetrics } from "./responsive.js";
 
 const DEFAULT_DIALOGUE_FONT_SIZE = "22px";
 const DEFAULT_HINT_FONT_SIZE = "18px";
@@ -74,29 +75,43 @@ export class DialogueRunner {
      */
     constructor(scene, config) {
         this.scene = scene;
-        this.config = config;
+        const metrics = getResponsiveMetrics(scene);
+        const responsiveBox = {
+            ...config.box,
+            x: config.box.x ?? metrics.dialogue.x,
+            y:
+                config.box.y && config.box.y < metrics.height * 0.7
+                    ? config.box.y
+                    : metrics.dialogue.y,
+            w: Math.min(config.box.w || metrics.dialogue.width, metrics.dialogue.width),
+            h: Math.max(config.box.h || metrics.dialogue.height, metrics.dialogue.height),
+        };
+        this.config = {
+            ...config,
+            box: responsiveBox,
+        };
         this.lines = config.lines || [];
         this.lineIndex = config.skipTo || 0;
-        this._dialogueFontSize = parsePixelFontSize(DEFAULT_DIALOGUE_FONT_SIZE);
-        this._hintFontSize = parsePixelFontSize(DEFAULT_HINT_FONT_SIZE, 14);
+        this._dialogueFontSize = parsePixelFontSize(metrics.fs(22));
+        this._hintFontSize = parsePixelFontSize(metrics.fs(18), 14);
         this._textAreaWidth = Math.max(
-            Math.round(config.box.w * DIALOGUE_TEXT_WIDTH_RATIO),
+            Math.round(responsiveBox.w * DIALOGUE_TEXT_WIDTH_RATIO),
             this._dialogueFontSize * 4,
         );
-        this._boxTop = config.box.y - config.box.h / 2;
-        this._boxBottom = config.box.y + config.box.h / 2;
+        this._boxTop = responsiveBox.y - responsiveBox.h / 2;
+        this._boxBottom = responsiveBox.y + responsiveBox.h / 2;
 
         // Create box
-        this.boxObj = createBox(scene, config.box.x, config.box.y, {
-            textureKey: config.box.textureKey || "ui-box-textbox",
-            width: config.box.w,
-            height: config.box.h,
+        this.boxObj = createBox(scene, responsiveBox.x, responsiveBox.y, {
+            textureKey: responsiveBox.textureKey || "ui-box-textbox",
+            width: responsiveBox.w,
+            height: responsiveBox.h,
         });
 
         // Create text
         this.textObj = scene.add
-            .text(config.box.x, config.box.y, "", {
-                fontSize: DEFAULT_DIALOGUE_FONT_SIZE,
+            .text(responsiveBox.x, responsiveBox.y, "", {
+                fontSize: metrics.fs(22),
                 color: "#111010",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -107,19 +122,19 @@ export class DialogueRunner {
         // Create hint
         this.hintObj = scene.add
             .text(
-                config.box.x,
-                config.box.y + config.box.h * HINT_Y_RATIO,
-                "▼ Click to continue",
+                responsiveBox.x,
+                responsiveBox.y + responsiveBox.h * HINT_Y_RATIO,
+                "▼ Tap to continue",
                 {
-                    fontSize: DEFAULT_HINT_FONT_SIZE,
+                    fontSize: metrics.fs(18),
                     color: HINT_BASE_COLOR,
                     fontFamily: "SVN-Pequena Neo",
                     stroke: HINT_STROKE_COLOR,
-                    strokeThickness: 3,
+                    strokeThickness: Math.round(3 * metrics.dpr),
                 },
             )
             .setOrigin(0.5)
-            .setShadow(0, 2, HINT_SHADOW_COLOR, 6, false, true);
+            .setShadow(0, 2, HINT_SHADOW_COLOR, Math.round(6 * metrics.dpr), false, true);
 
         this.hintTween = scene.tweens.add({
             targets: this.hintObj,
@@ -143,7 +158,7 @@ export class DialogueRunner {
             if (config.chars.left) {
                 const key =
                     config.chars.left.key || firstLine.charLeft || "char-wife";
-                this.charLeft = createCharacter(
+            this.charLeft = createCharacter(
                     scene,
                     config.chars.left.x,
                     config.chars.left.y,

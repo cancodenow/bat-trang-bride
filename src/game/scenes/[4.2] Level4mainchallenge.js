@@ -6,7 +6,8 @@ import {
   createModalFrame,
   createHowToPlay,
   createDevSkipButton,
-  createBackButton } from "../UIHelpers";
+  createBackButton,
+  getResponsiveMetrics } from "../UIHelpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — edit these to adjust layout & feel
@@ -64,6 +65,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    const metrics = getResponsiveMetrics(this);
 
     // ── State ────────────────────────────────────────────────────
     this._activeRing    = "inner";
@@ -115,12 +117,12 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
     // ── Instruction text ─────────────────────────────────────────
     this._instructionText = this.add
-      .text(width / 2, height - 48, "Hold and trace the INNER circle with your mouse", {
-        fontSize: "20px",
+      .text(width / 2, height - Math.round(48 * metrics.dpr), "Hold and trace the INNER circle with your mouse", {
+        fontSize: metrics.fs(20),
         color: "#ffffff",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: 4,
+        strokeThickness: Math.round(4 * metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5)
@@ -266,11 +268,11 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
     const txt = this.add
       .text(x, y - 50, msg, {
-        fontSize: "18px",
+        fontSize: metrics.fs(18),
         color: "#ff4444",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: 3,
+        strokeThickness: Math.round(3 * metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5)

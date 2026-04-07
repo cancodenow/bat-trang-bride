@@ -8,6 +8,8 @@ import {
     createCharacter,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
+    createImageButton,
 } from "../UIHelpers";
 
 export default class BuyRibsIntroScene extends Phaser.Scene {
@@ -23,7 +25,8 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, fs, dpr, buttonScale } = metrics;
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -32,24 +35,24 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.4);
 
         // Characters
-        createCharacter(this, width * 0.2, height - 20, "char-wife", {
+        createCharacter(this, width * 0.2, height - Math.round(20 * dpr), "char-wife", {
             scale: 0.5,
         });
-        createCharacter(this, width * 0.8, height - 20, "char-mom-happy", {
+        createCharacter(this, width * 0.8, height - Math.round(20 * dpr), "char-mom-happy", {
             scale: 0.5,
             flipX: true,
         });
 
         // Dialogue box
-        createDialogueBox(this, width / 2, height - 140, width - 100, 200, {
+        createDialogueBox(this, width / 2, height - Math.round(140 * dpr), width - Math.round(100 * dpr), Math.round(200 * dpr), {
             fillColor: 0x1a2a3a,
             fillAlpha: 0.92,
             strokeColor: 0x5a8aaa,
         });
 
         // Speaker label
-        this.add.text(80, height - 230, "Mom", {
-            fontSize: "18px",
+        this.add.text(Math.round(80 * dpr), height - Math.round(230 * dpr), "Mom", {
+            fontSize: fs(18),
             color: "#ffcc00",
             fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
@@ -59,32 +62,25 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         this.add
             .text(
                 width / 2,
-                height - 150,
+                height - Math.round(150 * dpr),
                 "Oh, you're so capable — you bought everything correctly.\nGo buy 1kg of pork ribs for me, then we'll head home.",
                 {
-                    fontSize: "20px",
+                    fontSize: fs(20),
                     color: "#000000",
                     fontFamily: "SVN-Pequena Neo",
                     align: "center",
-                    wordWrap: { width: width - 200 },
-                    lineSpacing: 8,
+                    wordWrap: { width: width - Math.round(200 * dpr) },
+                    lineSpacing: Math.round(8 * dpr),
                 },
             )
             .setOrigin(0.5);
 
         // Button
-        const BUTTON_SCALE = 0.15;
-        this.add
-            .image(width / 2, height - 50, "lv1-opt-tasks-of-course")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("PorkRibSelectionScene"));
+        createImageButton(this, width / 2, height - 60 * dpr, "", {
+            textureKey: "lv1-opt-tasks-of-course",
+            scale: buttonScale,
+            onClick: () => this.scene.start("PorkRibSelectionScene"),
+        });
         createDevSkipButton(this, "PorkRibSelectionScene");
         createBackButton(this);
     }

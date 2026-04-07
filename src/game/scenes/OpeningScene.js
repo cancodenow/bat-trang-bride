@@ -5,7 +5,10 @@ import {
     preloadCharacters,
     createImageButton,
     createDevSkipButton,
+    createResponsiveDebugText,
     addCoverBg,
+    getResponsiveMetrics,
+    bindResponsiveScene,
 } from "../UIHelpers";
 
 export default class OpeningScene extends Phaser.Scene {
@@ -23,16 +26,25 @@ export default class OpeningScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
 
-        addCoverBg(this, "openingbg");
+        const bgImg = addCoverBg(this, "openingbg");
         this.cameras.main.setBackgroundColor("#151fe0");
 
-        createImageButton(this, width - 650, height - 360, "", {
+        const startButton = createImageButton(this, 0, 0, "", {
             textureKey: "start_journey",
+            scale: 0.5,
             onClick: () => this.scene.start("IntroScene"),
         });
 
+        const buttonX = bgImg.x + bgImg.displayWidth * 0.1;
+        const buttonY = bgImg.y + bgImg.displayHeight * 0.1;
+
+        startButton.bg.setPosition(buttonX, buttonY);
+        startButton.label.setPosition(buttonX, buttonY);
+
         createDevSkipButton(this, "IntroScene");
+        createResponsiveDebugText(this);
+        bindResponsiveScene(this, () => this.scene.restart());
     }
 }

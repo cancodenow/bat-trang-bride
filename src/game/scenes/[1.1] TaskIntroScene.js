@@ -8,6 +8,8 @@ import {
     createBackButton,
     addCoverBg,
     DialogueRunner,
+    getResponsiveMetrics,
+    createImageButton,
 } from "../UIHelpers";
 
 export default class TaskIntroScene extends Phaser.Scene {
@@ -23,7 +25,8 @@ export default class TaskIntroScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, dpr } = metrics;
 
         addCoverBg(this, "taskBg");
 
@@ -44,10 +47,15 @@ export default class TaskIntroScene extends Phaser.Scene {
         ];
 
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - 120, w: 700, h: 150 },
+            box: {
+                x: width / 2,
+                y: height - Math.round(120 * dpr),
+                w: Math.round(700 * dpr),
+                h: Math.round(150 * dpr),
+            },
             chars: {
-                left: { x: width * 0.2, y: height + 70, scale: 0.5 },
-                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showFeastPanel(),
@@ -58,7 +66,7 @@ export default class TaskIntroScene extends Phaser.Scene {
     }
 
     showFeastPanel() {
-        const { width, height } = this.scale;
+        const { width, height, dpr, buttonScale } = getResponsiveMetrics(this);
 
         // Hide dialogue runner elements
         this.runner.destroy();
@@ -74,25 +82,16 @@ export default class TaskIntroScene extends Phaser.Scene {
             .setDepth(0);
 
         // Framed panel background
-        createFrame(this, width / 2, height / 2 - 20, {
+        createFrame(this, width / 2, (height / 2 - 20), {
             textureKey: "ui-frame-food",
             scale: 0.8,
         });
 
         // Action button
-        const BUTTON_SCALE = 0.15;
-        this.add
-            .image(width / 2, height - 60, "lv1-opt-tasks-of-course")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () =>
-                this.scene.start("MarketIngredientSelectionScene"),
-            );
+        createImageButton(this, width / 2, height - 60 * dpr, "", {
+            textureKey: "lv1-opt-tasks-of-course",
+            scale: buttonScale,
+            onClick: () => this.scene.start("MarketIngredientSelectionScene"),
+        });
     }
 }

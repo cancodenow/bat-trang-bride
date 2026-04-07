@@ -3,12 +3,14 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     createImageButton,
+    createContinueButton,
     createModalFrame,
     createFrame,
     createDishCard,
     createDevSkipButton,
     createBackButton,
-    addCoverBg,
+    getResponsiveMetrics,
+    bindResponsiveScene,
 } from "../UIHelpers";
 
 export default class MarketIngredientSelectionScene extends Phaser.Scene {
@@ -43,17 +45,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         preloadLevelAssets(this, 1);
     }
 
-    create() {
+    create(data = {}) {
         const { width, height } = this.scale;
         this.width = width;
         this.height = height;
+        this.metrics = getResponsiveMetrics(this);
+        this._hasInstructionModal = data.showInstruction !== false;
 
         this.cameras.main.setBackgroundColor("#ffffff");
-
-        // Layout constants
-        this.SIDEBAR_W = 400;
-        this.MARKET_X = this.SIDEBAR_W;
-        this.MARKET_VIEW_W = width - this.SIDEBAR_W;
 
         // Hover scroll constants
         this.SCROLL_EDGE_ZONE = 180;
@@ -148,85 +147,98 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             {
                 title: "Stall 1",
                 items: [
-                    { name: "Dried bamboo shoots", yOffset: 40, xOffset: 520 },
-                    { name: "Kohlrabi", yOffset: -70, xOffset: 150 },
-                    { name: "Lime leaves", yOffset: -130, xOffset: 340 },
-                    { name: "Carrot", yOffset: -70, xOffset: -270 },
+                    { name: "Shiitake mushrooms", slotX: 0.01, slotY: 0.65, scale: 0.78, priceDy: 40 },
+                    { name: "Carrot", slotX: 0.15, slotY: 0.55, scale: 0.85 },
+                    { name: "Dried lotus seeds", slotX: 0.32, slotY: 0.5, scale: 0.85, labelWidth: 100, priceDy: 40 },
+                    { name: "Kohlrabi", slotX: 0.40, slotY: 0.55, scale: 0.85, labelWidth: 130 },
+                    { name: "Lime leaves", slotX: 0.80, slotY: 0.48, scale: 0.75, nameDy: 2 },
+                    { name: "Dried bamboo shoots", slotX: 0.78, slotY: 0.68, scale: 0.95, priceDy: 40 },
+                    { name: "Dried squid", slotX: 0.89, slotY: 0.68, scale: 0.92, labelWidth: 80, priceDy: 40 },
+                    { name: "Dried pork skin", slotX: 0.94, slotY: 0.52, scale: 0.98 },
                 ],
             },
             {
                 title: "Stall 2",
                 items: [
-                    { name: "Dried squid", yOffset: 40, xOffset: 40 },
-                    { name: "Dried pork skin", yOffset: -100, xOffset: -5 },
-                    { name: "Shiitake mushrooms", yOffset: 20, xOffset: -820 },
-                    { name: "Pork ribs", yOffset: -70, xOffset: 150 },
-                ],
-            },
-            {
-                title: "Stall 3",
-                items: [
-                    { name: "Fresh shrimp", yOffset: -70, xOffset: 20 },
-                    { name: "Vietnamese chicken", yOffset: -70, xOffset: -380 },
-                    { name: "Pigeon", yOffset: -70, xOffset: -590 },
-                    { name: "Dried lotus seeds", yOffset: 20, xOffset: -1600 },
+                    { name: "Pigeon", slotX: 0.05, slotY: 0.57, scale: 0.88, labelWidth: 110 },
+                    { name: "Vietnamese chicken", slotX: 0.14, slotY: 0.57, scale: 0.95, labelWidth: 120, priceDy: 40 },
+                    { name: "Pork ribs", slotX: 0.3, slotY: 0.57, scale: 0.90, labelWidth: 120 },
+                    { name: "Fresh shrimp", slotX: 0.5, slotY: 0.57, scale: 0.88, labelWidth: 120 },
                 ],
             },
         ];
 
         // Game state
-        this.currentDish = this.allDishes[0];
-        this.selectedIngredients = {};
-        this.completedDishes = {};
+        this.currentDish = this.allDishes.find((dish) => dish.id === data.currentDishId) || this.allDishes[0];
+        this.selectedIngredients = { ...(data.selectedIngredients || {}) };
+        this.completedDishes = { ...(data.completedDishes || {}) };
 
-        // Background visible behind the instruction modal
-        addCoverBg(this, "marketBg", { depth: 0 });
-
-        this.showInstructionModal(); // TEMP: skipped
         this.createGameUI();
+
+        if (this._hasInstructionModal) {
+            this.showInstructionModal();
+        }
+
+        bindResponsiveScene(this, () => this.scene.restart(this.getSceneState()));
+    }
+
+    getSceneState() {
+        return {
+            showInstruction: this._hasInstructionModal,
+            currentDishId: this.currentDish?.id,
+            selectedIngredients: this.selectedIngredients,
+            completedDishes: this.completedDishes,
+        };
+    }
+
+    applyLayoutMetrics() {
+        const { width, height } = this.scale;
+        this.width = width;
+        this.height = height;
+        this.metrics = getResponsiveMetrics(this);
+        this.SIDEBAR_W = Math.min(400, Math.round(width * 0.26)) * this.metrics.dpr;
+        this.SIDEBAR_X = 0;
+        this.TOP_PANEL_H = height;
+        this.BOTTOM_PANEL_H = 0;
+        this.MARKET_GAP_W = Math.round(32 * this.metrics.dpr);
+        this.MARKET_X = this.SIDEBAR_W;
+        this.MARKET_Y = 0;
+        this.MARKET_VIEW_W = Math.max(0, width - this.MARKET_X);
+        this.MARKET_VIEW_H = height;
+        this.BOTTOM_PANEL_Y = height;
     }
 
     // ===================== INSTRUCTION MODAL =====================
 
     showInstructionModal() {
-        const { width, height } = this.scale;
+        const { width, modal, buttonScale } = this.metrics;
 
-        const { container } = createModalFrame(this, 0, 0, {
+        const { container } = createModalFrame(this, modal.width, modal.height, {
             overlayAlpha: 0.7,
+            textureKey: "lv1-how-to-play",
+            fitTexture: true,
         });
         this.instructionModal = container;
 
-        // How-to-play image centred on screen
-        const howToPlay = this.add
-            .image(width / 2, height / 2 - 40, "lv1-how-to-play")
-            .setDisplaySize(700, 420);
-
-        const BUTTON_SCALE = 0.2;
-        const startButton = this.add
-            .image(width / 2, height / 2 + 230, "continue_button")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => {
+        const { bg: startButton } = createContinueButton(this, width / 2, modal.buttonY, {
+            onClick: () => {
+                this._hasInstructionModal = false;
                 this.instructionModal.destroy();
-                this.createGameUI();
-            });
+            },
+            scale: buttonScale,
+        });
 
-        this.instructionModal.add([howToPlay, startButton]);
+        this.instructionModal.add([startButton]);
     }
 
     // ===================== MAIN GAME UI =====================
 
     createGameUI() {
+        this.applyLayoutMetrics();
         this.createSidebar();
         this.createMarketWorld();
         this.populateMarketItems();
-        this.setupHoverScrolling();
+        this.setupMarketScrolling();
         this.updateSidebar();
         this.updateBasketPanel();
         createDevSkipButton(this, "BuyRibsIntroScene");
@@ -238,32 +250,41 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     createSidebar() {
         const { height } = this.scale;
         const sw = this.SIDEBAR_W;
+        const panelX = this.SIDEBAR_X;
+        const panelY = 0;
+        const panelH = height;
+        const dpr = this.metrics.dpr;
+        const titleFont = this.metrics.fs(21);
+        const bodyFont = this.metrics.fs(17);
+        const progressRowHeight = Math.round(58 * dpr);
+        const progressStartY = Math.round(150 * dpr);
+        const sidePad = Math.round(15 * dpr);
+        const dividerW = sw - Math.round(30 * dpr);
 
         // ── SIDEBAR LAYOUT CONSTANTS ──────────────────────────────
         // Adjust these Y values to reposition each block.
-        const TITLE_Y = 16; // "Đi chợ" header
-        const DIVIDER_1_Y = 46; // line under title
-        const DISH_VIET_Y = 56; // current dish Vietnamese name
-        const DISH_ENG_Y = 76; // current dish English name
-        const BUDGET_Y = 96; // budget / selected total row
-        const DIVIDER_2_Y = 120; // line under budget
-        const PROGRESS_LBL_Y = 128; // "Dish Progress" label
-        const DISH_START_Y = 150; // first dish row top
-        const DISH_ROW_H = 58; // height of each dish row
+        const TITLE_Y = Math.round(16 * dpr); // "Đi chợ" header
+        const DIVIDER_1_Y = Math.round(46 * dpr); // line under title
+        const DISH_VIET_Y = Math.round(56 * dpr); // current dish Vietnamese name
+        const DISH_ENG_Y = Math.round(76 * dpr); // current dish English name
+        const BUDGET_Y = Math.round(96 * dpr); // budget / selected total row
+        const DIVIDER_2_Y = Math.round(120 * dpr); // line under budget
+        const PROGRESS_LBL_Y = Math.round(128 * dpr); // "Dish Progress" label
+        const DISH_START_Y = Math.round(150 * dpr); // first dish row top
+        const DISH_ROW_H = Math.round(58 * dpr); // height of each dish row
         // afterDishY is computed from DISH_START_Y + 6 rows
-        const BASKET_LBL_OFF = 8; // offset from afterDishY → "Basket" label
-        const BASKET_ITEM_OFF = 28; // offset from afterDishY → basket items list
-        const BASKET_TTL_OFF = 140; // offset from afterDishY → total line
+        const BASKET_LBL_OFF = Math.round(8 * dpr); // offset from afterDishY → "Basket" label
+        const BASKET_ITEM_OFF = Math.round(28 * dpr); // offset from afterDishY → basket items list
+        const BASKET_TTL_OFF = Math.round(140 * dpr); // offset from afterDishY → total line
         // ─────────────────────────────────────────────────────────
 
         // Sidebar background
-        this.add.rectangle(sw / 2, height / 2, sw, height, 0x141e2b);
-        this.add.rectangle(sw, height / 2, 2, height, 0x3a5a7a);
+        this.add.rectangle(panelX + sw / 2, panelY + panelH / 2, sw, panelH, 0x141e2b);
 
         // --- Title block ---
         this.add
-            .text(sw / 2, TITLE_Y, "Đi chợ / Market Challenge", {
-                fontSize: "21px",
+            .text(panelX + sw / 2, panelY + TITLE_Y, "Đi chợ / Market Challenge", {
+                fontSize: titleFont,
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
@@ -272,39 +293,39 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .setOrigin(0.5, 0);
 
         // Divider
-        this.add.rectangle(sw / 2, DIVIDER_1_Y, sw - 30, 1, 0x3a5a7a);
+        this.add.rectangle(panelX + sw / 2, panelY + DIVIDER_1_Y, dividerW, Math.round(1 * dpr), 0x3a5a7a);
 
         // --- Current dish block ---
-        this.sidebarDishViet = this.add.text(15, DISH_VIET_Y, "", {
-            fontSize: "19px",
+        this.sidebarDishViet = this.add.text(panelX + sidePad, panelY + DISH_VIET_Y, "", {
+            fontSize: this.metrics.fs(19),
             color: "#ffffff",
             fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
         });
-        this.sidebarDishEng = this.add.text(15, DISH_ENG_Y, "", {
-            fontSize: "16px",
+        this.sidebarDishEng = this.add.text(panelX + sidePad, panelY + DISH_ENG_Y, "", {
+            fontSize: this.metrics.fs(16),
             color: "#bb9882",
             fontFamily: "SVN-Pequena Neo",
         });
-        this.sidebarBudget = this.add.text(15, BUDGET_Y, "", {
-            fontSize: "17px",
+        this.sidebarBudget = this.add.text(panelX + sidePad, panelY + BUDGET_Y, "", {
+            fontSize: bodyFont,
             color: "#ffffff",
             fontFamily: "SVN-Pequena Neo",
         });
         this.sidebarTotal = this.add
-            .text(sw - 15, BUDGET_Y, "", {
-                fontSize: "17px",
+            .text(panelX + sw - sidePad, panelY + BUDGET_Y, "", {
+                fontSize: bodyFont,
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
             })
             .setOrigin(1, 0);
 
         // Divider
-        this.add.rectangle(sw / 2, DIVIDER_2_Y, sw - 30, 1, 0x3a5a7a);
+        this.add.rectangle(panelX + sw / 2, panelY + DIVIDER_2_Y, dividerW, Math.round(1 * dpr), 0x3a5a7a);
 
         // --- Dish progress block ---
-        this.add.text(15, PROGRESS_LBL_Y, "Dish Progress", {
-            fontSize: "17px",
+        this.add.text(panelX + sidePad, panelY + PROGRESS_LBL_Y, "Dish Progress", {
+            fontSize: bodyFont,
             color: "#bb9882",
             fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
@@ -314,11 +335,11 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.dishProgressBoxes = [];
 
         this.allDishes.forEach((dish, i) => {
-            const y = DISH_START_Y + i * DISH_ROW_H;
+            const y = panelY + progressStartY + i * progressRowHeight;
 
             const box = this.add
-                .image(sw / 2 - 10, y + DISH_ROW_H / 2, "ui-box-infobox")
-                .setDisplaySize(sw + 40, DISH_ROW_H + 2)
+                .image(panelX + sw / 2 - 10, y + progressRowHeight / 2, "ui-box-infobox")
+                .setDisplaySize(sw + Math.round(40 * dpr), progressRowHeight + Math.round(2 * dpr))
                 .setInteractive({ useHandCursor: true })
                 .on("pointerover", function () {
                     this.setTint(0xaaccff);
@@ -330,16 +351,16 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             this.dishProgressBoxes.push(box);
 
             const nameT = this.add
-                .text(sw * 0.3, y + DISH_ROW_H / 2, dish.vietnameseName, {
-                    fontSize: "18px",
+                .text(panelX + sw * 0.3, y + progressRowHeight / 2, dish.vietnameseName, {
+                    fontSize: this.metrics.fs(18),
                     color: "#ffffff",
                     fontFamily: "SVN-Pequena Neo",
                 })
                 .setOrigin(0.5, 0.5);
 
             const statusT = this.add
-                .text(sw * 0.78, y + DISH_ROW_H / 2, "NOT STARTED", {
-                    fontSize: "17px",
+                .text(panelX + sw * 0.8, y + progressRowHeight / 2, "NOT STARTED", {
+                    fontSize: this.metrics.fs(17),
                     color: "#ffffff",
                     fontFamily: "SVN-Pequena Neo",
                 })
@@ -349,108 +370,85 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         });
 
         // Divider after dish list
-        const afterDishY = DISH_START_Y + 6 * DISH_ROW_H + 6;
-        this.add.rectangle(sw / 2, afterDishY, sw - 30, 1, 0x3a5a7a);
+        const afterDishY = panelY + progressStartY + 6 * progressRowHeight + Math.round(6 * dpr);
+        this.add.rectangle(panelX + sw / 2, afterDishY, dividerW, Math.round(1 * dpr), 0x3a5a7a);
 
-        // --- Basket block ---
-        this.add.text(15, afterDishY + BASKET_LBL_OFF, "Basket", {
-            fontSize: "17px",
+        const basketY = afterDishY;
+
+        this.add.text(panelX + sidePad, basketY + BASKET_LBL_OFF, "Basket", {
+            fontSize: bodyFont,
             color: "#bb9882",
             fontFamily: "SVN-Pequena Neo",
             fontStyle: "bold",
         });
 
-        this.sidebarBasketItems = this.add.text(
-            15,
-            afterDishY + BASKET_ITEM_OFF,
-            "(empty)",
-            {
-                fontSize: "16px",
-                color: "#ffffff",
-                fontFamily: "SVN-Pequena Neo",
-                wordWrap: { width: sw - 30 },
-                lineSpacing: 4,
-            },
+        this.sidebarBasketItems = this.add.text(panelX + sidePad, basketY + BASKET_ITEM_OFF, "(empty)", {
+            fontSize: this.metrics.fs(16),
+            color: "#ffffff",
+            fontFamily: "SVN-Pequena Neo",
+            wordWrap: { width: dividerW },
+            lineSpacing: Math.round(4 * dpr),
+        });
+
+        this.sidebarBasketTotal = this.add.text(panelX + sidePad, basketY + BASKET_TTL_OFF, "Total: 0K", {
+            fontSize: this.metrics.fs(18),
+            color: "#bb9882",
+            fontFamily: "SVN-Pequena Neo",
+            fontStyle: "bold",
+        });
+
+        const btnY = height - Math.round(60 * dpr);
+        const BUTTON_SCALE = this.metrics.secondaryButtonScale;
+
+        const { bg: confirmButton } = createImageButton(
+            this,
+            panelX + sw / 2,
+            btnY,
+            "",
+            { textureKey: "lv1-opt-buy-check", scale: BUTTON_SCALE, onClick: () => this.validateSelection() },
         );
-
-        this.sidebarBasketTotal = this.add.text(
-            15,
-            afterDishY + BASKET_TTL_OFF,
-            "Total: 0K",
-            {
-                fontSize: "18px",
-                color: "#bb9882",
-                fontFamily: "SVN-Pequena Neo",
-                fontStyle: "bold",
-            },
-        );
-
-        // --- Action button ---
-        const btnY = height - 60;
-        const BUTTON_SCALE = 0.2;
-
-        this.confirmButton = this.add
-            .image(sw / 2, btnY, "lv1-opt-buy-check")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.validateSelection());
+        this.confirmButton = confirmButton;
     }
 
     // ===================== MARKET WORLD =====================
-
     createMarketWorld() {
-        const { height } = this.scale;
+        const viewportCenterY = this.MARKET_Y + this.MARKET_VIEW_H / 2;
 
         const stallCount = this.stalls.length;
-        const stallWidth = 500;
-        const stallGap = 80;
+        const stallWidth = Math.round(800 * this.metrics.dpr);
+        const stallGap = Math.round(60 * this.metrics.dpr);
+        this.MARKET_CONTENT_X = 90 * this.metrics.dpr; // Stalls start at 50 within marketWorld container
         this.MARKET_WORLD_W =
-            stallCount * stallWidth + (stallCount - 1) * stallGap + 160;
+            stallCount * stallWidth + (stallCount - 1) * stallGap + Math.round(160 * this.metrics.dpr);
         this.STALL_W = stallWidth;
         this.STALL_GAP = stallGap;
 
         this.marketWorld = this.add.container(this.MARKET_X, 0);
 
         const bgImg = this.add
-            .tileSprite(
-                this.MARKET_WORLD_W / 2,
-                height / 2,
-                this.MARKET_WORLD_W,
-                height,
-                "marketBg",
-            )
-            .setTileScale(
-                1,
-                height / this.textures.getFrame("marketBg").realHeight,
-            );
+            .image(this.MARKET_WORLD_W / 2, viewportCenterY, "marketBg")
+            .setDisplaySize(this.MARKET_WORLD_W, this.MARKET_VIEW_H);
         this.marketWorld.add(bgImg);
 
         // Clip mask so only the viewport right of sidebar is visible
         const maskShape = this.make.graphics();
-        maskShape.fillRect(this.MARKET_X, 0, this.MARKET_VIEW_W, height);
+        maskShape.fillRect(this.MARKET_X, this.MARKET_Y, this.MARKET_VIEW_W, this.MARKET_VIEW_H);
         const mask = maskShape.createGeometryMask();
         this.marketWorld.setMask(mask);
     }
 
     populateMarketItems() {
-        const { height } = this.scale;
         this.ingredientEntries = [];
 
-        let stallX = 80;
+        let stallX = this.MARKET_CONTENT_X;
 
         this.stalls.forEach((stall) => {
             const centerX = stallX + this.STALL_W / 2;
 
             // Stall sign — small label floating above the counter area
             const stallSign = this.add
-                .text(centerX, height * 0.48, stall.title, {
-                    fontSize: "24px",
+                .text(centerX, this.MARKET_Y + this.MARKET_VIEW_H * 0.32, stall.title, {
+                    fontSize: this.metrics.fs(24),
                     color: "#bb9882",
                     fontFamily: "SVN-Pequena Neo",
                     fontStyle: "bold",
@@ -461,21 +459,27 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
             // Place ingredients along a row in the lower portion (counter level)
             const itemCount = stall.items.length;
-            const spacing = this.STALL_W / (itemCount + 1);
-            const baseY = height * 0.62;
 
             stall.items.forEach((item, i) => {
                 const ingredientData = this.availableIngredients.find(
                     (ing) => ing.name === item.name,
                 );
-                const ix = stallX + spacing * (i + 1) + (item.xOffset ?? 0);
-                const iy = baseY + (item.yOffset ?? 0);
+                const fallbackSlotX = (i + 1) / (itemCount + 1);
+                const ix =
+                    stallX +
+                    this.STALL_W * (item.slotX ?? fallbackSlotX) +
+                    Math.round((item.offsetX ?? 0) * this.metrics.dpr);
+                const iy =
+                    this.MARKET_Y +
+                    this.MARKET_VIEW_H * (item.slotY ?? 0.58) +
+                    Math.round((item.offsetY ?? 0) * this.metrics.dpr);
 
                 const entry = this.createIngredientEntry(
                     ix,
                     iy,
                     item.name,
                     ingredientData,
+                    item,
                 );
                 this.ingredientEntries.push(entry);
             });
@@ -484,12 +488,18 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         });
     }
 
-    createIngredientEntry(cx, cy, itemName, ingredientData) {
+    createIngredientEntry(cx, cy, itemName, ingredientData, layout = {}) {
         const isSelected = this.selectedIngredients[itemName] !== undefined;
         const ingredientKey = itemName.toLowerCase().replace(/\s+/g, "-");
+        const scale = layout.scale ?? 1;
+        const labelDx = Math.round((layout.labelDx ?? 0) * this.metrics.dpr);
+        const labelWidth = Math.round((layout.labelWidth ?? 120) * this.metrics.dpr);
+        const nameDy = Math.round((layout.nameDy ?? 2) * this.metrics.dpr);
+        const priceDy = Math.round((layout.priceDy ?? 30) * this.metrics.dpr);
 
         // Ingredient image — the main visual
-        const imgSize = isSelected ? 110 : 100;
+        const baseSize = Math.round(100 * this.metrics.dpr * scale);
+        const imgSize = isSelected ? baseSize + Math.round(10 * this.metrics.dpr) : baseSize;
         const imgHeight = imgSize;
         // Anchor offset: keeps image bottom at the same canvas position as the original
         // squashed (4:3) layout that the xOffset/yOffset values were calibrated for.
@@ -498,7 +508,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         // Selection highlight — soft glowing ellipse under the item
         let glow = null;
         if (isSelected) {
-            glow = this.add.ellipse(cx, anchorCy + 20, 120, 30, 0x66ff66, 0.25);
+            glow = this.add.ellipse(
+                cx,
+                anchorCy + Math.round(20 * this.metrics.dpr),
+                Math.round(120 * this.metrics.dpr * scale),
+                Math.round(30 * this.metrics.dpr * Math.max(0.85, scale)),
+                0x66ff66,
+                0.25,
+            );
             this.marketWorld.add(glow);
         }
 
@@ -509,12 +526,12 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         // Name label
         const nameT = this.add
-            .text(cx, anchorCy + imgHeight / 2 + 8, itemName, {
-                fontSize: "16px",
+            .text(cx + labelDx, anchorCy + imgHeight / 2 + nameDy, itemName, {
+                fontSize: this.metrics.fs(16),
                 color: isSelected ? "#aaffaa" : "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
-                wordWrap: { width: 120 },
+                wordWrap: { width: labelWidth },
             })
             .setOrigin(0.5, 0);
         this.marketWorld.add(nameT);
@@ -522,11 +539,11 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         // Price label
         const priceT = this.add
             .text(
-                cx,
-                anchorCy + imgHeight / 2 + 50,
+                cx + labelDx,
+                anchorCy + imgHeight / 2 + priceDy,
                 ingredientData.price + "K",
                 {
-                    fontSize: "17px",
+                    fontSize: this.metrics.fs(17),
                     color: isSelected ? "#ffff66" : "#ffffff",
                     fontFamily: "SVN-Pequena Neo",
                     fontStyle: "bold",
@@ -537,8 +554,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.marketWorld.add(priceT);
 
         // Clickable hit zone — invisible rectangle covering image + labels
-        const hitW = 140;
-        const hitH = imgHeight + 60;
+        const hitW = Math.max(this.metrics.minTouchTarget, Math.round(140 * this.metrics.dpr));
+        const hitH = Math.max(this.metrics.minTouchTarget, imgHeight + Math.round(70 * this.metrics.dpr));
         const hitZone = this.add.rectangle(
             cx,
             anchorCy + 10,
@@ -560,7 +577,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         // Hover effect — slight scale bump
         hitZone.on("pointerover", () => {
-            const hoverSize = imgSize + 12;
+            const hoverSize = imgSize + Math.round(12 * this.metrics.dpr);
             img.setDisplaySize(hoverSize, hoverSize);
         });
         hitZone.on("pointerout", () => {
@@ -592,7 +609,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
     // ===================== HOVER SCROLLING =====================
 
-    setupHoverScrolling() {
+    setupMarketScrolling() {
         // Clamp bounds
         this._maxWorldX = this.MARKET_X;
         this._minWorldX =
@@ -606,18 +623,46 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.input.on("pointermove", (pointer) => {
             this._lastPointerX = pointer.x;
             this._lastPointerY = pointer.y;
+            if (this._dragStartX !== undefined && pointer.isDown) {
+                const delta = pointer.x - this._dragStartX;
+                const newX = Phaser.Math.Clamp(
+                    this._dragWorldStartX + delta,
+                    this._minWorldX,
+                    this._maxWorldX,
+                );
+                this.marketWorld.x = newX;
+            }
         });
 
         this._lastPointerX = this.MARKET_X + this.MARKET_VIEW_W / 2;
         this._lastPointerY = this.height / 2;
 
+        this.input.on("pointerdown", (pointer) => {
+            if (!this.isPointerInMarket(pointer.x, pointer.y)) return;
+            this._dragStartX = pointer.x;
+            this._dragWorldStartX = this.marketWorld.x;
+        });
+
+        this.input.on("pointerup", () => {
+            this._dragStartX = undefined;
+        });
+
         // Mouse wheel scrolling
         this.input.on("wheel", (pointer, gameObjects, deltaX, deltaY) => {
-            if (pointer.x < this.MARKET_X) return;
+            if (!this.isPointerInMarket(pointer.x, pointer.y)) return;
             let newX = this.marketWorld.x - deltaY * 1.5;
             newX = Phaser.Math.Clamp(newX, this._minWorldX, this._maxWorldX);
             this.marketWorld.x = newX;
         });
+    }
+
+    isPointerInMarket(x, y) {
+        return (
+            x >= this.MARKET_X &&
+            x <= this.MARKET_X + this.MARKET_VIEW_W &&
+            y >= this.MARKET_Y &&
+            y <= this.MARKET_Y + this.MARKET_VIEW_H
+        );
     }
 
     update() {
@@ -630,7 +675,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         const px = this._lastPointerX;
 
         // Only scroll when pointer is inside the market viewport
-        if (px < this.MARKET_X || px > this.width) {
+        if (!this.isPointerInMarket(px, this._lastPointerY)) {
             this._scrollVelocity = 0;
             return;
         }
@@ -668,9 +713,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.sidebarDishEng.setText(dish.englishName);
         this.sidebarBudget.setText("Budget: " + dish.budget + "K VND");
 
-        let total = 0;
-        for (const price of Object.values(this.selectedIngredients))
-            total += price;
+        const total = this.getSelectedTotal();
         this.sidebarTotal.setText("Selected: " + total + "K");
         this.sidebarTotal.setColor(total > dish.budget ? "#ff6666" : "#bb9882");
 
@@ -689,22 +732,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     updateBasketPanel() {
-        let total = 0;
-        let lines = "";
+        const lines = Object.entries(this.selectedIngredients)
+            .map(([name, price]) => "• " + name + "  " + price + "K")
+            .join("\n");
 
-        for (const [name, price] of Object.entries(this.selectedIngredients)) {
-            lines += "• " + name + "  " + price + "K\n";
-            total += price;
-        }
-
+        const total = this.getSelectedTotal();
         this.sidebarBasketItems.setText(lines || "(empty)");
         this.sidebarBasketTotal.setText("Total: " + total + "K VND");
-
-        if (total > this.currentDish.budget) {
-            this.sidebarBasketTotal.setColor("#ff6666");
-        } else {
-            this.sidebarBasketTotal.setColor("#bb9882");
-        }
+        this.sidebarBasketTotal.setColor(total > this.currentDish.budget ? "#ff6666" : "#bb9882");
     }
 
     // ===================== DISH SWITCHING =====================
@@ -720,7 +755,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             this._dishCard = null;
         }
 
-        const cardX = this.SIDEBAR_W + (width - this.SIDEBAR_W) / 2;
+        const cardX = this.MARKET_X + this.MARKET_VIEW_W / 2;
         const cardY = height / 2;
 
         const container = this.add.container(0, 0).setDepth(300);
@@ -735,16 +770,26 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         });
         container.add(overlay);
 
+        // Rounded card cover behind the content
+        const dpr = this.metrics.dpr;
+        const coverW = Math.round(560 * dpr);
+        const coverH = Math.round(520 * dpr);
+        const coverTop = cardY - Math.round(210 * dpr);
+        const cardCover = this.add.graphics();
+        cardCover.fillStyle(0x1a2536, 1);
+        cardCover.fillRoundedRect(cardX - coverW / 2, coverTop, coverW, coverH, Math.round(16 * dpr));
+        container.add(cardCover);
+
         // Dish card image — scaled to native PNG size
-        const cardImg = createDishCard(this, cardX, cardY - 40, dish.cardKey, {
+        const cardImg = createDishCard(this, cardX, cardY - Math.round(40 * this.metrics.dpr), dish.cardKey, {
             scale: 0.2,
         });
         container.add(cardImg);
 
         // Dish name
         const nameViet = this.add
-            .text(cardX, cardY + 150, dish.vietnameseName, {
-                fontSize: "22px",
+            .text(cardX, cardY + Math.round(150 * this.metrics.dpr), dish.vietnameseName, {
+                fontSize: this.metrics.fs(22),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
@@ -754,8 +799,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         container.add(nameViet);
 
         const nameEng = this.add
-            .text(cardX, cardY + 180, dish.englishName, {
-                fontSize: "15px",
+            .text(cardX, cardY + Math.round(180 * this.metrics.dpr), dish.englishName, {
+                fontSize: this.metrics.fs(15),
                 color: "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -770,14 +815,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         const info = this.add
             .text(
                 cardX,
-                cardY + 210,
+                cardY + Math.round(210 * this.metrics.dpr),
                 `Budget: ${dish.budget}K  |  ${ingredientList}`,
                 {
-                    fontSize: "13px",
+                    fontSize: this.metrics.fs(13),
                     color: "#bb9882",
                     fontFamily: "SVN-Pequena Neo",
                     align: "center",
-                    wordWrap: { width: 480 },
+                    wordWrap: { width: Math.round(480 * this.metrics.dpr) },
                 },
             )
             .setOrigin(0.5);
@@ -787,10 +832,10 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         const { bg: selectBtn } = createImageButton(
             this,
             cardX,
-            cardY + 270,
+            cardY + Math.round(270 * this.metrics.dpr),
             "Select this dish",
             {
-                fontSize: "18px",
+                fontSize: this.metrics.fs(18),
                 onClick: () => {
                     container.destroy();
                     this._dishCard = null;
@@ -822,6 +867,13 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
     // ===================== INGREDIENT LOGIC =====================
 
+    getSelectedTotal() {
+        let total = 0;
+        for (const price of Object.values(this.selectedIngredients))
+            total += price;
+        return total;
+    }
+
     toggleIngredientSelection(item) {
         if (this.selectedIngredients[item.name] !== undefined) {
             delete this.selectedIngredients[item.name];
@@ -833,9 +885,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     // ===================== VALIDATION =====================
 
     validateSelection() {
-        let total = 0;
-        for (const price of Object.values(this.selectedIngredients))
-            total += price;
+        const total = this.getSelectedTotal();
 
         if (total > this.currentDish.budget) {
             this.showImmediateFeedback("OVER BUDGET!", "#ff6666");
@@ -881,15 +931,21 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         if (this.feedbackText) this.feedbackText.destroy();
 
         const cx = this.MARKET_X + this.MARKET_VIEW_W / 2;
+        const feedbackY = this.MARKET_Y + Math.round(60 * this.metrics.dpr);
 
         this.feedbackText = this.add
-            .text(cx, 60, message, {
-                fontSize: "24px",
+            .text(cx, feedbackY, message, {
+                fontSize: this.metrics.fs(24),
                 color: color,
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
                 backgroundColor: "#000000",
-                padding: { left: 20, right: 20, top: 10, bottom: 10 },
+                padding: {
+                    left: Math.round(20 * this.metrics.dpr),
+                    right: Math.round(20 * this.metrics.dpr),
+                    top: Math.round(10 * this.metrics.dpr),
+                    bottom: Math.round(10 * this.metrics.dpr),
+                },
             })
             .setOrigin(0.5)
             .setDepth(100);
@@ -905,15 +961,17 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     // ===================== MODALS =====================
 
     openDishListModal() {
-        const { width, height } = this.scale;
+        const { width, height } = this.metrics;
+        const modalWidth = Math.min(this.metrics.modal.width, Math.round(520 * this.metrics.dpr));
+        const wrapWidth = modalWidth - Math.round(40 * this.metrics.dpr);
 
-        const { container: modalContainer } = createModalFrame(this, 520, 480, {
+        const { container: modalContainer } = createModalFrame(this, modalWidth, this.metrics.modal.height, {
             textureKey: "ui-success-modal",
         });
 
         const title = this.add
-            .text(width / 2, height / 2 - 210, "Dish Details", {
-                fontSize: "22px",
+            .text(width / 2, height / 2 - Math.round(210 * this.metrics.dpr), "Dish Details", {
+                fontSize: this.metrics.fs(22),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
@@ -923,7 +981,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         modalContainer.add(title);
 
-        let yPos = height / 2 - 170;
+        let yPos = height / 2 - Math.round(170 * this.metrics.dpr);
         this.allDishes.forEach((dish) => {
             const isCompleted = this.completedDishes[dish.id];
             const status = isCompleted ? " ✓" : "";
@@ -932,13 +990,18 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
             const row = this.add
                 .text(width / 2, yPos, label, {
-                    fontSize: "13px",
+                    fontSize: this.metrics.fs(13),
                     fontFamily: "SVN-Pequena Neo",
                     color: isCompleted ? "#66ff66" : "#ffffff",
                     backgroundColor: isCompleted ? "#264026" : "#2a3a50",
-                    padding: { left: 12, right: 12, top: 6, bottom: 6 },
+                    padding: {
+                        left: Math.round(12 * this.metrics.dpr),
+                        right: Math.round(12 * this.metrics.dpr),
+                        top: Math.round(6 * this.metrics.dpr),
+                        bottom: Math.round(6 * this.metrics.dpr),
+                    },
                     align: "center",
-                    wordWrap: { width: 480 },
+                    wordWrap: { width: wrapWidth },
                 })
                 .setOrigin(0.5)
                 .setInteractive({ useHandCursor: true });
@@ -967,12 +1030,12 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         const infoText = this.add
             .text(width / 2, yPos + 10, budgetInfo, {
-                fontSize: "10px",
+                fontSize: this.metrics.fs(10),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 align: "left",
-                wordWrap: { width: 480 },
-                lineSpacing: 4,
+                wordWrap: { width: wrapWidth },
+                lineSpacing: Math.round(4 * this.metrics.dpr),
             })
             .setOrigin(0.5, 0);
         modalContainer.add(infoText);
@@ -980,10 +1043,10 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         const { bg: closeButton } = createImageButton(
             this,
             width / 2,
-            height / 2 + 210,
+            height / 2 + Math.round(210 * this.metrics.dpr),
             "Close",
             {
-                fontSize: "16px",
+                fontSize: this.metrics.fs(16),
                 onClick: () => modalContainer.destroy(),
             },
         );
@@ -992,7 +1055,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     showLevelCompleteModal() {
-        const { width, height } = this.scale;
+        const { width, height } = this.metrics;
+        const { buttonScale } = this.metrics;
 
         this.confirmButton.disableInteractive();
 
@@ -1000,23 +1064,15 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
             .setDepth(199);
 
-        createFrame(this, width / 2, height / 2, {
+        const finishFrame = createFrame(this, width / 2, height / 2, {
             textureKey: "lv1-finish",
             scale: 0.5,
         }).setDepth(200);
 
-        const BUTTON_SCALE = 0.15;
-        this.add
-            .image(width / 2, height / 2 + 90, "continue_button")
-            .setScale(BUTTON_SCALE)
-            .setDepth(201)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("BuyRibsIntroScene"));
+        const { bg: continueBtn } = createContinueButton(this, width / 2, finishFrame.displayHeight, {
+            onClick: () => this.scene.start("BuyRibsIntroScene"),
+            scale: buttonScale,
+        });
+        continueBtn.setDepth(201);
     }
 }

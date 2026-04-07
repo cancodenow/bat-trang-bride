@@ -7,6 +7,7 @@ import {
     createDevSkipButton,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
 } from "../UIHelpers";
 
 export default class Scene02MarketInvite extends Phaser.Scene {
@@ -21,7 +22,8 @@ export default class Scene02MarketInvite extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, dpr } = metrics;
 
         addCoverBg(this, "lv1-bg-homeyard");
 
@@ -53,10 +55,15 @@ export default class Scene02MarketInvite extends Phaser.Scene {
 
         // Initialize DialogueRunner with dialogue configuration
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - 120, w: 700, h: 150 },
+            box: {
+                x: width / 2,
+                y: height - Math.round(120 * dpr),
+                w: Math.round(700 * dpr),
+                h: Math.round(150 * dpr),
+            },
             chars: {
-                left: { x: width * 0.2, y: height + 70, scale: 0.5 },
-                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showEndScreen(),

@@ -7,6 +7,8 @@ import {
     createBackButton,
     addCoverBg,
     DialogueRunner,
+    getResponsiveMetrics,
+    createImageButton,
 } from "../UIHelpers";
 
 export default class MorningScene01 extends Phaser.Scene {
@@ -22,7 +24,8 @@ export default class MorningScene01 extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, fs, dpr } = metrics;
 
         addCoverBg(this, "morningBg");
 
@@ -31,11 +34,11 @@ export default class MorningScene01 extends Phaser.Scene {
         // Time label with infobox background
         this.add
             .image(width / 2, 40, "ui-box-infobox")
-            .setDisplaySize(180, 75)
+            .setDisplaySize(Math.round(180 * dpr), Math.round(75 * dpr))
             .setDepth(0);
         this.add
             .text(width / 2, 40, "5:00 AM", {
-                fontSize: "28px",
+                fontSize: fs(28),
                 color: "#ffcc00",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -74,10 +77,15 @@ export default class MorningScene01 extends Phaser.Scene {
         const skipToChoice = this.scene.settings.data?.skipToChoice;
 
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - 100, w: 780, h: 130 },
+            box: {
+                x: width / 2,
+                y: height - Math.round(100 * dpr),
+                w: Math.round(780 * dpr),
+                h: Math.round(130 * dpr),
+            },
             chars: {
-                left: { x: width * 0.2, y: height + 70, scale: 0.5 },
-                right: { x: width * 0.8, y: height + 50, scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showChoiceButtons(),
@@ -89,36 +97,25 @@ export default class MorningScene01 extends Phaser.Scene {
     }
 
     showChoiceButtons() {
-        const { width, height } = this.scale;
+        const { dpr, width, height, buttonScale } = getResponsiveMetrics(this);
 
         this.runner.hintObj.setText("Make a choice:");
 
-        const BUTTON_SCALE = 0.15;
-
         // Option: Keep scrolling TikTok → bad ending
-        this.add
-            .image(width / 2 - 200, height - 200, "lv1-opt-wake-tiktok")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("BadEndingScene"));
+        createImageButton(this, width / 2 - Math.round(200 * dpr), height - Math.round(200 * dpr), "", {
+            textureKey: "lv1-opt-wake-tiktok",
+            hoverScale: true,
+            scale: buttonScale,
+            onClick: () => this.scene.start("BadEndingScene"),
+        });
+
 
         // Option: Get up → continue
-        this.add
-            .image(width / 2 + 200, height - 200, "lv1-opt-wake-get-up")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("Scene02MarketInvite"));
+        createImageButton(this, width / 2 + Math.round(200 * dpr), height - Math.round(200 * dpr), "", {
+            textureKey: "lv1-opt-wake-get-up",
+            hoverScale: true,
+            scale: buttonScale,
+            onClick: () => this.scene.start("Scene02MarketInvite"),
+        });
     }
 }

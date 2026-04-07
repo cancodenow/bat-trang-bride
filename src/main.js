@@ -23,14 +23,34 @@ import Level3PassScene from "./game/scenes/[3.3] Level3PassScene";
 import Level4IntroScene from "./game/scenes/[4.1] Level4IntroScene";
 import Level4MainChallengeScene from "./game/scenes/[4.2] Level4mainchallenge";
 import Level4PassScene from "./game/scenes/[4.3] Level4PassScene";
+import RotateDeviceOverlayScene from "./game/scenes/RotateDeviceOverlayScene";
+import { getOrientationGameSize } from "./game/UIHelpers";
+
+const dpr = window.devicePixelRatio || 1;
+
+const getViewportGameSize = () => {
+    const base = getOrientationGameSize(window.innerWidth, window.innerHeight);
+    return {
+        width: Math.round(base.width * dpr),
+        height: Math.round(base.height * dpr),
+    };
+};
+
+const initialGameSize = getViewportGameSize();
 
 const config = {
     type: Phaser.AUTO,
     parent: "phaser-container",
-    width: 1600,
-    height: 900,
+    width: initialGameSize.width,
+    height: initialGameSize.height,
     backgroundColor: "#000000",
+    render: {
+        antialias: true,
+        antialiasGL: true,
+        pixelArt: false,
+    },
     scene: [
+
         OpeningScene,
         IntroScene,
         MorningScene01,
@@ -55,11 +75,37 @@ const config = {
         Level4IntroScene,
         Level4MainChallengeScene,
         Level4PassScene,
+        RotateDeviceOverlayScene,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
     },
+    title: "Bat trang's Bride"
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+game.events.once("ready", () => {
+    if (window.innerWidth < window.innerHeight) {
+        game.scene.start("RotateDeviceOverlayScene");
+        game.scene.bringToTop("RotateDeviceOverlayScene");
+    } else {
+        // game.scene.start("OpeningScene");
+        game.scene.start("MarketIngredientSelectionScene")
+    }
+});
+
+const syncGameSizeToViewport = () => {
+    const nextSize = getViewportGameSize();
+    const { width, height } = game.scale.gameSize;
+
+    if (width !== nextSize.width || height !== nextSize.height) {
+        game.scale.setGameSize(nextSize.width, nextSize.height);
+    }
+
+    game.scale.refresh();
+};
+
+window.addEventListener("resize", syncGameSizeToViewport);
+window.addEventListener("orientationchange", syncGameSizeToViewport);

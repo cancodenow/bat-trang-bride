@@ -5,7 +5,8 @@ import {
   createModalFrame,
   createHowToPlay,
   createDevSkipButton,
-  createBackButton } from "../UIHelpers";
+  createBackButton,
+  getResponsiveMetrics } from "../UIHelpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — change these to adjust layout
@@ -64,6 +65,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    const metrics = getResponsiveMetrics(this);
     this.W = width;
     this.H = height;
 
@@ -116,8 +118,8 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         this.add.circle(slot.x, slot.y, 8, 0xff0000, 0.9).setDepth(51);
         this.add
           .text(slot.x, slot.y - 14, `S${slot.index}`, {
-            fontSize: "13px", color: "#ff4444",
-            stroke: "#000", strokeThickness: 3,
+            fontSize: metrics.fs(13), color: "#ff4444",
+            stroke: "#000", strokeThickness: Math.round(3 * metrics.dpr),
           })
           .setOrigin(0.5)
           .setDepth(52);
@@ -132,8 +134,8 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         this.add.circle(tx, ty, 20, 0x4488ff, 0.35).setDepth(50);
         this.add
           .text(tx, ty, `T${i}`, {
-            fontSize: "13px", color: "#88ccff",
-            stroke: "#000", strokeThickness: 3,
+            fontSize: metrics.fs(13), color: "#88ccff",
+            stroke: "#000", strokeThickness: Math.round(3 * metrics.dpr),
           })
           .setOrigin(0.5)
           .setDepth(52);
@@ -307,11 +309,11 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
 
     const txt = this.add
       .text(x, y + 50, msg, {
-        fontSize: "18px",
+        fontSize: metrics.fs(18),
         color: "#ff4444",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: 3,
+        strokeThickness: Math.round(3 * metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5)

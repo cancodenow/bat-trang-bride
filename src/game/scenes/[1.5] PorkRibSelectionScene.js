@@ -6,7 +6,9 @@ import {
     createDevSkipButton,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
 } from "../UIHelpers";
+import { createImageButton } from "../ui/buttons.js";
 
 export default class PorkRibSelectionScene extends Phaser.Scene {
     constructor() {
@@ -21,7 +23,9 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
     }
 
     create() {
+        this.metrics = getResponsiveMetrics(this);
         const { width, height } = this.scale;
+        const { fs, dpr } = this.metrics;
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -29,7 +33,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         this.PRICE_PER_PIECE = 32;
         this.TOTAL_PIECES = 5;
         this.MONEY = 130;
-        this.SIDEBAR_W = 260;
+        this.SIDEBAR_W = Math.round(260 * this.metrics.dpr);
 
         // State — single quantity counter
         this.quantity = 0;
@@ -48,13 +52,16 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
     createSidebar() {
         const { height } = this.scale;
         const sw = this.SIDEBAR_W;
+        const dpr = this.metrics.dpr;
+        const fs = this.metrics.fs;
+        const pad = Math.round(15 * dpr);
 
         this.add.rectangle(sw / 2, height / 2, sw, height, 0x141e2b);
         this.add.rectangle(sw, height / 2, 2, height, 0x3a5a7a);
 
         this.add
-            .text(sw / 2, 16, "Mua Sườn / Buy Ribs", {
-                fontSize: "18px",
+            .text(sw / 2, Math.round(16 * dpr), "Mua Sườn / Buy Ribs", {
+                fontSize: fs(18),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
@@ -62,62 +69,62 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             })
             .setOrigin(0.5, 0);
 
-        this.add.rectangle(sw / 2, 46, sw - 30, 1, 0x3a5a7a);
+        this.add.rectangle(sw / 2, Math.round(46 * dpr), sw - Math.round(30 * dpr), Math.round(1 * dpr), 0x3a5a7a);
 
-        this.add.text(15, 56, "Price per piece:", {
-            fontSize: "15px",
+        this.add.text(pad, Math.round(56 * dpr), "Price per piece:", {
+            fontSize: fs(15),
             color: "#bb9882",
             fontFamily: "SVN-Pequena Neo",
         });
         this.add
-            .text(sw - 15, 56, "32K VND", {
-                fontSize: "15px",
+            .text(sw - pad, Math.round(56 * dpr), "32K VND", {
+                fontSize: fs(15),
                 color: "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
             })
             .setOrigin(1, 0);
 
-        this.add.text(15, 76, "Budget:", {
-            fontSize: "15px",
+        this.add.text(pad, Math.round(76 * dpr), "Budget:", {
+            fontSize: fs(15),
             color: "#bb9882",
             fontFamily: "SVN-Pequena Neo",
         });
         this.add
-            .text(sw - 15, 76, this.MONEY + "K VND", {
-                fontSize: "15px",
+            .text(sw - pad, Math.round(76 * dpr), this.MONEY + "K VND", {
+                fontSize: fs(15),
                 color: "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
             })
             .setOrigin(1, 0);
 
-        this.add.rectangle(sw / 2, 100, sw - 30, 1, 0x3a5a7a);
+        this.add.rectangle(sw / 2, Math.round(100 * dpr), sw - Math.round(30 * dpr), Math.round(1 * dpr), 0x3a5a7a);
 
         this.add
-            .text(sw / 2, 108, "Selection", {
-                fontSize: "15px",
+            .text(sw / 2, Math.round(108 * dpr), "Selection", {
+                fontSize: fs(15),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
             })
             .setOrigin(0.5, 0);
 
-        this.selectedCountText = this.add.text(15, 128, "Pieces: 0 ", {
-            fontSize: "17px",
+        this.selectedCountText = this.add.text(pad, Math.round(128 * dpr), "Pieces: 0 ", {
+            fontSize: fs(17),
             color: "#ffffff",
             fontFamily: "SVN-Pequena Neo",
         });
 
-        this.totalText = this.add.text(15, 150, "Total: 0K", {
-            fontSize: "17px",
+        this.totalText = this.add.text(pad, Math.round(150 * dpr), "Total: 0K", {
+            fontSize: fs(17),
             color: "#ffffff",
             fontFamily: "SVN-Pequena Neo",
         });
 
-        this.add.rectangle(sw / 2, 180, sw - 30, 1, 0x3a5a7a);
+        this.add.rectangle(sw / 2, Math.round(180 * dpr), sw - Math.round(30 * dpr), Math.round(1 * dpr), 0x3a5a7a);
 
         this.add
-            .text(sw / 2, 188, "one piece = 200g", {
-                fontSize: "14px",
+            .text(sw / 2, Math.round(188 * dpr), "one piece = 200g", {
+                fontSize: fs(14),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -125,52 +132,49 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             .setOrigin(0.5, 0);
 
         this.statusText = this.add
-            .text(sw / 2, 212, "Click the rib to add one piece.", {
-                fontSize: "14px",
+            .text(sw / 2, Math.round(212 * dpr), "Click the rib to add one piece.", {
+                fontSize: fs(14),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
-                wordWrap: { width: sw - 20 },
+                wordWrap: { width: sw - Math.round(20 * dpr) },
             })
             .setOrigin(0.5, 0);
 
         // Check button
         const BUTTON_SCALE = 0.15;
-        this.add
-            .image(sw / 2, height - 60, "lv1-opt-buy-check")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(BUTTON_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(BUTTON_SCALE);
-            })
-            .on("pointerdown", () => this.checkSelection());
+        createImageButton(
+            this,
+            sw / 2,
+            height - Math.round(60 * dpr),
+            "",
+            { textureKey: "lv1-opt-buy-check", scale: BUTTON_SCALE, onClick: () => this.checkSelection() },
+        );
     }
 
     // ===================== RIB DISPLAY =====================
 
     createRibDisplay() {
         const { width, height } = this.scale;
+        const fs = this.metrics.fs;
         const sw = this.SIDEBAR_W;
         const cx = sw + (width - sw) / 2;
-        const cy = height / 2 - 20;
-        const imgSize = 90;
+        const cy = height / 2 - Math.round(20 * this.metrics.dpr);
+        const imgSize = Math.round(90 * this.metrics.dpr);
 
-        const ribX = cx + 120;
+        const ribX = cx + Math.round(120 * this.metrics.dpr);
         const ribH = imgSize * 0.85;
 
         const img = this.add
-            .image(ribX, cy + 70, "pork-ribs")
+            .image(ribX, cy + Math.round(70 * this.metrics.dpr), "pork-ribs")
             .setDisplaySize(imgSize, ribH)
             .setInteractive({ useHandCursor: true });
 
-        const imgBottom = cy + 70 + ribH / 2;
+        const imgBottom = cy + Math.round(70 * this.metrics.dpr) + ribH / 2;
 
         this.add
-            .text(ribX, imgBottom + 12, "Pork Ribs", {
-                fontSize: "18px",
+            .text(ribX, imgBottom + Math.round(12 * this.metrics.dpr), "Pork Ribs", {
+                fontSize: fs(18),
                 color: "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -178,8 +182,8 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             .setOrigin(0.5, 0);
 
         this.add
-            .text(ribX, imgBottom + 36, "32K / piece  —  click to add", {
-                fontSize: "15px",
+            .text(ribX, imgBottom + Math.round(36 * this.metrics.dpr), "32K / piece  —  click to add", {
+                fontSize: fs(15),
                 color: "#bb9882",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
@@ -194,7 +198,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         });
 
         img.on("pointerover", () =>
-            img.setDisplaySize(imgSize + 14, (imgSize + 14) * 0.85),
+            img.setDisplaySize(imgSize + Math.round(14 * this.metrics.dpr), (imgSize + Math.round(14 * this.metrics.dpr)) * 0.85),
         );
         img.on("pointerout", () => img.setDisplaySize(imgSize, ribH));
     }
@@ -234,8 +238,9 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
 
     showBargainModal() {
         const { width, height } = this.scale;
+        const { fs, dpr } = this.metrics;
 
-        const { container } = createModalFrame(this, 640, 260, {
+        const { container } = createModalFrame(this, Math.round(640 * dpr), Math.round(260 * dpr), {
             overlayAlpha: 0.6,
         });
         const frameY = height / 2; // frame is centered here by createModalFrame
@@ -246,41 +251,33 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
                 frameY,
                 "Let's keep within the budget, dear.\nDo you want to bargain?",
                 {
-                    fontSize: "22px",
+                    fontSize: fs(22),
                     color: "#ffffff",
                     fontFamily: "SVN-Pequena Neo",
                     align: "center",
-                    wordWrap: { width: 560 },
-                    lineSpacing: 6,
+                    wordWrap: { width: Math.round(560 * dpr) },
+                    lineSpacing: Math.round(6 * dpr),
                 },
             )
             .setOrigin(0.5);
 
         const YES_SCALE = 0.15;
-        const yesBtn = this.add
-            .image(width / 2 + 160, frameY + 80, "lv1-opt-ribs-yes")
-            .setScale(YES_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(YES_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(YES_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("BargainScene"));
+        const { bg: yesBtn } = createImageButton(
+            this,
+            width / 2 + Math.round(160 * dpr),
+            frameY + Math.round(80 * dpr),
+            "",
+            { textureKey: "lv1-opt-ribs-yes", scale: YES_SCALE, onClick: () => this.scene.start("BargainScene") },
+        );
 
         const NO_SCALE = 0.15;
-        const momBtn = this.add
-            .image(width / 2 - 160, frameY + 80, "lv1-opt-no-bargain")
-            .setScale(NO_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () {
-                this.setScale(NO_SCALE * 1.08);
-            })
-            .on("pointerout", function () {
-                this.setScale(NO_SCALE);
-            })
-            .on("pointerdown", () => this.scene.start("BargainBadEndingScene"));
+        const { bg: momBtn } = createImageButton(
+            this,
+            width / 2 - Math.round(160 * dpr),
+            frameY + Math.round(80 * dpr),
+            "",
+            { textureKey: "lv1-opt-no-bargain", scale: NO_SCALE, onClick: () => this.scene.start("BargainBadEndingScene") },
+        );
 
         container.add([msg, yesBtn, momBtn]);
     }

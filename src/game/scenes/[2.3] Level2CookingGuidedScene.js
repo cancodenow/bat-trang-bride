@@ -5,7 +5,9 @@ import {
   createImageButton,
   createModalFrame,
   createDevSkipButton,
-  createBackButton } from "../UIHelpers";
+  createBackButton,
+  getResponsiveMetrics,
+  bindResponsiveScene } from "../UIHelpers";
 
 export default class Level2CookingGuidedScene extends Phaser.Scene {
   constructor() {
@@ -17,10 +19,11 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
     preloadLevelAssets(this, 2);
   }
 
-  create() {
+  create(data = {}) {
     const { width, height } = this.scale;
     this.W = width;
     this.H = height;
+    this.metrics = getResponsiveMetrics(this);
 
     // ===================== CHALLENGE DATA =====================
 
@@ -155,8 +158,9 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
       });
     });
 
-    this.currentChallengeIndex = 0;
-    this.currentStepIndex = 0;
+    this.currentChallengeIndex = data.currentChallengeIndex || 0;
+    this.currentStepIndex = data.currentStepIndex || 0;
+    this.currentView = data.view || "instruction";
 
     // Background visible behind the instruction modal
     this.add.image(this.W / 2, this.H / 2, "lv2-cl1-bg-start").setDisplaySize(this.W, this.H).setDepth(0);
@@ -164,22 +168,51 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
 
     createDevSkipButton(this, "CookingChallengeCompleteScene");
     createBackButton(this);
+    this.restoreViewFromState();
+    bindResponsiveScene(this, () => this.scene.restart(this.getSceneState()));
+  }
+
+  getSceneState() {
+    return {
+      currentChallengeIndex: this.currentChallengeIndex,
+      currentStepIndex: this.currentStepIndex,
+      view: this.currentView,
+    };
+  }
+
+  restoreViewFromState() {
+    if (this.currentView === "step") {
+      this.loadStep(this.currentStepIndex);
+      return;
+    }
+
+    if (this.currentView === "challenge") {
+      this.loadChallenge(this.currentChallengeIndex);
+      return;
+    }
+
+    if (this.currentView === "unlocked") {
+      this.showDishUnlocked();
+      return;
+    }
+
     this.showInstructionModal();
   }
 
   // ===================== INSTRUCTION MODAL =====================
 
   showInstructionModal() {
-    const { container } = createModalFrame(this, 0, 0, { overlayAlpha: 0.7 });
+    this.currentView = "instruction";
+    const { container } = createModalFrame(this, this.metrics.modal.width, this.metrics.modal.height, { overlayAlpha: 0.7 });
     this.instructionModal = container;
 
     const howToPlay = this.add
-      .image(this.W / 2, this.H / 2 - 40, "lv2-how-to-play")
-      .setDisplaySize(700, 420);
+      .image(this.W / 2, this.metrics.modal.mediaY, "lv2-how-to-play")
+      .setDisplaySize(this.metrics.modal.mediaWidth, this.metrics.modal.mediaHeight);
 
-    const BUTTON_SCALE = 0.2;
+    const BUTTON_SCALE = this.metrics.secondaryButtonScale;
     const startBtn = this.add
-      .image(this.W / 2, this.H / 2 + 230, "continue_button")
+      .image(this.W / 2, this.metrics.modal.buttonY, "continue_button")
       .setScale(BUTTON_SCALE)
       .setInteractive({ useHandCursor: true })
       .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
@@ -198,6 +231,8 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
     this.children.removeAll(true);
     this.currentChallengeIndex = index;
     this.currentStepIndex = 0;
+    this.currentView = "challenge";
+    this.metrics = getResponsiveMetrics(this);
 
     const challenge = this.challenges[index];
 
@@ -207,23 +242,23 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
       .setDisplaySize(this.W, this.H);
 
     // Progress label
-    this.add
+      this.add
       .text(
         this.W - 20,
         20,
         `Challenge ${index + 1} / ${this.challenges.length}`,
-        { fontSize: "16px", color: "#ffffff", fontFamily: "SVN-Pequena Neo", stroke: "#000000", strokeThickness: 3 }
+        { fontSize: this.metrics.fs(16), color: "#ffffff", fontFamily: "SVN-Pequena Neo", stroke: "#000000", strokeThickness: Math.round(3 * this.metrics.dpr) }
       )
       .setOrigin(1, 0);
 
     // Click anywhere to start step 1
     const clickHint = this.add
-      .text(this.W / 2, this.H - 60, "Click to start", {
-        fontSize: "20px",
+      .text(this.W / 2, this.H - this.metrics.bottomInset - Math.round(36 * this.metrics.dpr), "Tap to start", {
+        fontSize: this.metrics.isPortrait ? this.metrics.fs(22) : this.metrics.fs(20),
         color: "#ffffff",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: 4,
+        strokeThickness: Math.round(4 * this.metrics.dpr),
       })
       .setOrigin(0.5);
 
@@ -250,6 +285,8 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
   loadStep(stepIndex) {
     this.children.removeAll(true);
     this.currentStepIndex = stepIndex;
+    this.currentView = "step";
+    this.metrics = getResponsiveMetrics(this);
 
     const challenge = this.challenges[this.currentChallengeIndex];
     const step = challenge.steps[stepIndex];
@@ -260,12 +297,12 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
       .setDisplaySize(this.W, this.H);
 
     // Progress label
-    this.add
+      this.add
       .text(
         this.W - 20,
-        20,
+        this.metrics.topInset,
         `Challenge ${this.currentChallengeIndex + 1} / ${this.challenges.length}  ·  Step ${stepIndex + 1} / ${challenge.steps.length}`,
-        { fontSize: "16px", color: "#ffffff", fontFamily: "SVN-Pequena Neo", stroke: "#000000", strokeThickness: 3 }
+        { fontSize: this.metrics.isPortrait ? this.metrics.fs(18) : this.metrics.fs(16), color: "#ffffff", fontFamily: "SVN-Pequena Neo", stroke: "#000000", strokeThickness: Math.round(3 * this.metrics.dpr) }
       )
       .setOrigin(1, 0);
 
@@ -279,14 +316,14 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
   // ===================== PROGRESS DOTS =====================
 
   drawProgressDots(total, current) {
-    const dotY = 60;
-    const dotGap = 32;
+    const dotY = this.metrics.topInset + Math.round(40 * this.metrics.dpr);
+    const dotGap = this.metrics.isPortrait ? Math.round(28 * this.metrics.dpr) : Math.round(32 * this.metrics.dpr);
     const startX = this.W / 2 - ((total - 1) * dotGap) / 2;
     for (let i = 0; i < total; i++) {
       const color =
         i < current ? 0x66ff66 : i === current ? 0xffcc00 : 0xaaaaaa;
-      const dot = this.add.circle(startX + i * dotGap, dotY, 10, color);
-      dot.setStrokeStyle(2, 0x000000);
+      const dot = this.add.circle(startX + i * dotGap, dotY, Math.round(10 * this.metrics.dpr), color);
+      dot.setStrokeStyle(Math.round(2 * this.metrics.dpr), 0x000000);
     }
   }
 
@@ -304,26 +341,34 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
       choices = Phaser.Utils.Array.Shuffle([correctKey, ...distractors]);
     }
 
-    const iconSize = 160;
-    const gap = 30;
-    const totalW = choices.length * iconSize + (choices.length - 1) * gap;
+    const iconSize = this.metrics.challengeChoices.iconSize;
+    const gap = this.metrics.challengeChoices.gap;
+    const columns = this.metrics.challengeChoices.columns;
+    const rows = Math.ceil(choices.length / columns);
+    const totalW = columns * iconSize + (columns - 1) * gap;
     const startX = this.W / 2 - totalW / 2 + iconSize / 2;
-    const iconY = this.H - 120;
+    const startY = this.metrics.isPortrait
+      ? this.H - this.metrics.bottomInset - rows * iconSize - (rows - 1) * gap - 30
+      : this.H - 120 - iconSize / 2;
+    const instructionY = this.metrics.isPortrait ? startY - 56 : startY - 20;
 
     // Instruction text (custom per step, or fallback)
     this.add
-      .text(this.W / 2, iconY - iconSize / 2 - 20, instruction || "Pick the next step:", {
-        fontSize: "18px",
+      .text(this.W / 2, instructionY, instruction || "Pick the next step:", {
+        fontSize: this.metrics.isPortrait ? this.metrics.fs(24) : this.metrics.fs(18),
         color: "#ffffff",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: 4,
+        strokeThickness: Math.round(4 * this.metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5);
 
     choices.forEach((key, i) => {
-      const x = startX + i * (iconSize + gap);
+      const col = i % columns;
+      const row = Math.floor(i / columns);
+      const x = startX + col * (iconSize + gap);
+      const iconY = startY + row * (iconSize + gap);
       const icon = this.add
         .image(x, iconY, key)
         .setDisplaySize(iconSize, iconSize)
@@ -375,6 +420,8 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
 
   showDishUnlocked() {
     this.children.removeAll(true);
+    this.currentView = "unlocked";
+    this.metrics = getResponsiveMetrics(this);
 
     const challenge = this.challenges[this.currentChallengeIndex];
 
@@ -384,13 +431,13 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
 
     // Dish unlocked image
     this.add
-      .image(this.W / 2, this.H / 2 - 60, challenge.dishUnlocked)
-      .setScale(0.5);
+      .image(this.W / 2, this.H / 2 - (this.metrics.isPortrait ? 140 : 60), challenge.dishUnlocked)
+      .setScale(this.metrics.isPortrait ? 0.42 : 0.5);
 
     // Continue button
-    const BUTTON_SCALE = 0.15;
+    const BUTTON_SCALE = this.metrics.buttonScale;
     this.add
-      .image(this.W / 2, this.H / 2 +300, "continue_button")
+      .image(this.W / 2, this.H / 2 + (this.metrics.isPortrait ? 360 : 300), "continue_button")
       .setScale(BUTTON_SCALE)
       .setInteractive({ useHandCursor: true })
       .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })

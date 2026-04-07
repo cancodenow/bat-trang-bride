@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createBackButton, addCoverBg } from "../UIHelpers";
+import { preloadUIAssets, createBackButton, addCoverBg, getResponsiveMetrics } from "../UIHelpers";
 
 export default class IngredientSelectionIntroScene extends Phaser.Scene {
     constructor() {
@@ -14,7 +14,8 @@ export default class IngredientSelectionIntroScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, fs } = metrics;
 
         addCoverBg(this, "ingredientIntroBg", { depth: 0 });
         this.add
@@ -30,7 +31,7 @@ export default class IngredientSelectionIntroScene extends Phaser.Scene {
                 height / 2,
                 "Next step: Choose ingredients at the market",
                 {
-                    fontSize: "32px",
+                    fontSize: fs(32),
                     color: "#000000",
                     fontFamily: "SVN-Pequena Neo",
                     align: "center",

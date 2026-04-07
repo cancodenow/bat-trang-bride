@@ -1,3 +1,5 @@
+import { getResponsiveMetrics } from "./responsive.js";
+
 // ===================== IMAGE COMPONENT HELPERS =====================
 // Every function reads the PNG's real dimensions via nativeSize() and
 // applies a scale factor — identical approach to buttons.js.
@@ -10,12 +12,13 @@
 //   createHowToPlay(this, x, y, "lv1-how-to-play")
 
 function hasTexture(scene, key) {
-  return scene.textures.exists(key);
+    return scene.textures.exists(key);
 }
 
 function nativeSize(scene, key, scale = 0.5) {
-  const frame = scene.textures.getFrame(key);
-  return { w: frame.realWidth * scale, h: frame.realHeight * scale };
+    const { dpr } = getResponsiveMetrics(scene);
+    const frame = scene.textures.getFrame(key);
+    return { w: frame.realWidth * scale * dpr, h: frame.realHeight * scale * dpr };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -38,19 +41,20 @@ function nativeSize(scene, key, scale = 0.5) {
  * @returns {Phaser.GameObjects.Image|null}  null if texture not loaded
  */
 export function createUIImage(scene, x, y, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
-  const w = opts.width  ?? nw;
-  const h = opts.height ?? nh;
-  const [ox, oy] = opts.origin ?? [0.5, 0.5];
+    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+    const w = opts.width ?? nw;
+    const h = opts.height ?? nh;
+    const [ox, oy] = opts.origin ?? [0.5, 0.5];
 
-  const img = scene.add.image(x, y, key)
-    .setDisplaySize(w, h)
-    .setOrigin(ox, oy);
+    const img = scene.add
+        .image(x, y, key)
+        .setDisplaySize(w, h)
+        .setOrigin(ox, oy);
 
-  if (opts.depth !== undefined) img.setDepth(opts.depth);
-  return img;
+    if (opts.depth !== undefined) img.setDepth(opts.depth);
+    return img;
 }
 
 /**
@@ -69,20 +73,28 @@ export function createUIImage(scene, x, y, key, opts = {}) {
  * @returns {Phaser.GameObjects.Image|null}
  */
 export function addCoverBg(scene, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { width: sceneWidth, height: sceneHeight } = scene.scale;
-  const x = opts.x ?? sceneWidth / 2;
-  const y = opts.y ?? sceneHeight / 2;
-  const width = opts.width ?? sceneWidth;
-  const height = opts.height ?? sceneHeight;
+    const { width: sceneWidth, height: sceneHeight } =
+        getResponsiveMetrics(scene);
+    const x = opts.x ?? sceneWidth / 2;
+    const y = opts.y ?? sceneHeight / 2;
+    const width = opts.width ?? sceneWidth;
+    const height = opts.height ?? sceneHeight;
 
-  const frame = scene.textures.getFrame(key);
-  const coverScale = Math.max(width / frame.realWidth, height / frame.realHeight);
+    const frame = scene.textures.getFrame(key);
+    const coverScale = Math.max(
+        width / frame.realWidth,
+        height / frame.realHeight,
+    );
+    const coverWidth = Math.round(frame.realWidth * coverScale);
+    const coverHeight = Math.round(frame.realHeight * coverScale);
 
-  const img = scene.add.image(x, y, key).setScale(coverScale);
-  if (opts.depth !== undefined) img.setDepth(opts.depth);
-  return img;
+    const img = scene.add
+        .image(x, y, key)
+        .setDisplaySize(coverWidth, coverHeight);
+    if (opts.depth !== undefined) img.setDepth(opts.depth);
+    return img;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -107,40 +119,48 @@ export function addCoverBg(scene, key, opts = {}) {
  * @returns {{ img }}
  */
 export function createOptionButton(scene, x, y, key, opts = {}) {
-  if (hasTexture(scene, key)) {
-    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
-    const w = opts.width  ?? nw;
-    const h = opts.height ?? nh;
+    const metrics = getResponsiveMetrics(scene);
 
-    const img = scene.add.image(x, y, key)
-      .setDisplaySize(w, h)
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
+    if (hasTexture(scene, key)) {
+        const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+        const w = opts.width ?? nw;
+        const h = opts.height ?? nh;
 
-    if (opts.depth !== undefined) img.setDepth(opts.depth);
+        const img = scene.add
+            .image(x, y, key)
+            .setDisplaySize(w, h)
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true });
 
-    img.on("pointerover", () => img.setTint(0xdddddd));
-    img.on("pointerout",  () => img.clearTint());
-    if (opts.onClick) img.on("pointerdown", opts.onClick);
+        if (opts.depth !== undefined) img.setDepth(opts.depth);
 
-    return { img };
-  }
+        img.on("pointerover", () => img.setTint(0xdddddd));
+        img.on("pointerout", () => img.clearTint());
+        if (opts.onClick) img.on("pointerdown", opts.onClick);
 
-  // fallback
-  const btn = scene.add
-    .text(x, y, opts.fallbackLabel ?? "", {
-      fontSize: "16px",
-      fontFamily: "SVN-Pequena Neo",
-      color: "#ffffff",
-      backgroundColor: "#2a4a6a",
-      padding: { left: 20, right: 20, top: 10, bottom: 10 },
-      align: "center",
-    })
-    .setOrigin(0.5)
-    .setInteractive({ useHandCursor: true });
+        return { img };
+    }
 
-  if (opts.onClick) btn.on("pointerdown", opts.onClick);
-  return { img: btn };
+    // fallback
+    const btn = scene.add
+        .text(x, y, opts.fallbackLabel ?? "", {
+            fontSize: metrics.fs(16),
+            fontFamily: "SVN-Pequena Neo",
+            color: "#ffffff",
+            backgroundColor: "#2a4a6a",
+            padding: {
+                left: Math.round(20 * metrics.dpr),
+                right: Math.round(20 * metrics.dpr),
+                top: Math.round(10 * metrics.dpr),
+                bottom: Math.round(10 * metrics.dpr),
+            },
+            align: "center",
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+    if (opts.onClick) btn.on("pointerdown", opts.onClick);
+    return { img: btn };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -160,14 +180,15 @@ export function createOptionButton(scene, x, y, key, opts = {}) {
  * @returns {Phaser.GameObjects.Image|null}
  */
 export function createHUDWidget(scene, x, y, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
 
-  return scene.add.image(x, y, key)
-    .setDisplaySize(nw, nh)
-    .setOrigin(0.5)
-    .setDepth(opts.depth ?? 10);
+    return scene.add
+        .image(x, y, key)
+        .setDisplaySize(nw, nh)
+        .setOrigin(0.5)
+        .setDepth(opts.depth ?? 10);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -191,26 +212,24 @@ export function createHUDWidget(scene, x, y, key, opts = {}) {
  * @returns {Phaser.GameObjects.Image|null}
  */
 export function createDishCard(scene, x, y, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
-  const w = opts.width  ?? nw;
-  const h = opts.height ?? nh;
+    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+    const w = opts.width ?? nw;
+    const h = opts.height ?? nh;
 
-  const img = scene.add.image(x, y, key)
-    .setDisplaySize(w, h)
-    .setOrigin(0.5);
+    const img = scene.add.image(x, y, key).setDisplaySize(w, h).setOrigin(0.5);
 
-  if (opts.depth !== undefined) img.setDepth(opts.depth);
+    if (opts.depth !== undefined) img.setDepth(opts.depth);
 
-  if (opts.onClick) {
-    img.setInteractive({ useHandCursor: true });
-    img.on("pointerover", () => img.setTint(0xeeeeee));
-    img.on("pointerout",  () => img.clearTint());
-    img.on("pointerdown", opts.onClick);
-  }
+    if (opts.onClick) {
+        img.setInteractive({ useHandCursor: true });
+        img.on("pointerover", () => img.setTint(0xeeeeee));
+        img.on("pointerout", () => img.clearTint());
+        img.on("pointerdown", opts.onClick);
+    }
 
-  return img;
+    return img;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -232,16 +251,17 @@ export function createDishCard(scene, x, y, key, opts = {}) {
  * @returns {Phaser.GameObjects.Image|null}
  */
 export function createHowToPlay(scene, x, y, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
-  const w = opts.width  ?? nw;
-  const h = opts.height ?? nh;
+    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+    const w = opts.width ?? nw;
+    const h = opts.height ?? nh;
 
-  return scene.add.image(x, y, key)
-    .setDisplaySize(w, h)
-    .setOrigin(0.5)
-    .setDepth(opts.depth ?? 50);
+    return scene.add
+        .image(x, y, key)
+        .setDisplaySize(w, h)
+        .setOrigin(0.5)
+        .setDepth(opts.depth ?? 50);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -256,18 +276,29 @@ export function createHowToPlay(scene, x, y, key, opts = {}) {
  * @param {string} nextScene  - scene key to jump to
  */
 export function createDevSkipButton(scene, nextScene) {
-  const { width } = scene.scale;
-  scene.add.text(width - 10, 10, "[DEV] Skip", {
-    fontSize: "14px",
-    fontFamily: "SVN-Pequena Neo",
-    color: "#ffffff",
-    backgroundColor: "#cc2222",
-    padding: { left: 8, right: 8, top: 4, bottom: 4 },
-  })
-    .setOrigin(1, 0)
-    .setDepth(500)
-    .setInteractive({ useHandCursor: true })
-    .on("pointerdown", () => scene.scene.start(nextScene));
+    const metrics = getResponsiveMetrics(scene);
+    scene.add
+        .text(
+            metrics.width - metrics.edgePadding,
+            metrics.topInset,
+            "[DEV] Skip",
+            {
+                fontSize: metrics.fs(14),
+                fontFamily: "SVN-Pequena Neo",
+                color: "#ffffff",
+                backgroundColor: "#cc2222",
+                padding: {
+                    left: Math.round(8 * metrics.dpr),
+                    right: Math.round(8 * metrics.dpr),
+                    top: Math.round(4 * metrics.dpr),
+                    bottom: Math.round(4 * metrics.dpr),
+                },
+            },
+        )
+        .setOrigin(1, 0)
+        .setDepth(500)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerdown", () => scene.scene.start(nextScene));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -287,14 +318,15 @@ export function createDevSkipButton(scene, nextScene) {
  * @returns {Phaser.GameObjects.Image|null}
  */
 export function createSplashImage(scene, x, y, key, opts = {}) {
-  if (!hasTexture(scene, key)) return null;
+    if (!hasTexture(scene, key)) return null;
 
-  const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
+    const { w: nw, h: nh } = nativeSize(scene, key, opts.scale ?? 0.5);
 
-  return scene.add.image(x, y, key)
-    .setDisplaySize(nw, nh)
-    .setOrigin(0.5)
-    .setDepth(opts.depth ?? 100);
+    return scene.add
+        .image(x, y, key)
+        .setDisplaySize(nw, nh)
+        .setOrigin(0.5)
+        .setDepth(opts.depth ?? 100);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -309,10 +341,10 @@ export function createSplashImage(scene, x, y, key, opts = {}) {
  * @param {string} key          - scene key to go to
  */
 export function goToScene(scene, key) {
-  const history = scene.game.registry.get("sceneHistory") || [];
-  history.push(scene.scene.key);
-  scene.game.registry.set("sceneHistory", history);
-  scene.scene.start(key);
+    const history = scene.game.registry.get("sceneHistory") || [];
+    history.push(scene.scene.key);
+    scene.game.registry.set("sceneHistory", history);
+    scene.scene.start(key);
 }
 
 /**
@@ -323,22 +355,33 @@ export function goToScene(scene, key) {
  * @param {string} [fallbackScene]  - scene key to use if no history (default: "OpeningScene")
  */
 export function createBackButton(scene, fallbackScene = "OpeningScene") {
-  scene.add.text(16, 10, "← Back", {
-    fontSize: "16px",
-    fontFamily: "SVN-Pequena Neo",
-    color: "#ffffff",
-    backgroundColor: "#1a3a5a",
-    padding: { left: 10, right: 10, top: 5, bottom: 5 },
-  })
-    .setOrigin(0, 0)
-    .setDepth(500)
-    .setInteractive({ useHandCursor: true })
-    .on("pointerover", function () { this.setStyle({ backgroundColor: "#2a5a8a" }); })
-    .on("pointerout",  function () { this.setStyle({ backgroundColor: "#1a3a5a" }); })
-    .on("pointerdown", () => {
-      const history = scene.game.registry.get("sceneHistory") || [];
-      const prev = history.pop() || fallbackScene;
-      scene.game.registry.set("sceneHistory", history);
-      scene.scene.start(prev);
-    });
+    const metrics = getResponsiveMetrics(scene);
+    scene.add
+        .text(metrics.edgePadding, metrics.topInset, "← Back", {
+            fontSize: metrics.fs(16),
+            fontFamily: "SVN-Pequena Neo",
+            color: "#ffffff",
+            backgroundColor: "#1a3a5a",
+            padding: {
+                left: Math.round(10 * metrics.dpr),
+                right: Math.round(10 * metrics.dpr),
+                top: Math.round(5 * metrics.dpr),
+                bottom: Math.round(5 * metrics.dpr),
+            },
+        })
+        .setOrigin(0, 0)
+        .setDepth(500)
+        .setInteractive({ useHandCursor: true })
+        .on("pointerover", function () {
+            this.setStyle({ backgroundColor: "#2a5a8a" });
+        })
+        .on("pointerout", function () {
+            this.setStyle({ backgroundColor: "#1a3a5a" });
+        })
+        .on("pointerdown", () => {
+            const history = scene.game.registry.get("sceneHistory") || [];
+            const prev = history.pop() || fallbackScene;
+            scene.game.registry.set("sceneHistory", history);
+            scene.scene.start(prev);
+        });
 }

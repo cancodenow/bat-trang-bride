@@ -5,6 +5,7 @@ import {
     createDevSkipButton,
     createBackButton,
     createTryAgainButton,
+    getResponsiveMetrics,
 } from "../UIHelpers";
 
 export default class BargainBadEndingScene extends Phaser.Scene {
@@ -17,14 +18,15 @@ export default class BargainBadEndingScene extends Phaser.Scene {
     }
 
     create() {
-        const { width, height } = this.scale;
+        const metrics = getResponsiveMetrics(this);
+        const { width, height, fs, dpr } = metrics;
 
         this.cameras.main.setBackgroundColor("#000000");
 
         // Big title
         this.add
-            .text(width / 2, height / 2 - 100, "BAD ENDING", {
-                fontSize: "48px",
+            .text(width / 2, height / 2 - Math.round(100 * dpr), "BAD ENDING", {
+                fontSize: fs(48),
                 color: "#ff4444",
                 fontFamily: "SVN-Pequena Neo",
                 fontStyle: "bold",
@@ -39,21 +41,17 @@ export default class BargainBadEndingScene extends Phaser.Scene {
                 height / 2,
                 "You do not know how to bargain.\nYou spend all your pocket money on the ribs.",
                 {
-                    fontSize: "22px",
+                    fontSize: fs(22),
                     color: "#cccccc",
                     fontFamily: "SVN-Pequena Neo",
                     align: "center",
-                    wordWrap: { width: 600 },
-                    lineSpacing: 10,
+                    wordWrap: { width: Math.round(600 * dpr) },
+                    lineSpacing: Math.round(10 * dpr),
                 },
             )
             .setOrigin(0.5);
 
         // Restart button
-        // createImageButton(this, width / 2, height / 2 + 120, "Restart from Screen 04", {
-        //   fontSize: "20px",
-        //   onClick: () => this.scene.start("BuyRibsIntroScene"),
-        // });
         createTryAgainButton(this, width / 2, height / 2 + 180, {
             onClick: () =>
                 this.scene.start("BargainScene", { skipToChoice: "choice1" }),

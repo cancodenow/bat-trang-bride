@@ -6,6 +6,7 @@ import {
     createDevSkipButton,
     createBackButton,
     addCoverBg,
+    getResponsiveMetrics,
 } from "../UIHelpers";
 
 // ── Tuning ────────────────────────────────────────────────────────────────────
@@ -25,6 +26,7 @@ export default class Level1PassScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
+        const { buttonScale } = getResponsiveMetrics(this);
 
         addCoverBg(this, "marketBg", { depth: 0 });
 
@@ -34,7 +36,7 @@ export default class Level1PassScene extends Phaser.Scene {
             .setDepth(1);
 
         createContinueButton(this, width / 2, height / 2 + 320, {
-            scale: 0.2,
+            scale: buttonScale,
             onClick: () => this.scene.start("Level2IntroScene"),
         });
 

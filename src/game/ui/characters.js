@@ -1,5 +1,7 @@
 // ===================== CHARACTER HELPERS =====================
 
+import { DPR, getResponsiveMetrics } from "./responsive";
+
 /**
  * All character texture keys and their asset paths.
  * Used by preloadCharacters() and as reference when calling createCharacter().
@@ -55,10 +57,11 @@ export function preloadCharacters(scene) {
  * @returns {Phaser.GameObjects.Image}
  */
 export function createCharacter(scene, x, y, key, opts = {}) {
+    const { dpr } = getResponsiveMetrics(scene);
     const scale = opts.scale !== undefined ? opts.scale : 0.5;
     const img = scene.add.image(x, y, key).setOrigin(0.5, 1);
 
-    img.setScale(scale);
+    img.setScale(scale * dpr);
     if (opts.flipX) img.setFlipX(true);
     if (opts.depth !== undefined) img.setDepth(opts.depth);
 
