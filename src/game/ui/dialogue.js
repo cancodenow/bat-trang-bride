@@ -5,11 +5,17 @@ import { createBox } from "./containers.js";
 import { createCharacter } from "./characters.js";
 
 const DEFAULT_DIALOGUE_FONT_SIZE = "22px";
-const DEFAULT_HINT_FONT_SIZE = "14px";
+const DEFAULT_HINT_FONT_SIZE = "18px";
 const DIALOGUE_TEXT_WIDTH_RATIO = 0.85;
 const HINT_Y_RATIO = 0.35;
 const CONTENT_EDGE_PADDING_RATIO = 0.12;
 const TEXT_HINT_GAP_RATIO = 0.08;
+const HINT_BASE_COLOR = "#fff4c2";
+const HINT_STROKE_COLOR = "#6f5630";
+const HINT_SHADOW_COLOR = "#000000";
+const HINT_PULSE_ALPHA = 0.35;
+const HINT_PULSE_SCALE = 1.08;
+const HINT_PULSE_DURATION_MS = 650;
 
 function parsePixelFontSize(fontSize, fallback = 22) {
     if (typeof fontSize === "number") return fontSize;
@@ -106,11 +112,25 @@ export class DialogueRunner {
                 "▼ Click to continue",
                 {
                     fontSize: DEFAULT_HINT_FONT_SIZE,
-                    color: "#aaaaaa",
+                    color: HINT_BASE_COLOR,
                     fontFamily: "SVN-Pequena Neo",
+                    stroke: HINT_STROKE_COLOR,
+                    strokeThickness: 3,
                 },
             )
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setShadow(0, 2, HINT_SHADOW_COLOR, 6, false, true);
+
+        this.hintTween = scene.tweens.add({
+            targets: this.hintObj,
+            alpha: HINT_PULSE_ALPHA,
+            scaleX: HINT_PULSE_SCALE,
+            scaleY: HINT_PULSE_SCALE,
+            duration: HINT_PULSE_DURATION_MS,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.InOut",
+        });
 
         // Create characters if config provided
         // chars.left.key / chars.right.key set the initial texture;
@@ -242,6 +262,7 @@ export class DialogueRunner {
      * Remove the click listener
      */
     destroy() {
+        this.hintTween?.stop();
         this.scene.input.off("pointerdown", this._clickHandler);
     }
 }
