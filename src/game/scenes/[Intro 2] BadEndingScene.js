@@ -46,7 +46,7 @@ export default class BadEndingScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true })
       .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
       .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
-      .on("pointerdown", () => this.scene.start("MorningScene01"));
+      .on("pointerdown", () => this.scene.start("MorningScene01", { skipToChoice: true }));
 
     createDevSkipButton(this, "MorningScene01");
   }

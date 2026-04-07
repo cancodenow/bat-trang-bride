@@ -72,7 +72,8 @@ export default class MorningScene01 extends Phaser.Scene {
             },
         ];
 
-        this.currentLine = 0;
+        const skipToChoice = this.scene.settings.data?.skipToChoice;
+        this.currentLine = skipToChoice ? this.dialogueLines.length - 1 : 0;
 
         // Dialogue box background
         createBox(this, width / 2, height - 100, {
