@@ -96,7 +96,7 @@ export default class BargainScene extends Phaser.Scene {
         const { bg: btn1 } = createImageButton(
             this,
             width / 2 - Math.round(180 * dpr),
-            height - Math.round(220 * dpr),
+            height - Math.round(240 * dpr),
             "",
             { textureKey: "lv1-opt-bargain", scale: buttonScale, onClick: () => this.onCorrectChoice() },
         );
@@ -105,7 +105,7 @@ export default class BargainScene extends Phaser.Scene {
         const { bg: btn2 } = createImageButton(
             this,
             width / 2 + Math.round(180 * dpr),
-            height - Math.round(220 * dpr),
+            height - Math.round(240 * dpr),
             "",
             { textureKey: "lv1-opt-no-bargain", scale: buttonScale, onClick: () => this.scene.start("BargainBadEndingScene") },
         );

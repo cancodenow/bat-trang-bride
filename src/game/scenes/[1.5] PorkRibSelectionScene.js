@@ -33,7 +33,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         this.PRICE_PER_PIECE = 32;
         this.TOTAL_PIECES = 5;
         this.MONEY = 130;
-        this.SIDEBAR_W = Math.round(260 * this.metrics.dpr);
+        this.SIDEBAR_W = Math.min(400, Math.round(width * 0.26)) * this.metrics.dpr;
 
         // State — single quantity counter
         this.quantity = 0;
@@ -216,7 +216,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             this.statusText.setColor("#bb9882");
         } else if (count < 5) {
             this.statusText.setText(
-                "You have selected " + count * 0.2 + " kg of pork ribs",
+                "You have selected " + (count * 0.2).toLocaleString() + " kg of pork ribs",
             );
             this.statusText.setColor("#ffffff");
         } else {
