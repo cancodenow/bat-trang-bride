@@ -5,7 +5,6 @@ import {
     preloadCharacters,
     createImageButton,
     createDevSkipButton,
-    createResponsiveDebugText,
     addCoverBg,
     getResponsiveMetrics,
     bindResponsiveScene,
@@ -44,7 +43,6 @@ export default class OpeningScene extends Phaser.Scene {
         startButton.label.setPosition(buttonX, buttonY);
 
         createDevSkipButton(this, "IntroScene");
-        createResponsiveDebugText(this);
         bindResponsiveScene(this, () => this.scene.restart());
     }
 }

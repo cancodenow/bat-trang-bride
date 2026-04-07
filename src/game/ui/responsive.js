@@ -248,34 +248,6 @@ export function getResponsiveMetrics(sceneOrScale) {
     };
 }
 
-export function createResponsiveDebugText(scene, opts = {}) {
-    const metrics = getResponsiveMetrics(scene);
-    const x = opts.x ?? metrics.edgePadding;
-    const y = opts.y ?? metrics.topInset + 34;
-    const canvas = scene.game.canvas;
-    const dpr = window.devicePixelRatio || 1;
-    const lines = [
-        `[DEV] logical: ${metrics.width}x${metrics.height}`,
-        `[DEV] canvas buffer: ${canvas.width}x${canvas.height}`,
-        `[DEV] bucket: ${metrics.bucket}`,
-        `[DEV] devicePixelRatio: ${dpr}`,
-        `[DEV] resolution effective: ${canvas.width === metrics.width * dpr ? "YES" : "NO (no-op)"}`,
-        `[DEV] isPortrait: ${metrics.isPortrait}`,
-    ];
-
-    return scene.add
-        .text(x, y, lines.join("\n"), {
-            fontSize: opts.fontSize ?? "14px",
-            fontFamily: "monospace",
-            color: opts.color ?? "#ffffff",
-            backgroundColor: opts.backgroundColor ?? "#000000aa",
-            padding: opts.padding ?? { left: 8, right: 8, top: 6, bottom: 6 },
-            align: "left",
-        })
-        .setOrigin(0, 0)
-        .setDepth(opts.depth ?? 500);
-}
-
 export function bindResponsiveScene(scene, onChange) {
     const handler = () => onChange();
 
