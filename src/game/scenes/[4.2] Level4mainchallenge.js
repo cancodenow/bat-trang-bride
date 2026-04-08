@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {
   preloadUIAssets,
   preloadLevelAssets,
+  createContinueButton,
   createImageButton,
   createModalFrame,
   createHowToPlay,
@@ -247,14 +248,10 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       depth: 300,
     });
 
-    const BUTTON_SCALE = 0.2;
-    const startBtn = this.add
-      .image(width / 2, height / 2 + 230, "continue_button")
-      .setScale(BUTTON_SCALE)
-      .setInteractive({ useHandCursor: true })
-      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
-      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
-      .on("pointerdown", () => this._instructionModal.destroy());
+    const { bg: startBtn } = createContinueButton(this, width / 2, height / 2 + 230, {
+      scale: getResponsiveMetrics(this).buttonScale,
+      onClick: () => this._instructionModal.destroy(),
+    });
 
     this._instructionModal.add([htp, startBtn]);
   }
@@ -322,14 +319,10 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
     this.add.image(width / 2, height / 2, "lv4-finish").setScale(0.5).setDepth(201);
 
-    const BUTTON_SCALE = 0.2;
-    this.add
-      .image(width / 2, height / 2 + 200, "continue_button")
-      .setScale(BUTTON_SCALE)
-      .setDepth(202)
-      .setInteractive({ useHandCursor: true })
-      .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
-      .on("pointerout",  function () { this.setScale(BUTTON_SCALE); })
-      .on("pointerdown", () => this.scene.start("Level4PassScene"));
+    const { bg: continueBtn } = createContinueButton(this, width / 2, height / 2 + 200, {
+      scale: getResponsiveMetrics(this).buttonScale,
+      onClick: () => this.scene.start("Level4PassScene"),
+    });
+    continueBtn.setDepth(202);
   }
 }

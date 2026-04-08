@@ -5,12 +5,9 @@ import {
     createFinishButton,
     createDevSkipButton,
     createBackButton,
+    createCompletionBoard,
     getResponsiveMetrics,
 } from "../UIHelpers";
-
-// ── Tuning ────────────────────────────────────────────────────────────────────
-const FINISH_SCALE = 0.8; // scale of the Finish_level4 image
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default class Level4PassScene extends Phaser.Scene {
     constructor() {
@@ -31,15 +28,15 @@ export default class Level4PassScene extends Phaser.Scene {
             .setDisplaySize(width, height)
             .setDepth(0);
 
-        this.add
-            .image(width / 2, height / 2, "lv4-finish")
-            .setScale(FINISH_SCALE)
-            .setDepth(1);
+        const { centerX, buttonY, depth } = createCompletionBoard(this, "lv4-finish", {
+            contentHeightRatio: 0.5,
+        });
 
-        createFinishButton(this, width / 2, height / 2 + 320, {
+        const { bg: button } = createFinishButton(this, centerX, buttonY, {
             scale: buttonScale,
             onClick: () => this.scene.start("FinishLevelScene"),
         });
+        button.setDepth(depth + 1);
 
         createDevSkipButton(this, "FinishLevelScene");
         createBackButton(this);

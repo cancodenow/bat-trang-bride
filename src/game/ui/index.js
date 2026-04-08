@@ -8,6 +8,7 @@
 
 export * from "./assets.js";
 export * from "./buttons.js";
+export * from "./completion.js";
 export * from "./containers.js";
 export * from "./dialogue.js";
 export * from "./characters.js";

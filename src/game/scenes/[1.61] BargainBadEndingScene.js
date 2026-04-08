@@ -19,7 +19,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
 
     create() {
         const metrics = getResponsiveMetrics(this);
-        const { width, height, fs, dpr } = metrics;
+        const { width, height, fs, dpr, buttonScale } = metrics;
 
         this.cameras.main.setBackgroundColor("#000000");
 
@@ -55,6 +55,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
         createTryAgainButton(this, width / 2, height / 2 + 180, {
             onClick: () =>
                 this.scene.start("BargainScene", { skipToChoice: "choice1" }),
+            scale: buttonScale
         });
         createDevSkipButton(this, "BuyRibsIntroScene");
         createBackButton(this);

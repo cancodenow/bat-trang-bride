@@ -431,14 +431,10 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
             .setScale(this.metrics.isPortrait ? 0.42 : 0.5);
 
         // Continue button
-        const BUTTON_SCALE = this.metrics.buttonScale;
-        this.add
-            .image(this.W / 2, this.H / 2 + (this.metrics.isPortrait ? 360 : 300), "continue_button")
-            .setScale(BUTTON_SCALE)
-            .setInteractive({ useHandCursor: true })
-            .on("pointerover", function () { this.setScale(BUTTON_SCALE * 1.08); })
-            .on("pointerout", function () { this.setScale(BUTTON_SCALE); })
-            .on("pointerdown", () => this.goToNextChallenge());
+        createContinueButton(this, this.W / 2, this.H / 2 + (this.metrics.isPortrait ? 360 : 300), {
+            scale: this.metrics.buttonScale,
+            onClick: () => this.goToNextChallenge(),
+        });
     }
 
     // ===================== NEXT CHALLENGE =====================

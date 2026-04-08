@@ -5,7 +5,7 @@ import {
     createImageButton,
     createContinueButton,
     createModalFrame,
-    createFrame,
+    createCompletionBoard,
     createDishCard,
     createDevSkipButton,
     createBackButton,
@@ -1064,15 +1064,12 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
             .setDepth(199);
 
-        const finishFrame = createFrame(this, width / 2, height / 2, {
-            textureKey: "lv1-finish",
-            scale: 0.5,
-        }).setDepth(200);
-
-        const { bg: continueBtn } = createContinueButton(this, width / 2, finishFrame.displayHeight, {
-            onClick: () => this.scene.start("BuyRibsIntroScene"),
-            scale: buttonScale,
+        createCompletionBoard(this, "lv1-finish", {
+            depth: 200,
+            maxWidthRatio: 0.68,
+            maxHeightRatio: 0.56,
+            contentHeightRatio: 0.5,
+            button: { scale: buttonScale, onClick: () => this.scene.start("BuyRibsIntroScene") },
         });
-        continueBtn.setDepth(201);
     }
 }
