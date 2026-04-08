@@ -429,6 +429,7 @@ class AnalyticsService {
             script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
             document.head.appendChild(script);
             this._scriptInjected = true;
+            console.log("[analytics] GA4 script injected", GA_MEASUREMENT_ID);
         }
 
         window.gtag("js", new Date());
