@@ -8,7 +8,8 @@ import {
     createHowToPlay,
     createDevSkipButton,
     createBackButton,
-    getResponsiveMetrics
+    getResponsiveMetrics,
+    addCoverBg
 } from "../UIHelpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -24,7 +25,7 @@ const TOKEN_DRAG_SCALE = 0.1;
 const TOKEN_PLACED_SCALE = 0.20;
 
 // Scale of the dish tray image (center of screen)
-const TRAY_SCALE = 0.7;
+const TRAY_SCALE = 0.8;
 
 // Scale of the board image (left side)
 const BOARD_SCALE = 0.3 * 2.8;
@@ -32,12 +33,12 @@ const BOARD_SCALE = 0.3 * 2.8;
 // Drop zone offsets relative to tray center — one entry per slot (6 total).
 // Positive dx → right, positive dy → down.
 const SLOT_OFFSETS = [
-    { dx: -120, dy: -60 }, // slot 0 — top-left
-    { dx: 80, dy: -50 }, // slot 1 — top-right
-    { dx: -100, dy: 30 }, // slot 2 — mid-left
-    { dx: 80, dy: 40 }, // slot 3 — mid-right
-    { dx: -10, dy: 95 }, // slot 4 — bot-left
-    { dx: -10, dy: -120 }, // slot 5 — bot-right
+    { dx: -140, dy: -60 }, // slot 0 — top-left
+    { dx: 100, dy: -80 }, // slot 1 — top-right
+    { dx: -140, dy: 60 }, // slot 2 — mid-left
+    { dx: 100, dy: 50 }, // slot 3 — mid-right
+    { dx: -10, dy: 110 }, // slot 4 — bot-left
+    { dx: -10, dy: -150 }, // slot 5 — bot-right
 ];
 
 // Grid layout for food tokens on the board (2 cols × 3 rows)
@@ -49,7 +50,7 @@ const FOOD_TOKEN_SCALE = TOKEN_SCALE;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DROP_RADIUS = 40; // px — how close to a slot center counts as a drop
+const DROP_RADIUS = 60; // px — how close to a slot center counts as a drop
 const ERROR_MESSAGES = [
     "Not here, dear. Try another spot.",
     "Almost, dear. Look at the tray again.",
@@ -79,38 +80,37 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         this._filledCount = 0;
 
         // ── Background ──────────────────────────────────────────────
-        this.add
-            .image(width / 2, height / 2, "lv3-bg-cl2")
-            .setDisplaySize(width, height)
-            .setDepth(0);
+        addCoverBg(this, "lv3-bg-cl2", { depth: 0 });
 
         // ── Board (left side) ────────────────────────────────────────
         const boardX = width * 0.18;
         const boardY = height * 0.5;
+        this._boardScale = BOARD_SCALE * metrics.dpr;
         this.add
             .image(boardX, boardY, "lv3-cl2-board_dishes")
-            .setScale(BOARD_SCALE)
+            .setScale(this._boardScale)
             .setDepth(1);
 
         // ── Tray (center) ────────────────────────────────────────────
-        const trayX = width * 0.62;
-        const trayY = height * 0.5;
+        const trayX = width * 0.62 - 20; // nudge left to better align with tokens
+        const trayY = height * 0.5 + 10; // nudge down to better align with tokens
+        this._trayScale = TRAY_SCALE * metrics.dpr;
         this._emptyTray = this.add
             .image(trayX, trayY, "lv3-cl2-empty_trade")
-            .setScale(TRAY_SCALE)
+            .setScale(this._trayScale)
             .setDepth(1);
 
         this._fullTray = this.add
             .image(trayX, trayY, "lv3-cl2-trade_full_of_food")
-            .setScale(TRAY_SCALE)
+            .setScale(this._trayScale)
             .setDepth(1)
             .setAlpha(0);
 
         // ── Slot positions ────────────────────────────────────────────
         this._slots = SLOT_OFFSETS.map((off, i) => ({
             index: i,
-            x: trayX + off.dx,
-            y: trayY + off.dy,
+            x: trayX + Math.round(off.dx * metrics.dpr),
+            y: trayY + Math.round(off.dy * metrics.dpr),
             filled: false,
         }));
 
@@ -118,8 +118,8 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         if (DEBUG_POSITIONS) {
             // Tray slots — red circles with slot index
             this._slots.forEach((slot) => {
-                this.add.circle(slot.x, slot.y, DROP_RADIUS, 0xff0000, 0.25).setDepth(50);
-                this.add.circle(slot.x, slot.y, 8, 0xff0000, 0.9).setDepth(51);
+                this.add.circle(slot.x, slot.y, DROP_RADIUS * metrics.dpr, 0xff0000, 0.25).setDepth(50);
+                this.add.circle(slot.x, slot.y, 8 * metrics.dpr, 0xff0000, 0.9).setDepth(51);
                 this.add
                     .text(slot.x, slot.y - 14, `S${slot.index}`, {
                         fontSize: metrics.fs(13), color: "#ff4444",
@@ -133,9 +133,11 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             for (let i = 0; i < 6; i++) {
                 const col = i % 2;
                 const row = Math.floor(i / 2);
-                const tx = boardX - BOARD_TOKEN_COL_GAP * 0.5 + col * BOARD_TOKEN_COL_GAP;
-                const ty = boardY - BOARD_TOKEN_ROW_GAP + row * BOARD_TOKEN_ROW_GAP;
-                this.add.circle(tx, ty, 20, 0x4488ff, 0.35).setDepth(50);
+                const _colGap = Math.round(BOARD_TOKEN_COL_GAP * metrics.dpr);
+                const _rowGap = Math.round(BOARD_TOKEN_ROW_GAP * metrics.dpr);
+                const tx = boardX - _colGap * 0.5 + col * _colGap;
+                const ty = boardY - _rowGap + row * _rowGap;
+                this.add.circle(tx, ty, Math.round(20 * metrics.dpr), 0x4488ff, 0.35).setDepth(50);
                 this.add
                     .text(tx, ty, `T${i}`, {
                         fontSize: metrics.fs(13), color: "#88ccff",
@@ -148,19 +150,24 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
 
         // ── Food tokens on board ──────────────────────────────────────
         const tokenCols = 2;
-        const startX = boardX - BOARD_TOKEN_COL_GAP * 0.5;
-        const startY = boardY - BOARD_TOKEN_ROW_GAP;
+        const colGap = Math.round(BOARD_TOKEN_COL_GAP * metrics.dpr);
+        const rowGap = Math.round(BOARD_TOKEN_ROW_GAP * metrics.dpr);
+        const startX = boardX - colGap * 0.5;
+        const startY = boardY - rowGap;
+
+        this._dropRadius = DROP_RADIUS * metrics.dpr;
+        this._foodTokenScale = FOOD_TOKEN_SCALE * metrics.dpr;
 
         this._tokens = [];
         for (let i = 0; i < 6; i++) {
             const col = i % tokenCols;
             const row = Math.floor(i / tokenCols);
-            const tx = startX + col * BOARD_TOKEN_COL_GAP;
-            const ty = startY + row * BOARD_TOKEN_ROW_GAP;
+            const tx = startX + col * colGap;
+            const ty = startY + row * rowGap;
 
             const token = this.add
                 .image(tx, ty, `lv3-food-plate-${i + 1}`)
-                .setScale(FOOD_TOKEN_SCALE)
+                .setScale(this._foodTokenScale)
                 .setDepth(10)
                 .setInteractive({ useHandCursor: true });
 
@@ -171,12 +178,12 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
 
             token.on("pointerover", () => {
                 if (!token.placed && this._dragging === null) {
-                    token.setScale(FOOD_TOKEN_SCALE * 1.1);
+                    token.setScale(this._foodTokenScale * 1.1);
                 }
             });
             token.on("pointerout", () => {
                 if (!token.placed && this._dragging === null) {
-                    token.setScale(FOOD_TOKEN_SCALE);
+                    token.setScale(this._foodTokenScale);
                 }
             });
             token.on("pointerdown", () => this._startDrag(token));
@@ -243,7 +250,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         }
 
         // Check: close enough AND correct slot
-        if (nearest && nearestDist <= DROP_RADIUS && nearest.index === token.slotIndex) {
+        if (nearest && nearestDist <= this._dropRadius && nearest.index === token.slotIndex) {
             this._placeToken(token, nearest);
         } else {
             this._returnToken(token, ptr.x, ptr.y);
@@ -262,12 +269,12 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             targets: token,
             x: slot.x,
             y: slot.y,
-            scaleX: TOKEN_PLACED_SCALE * 1.25,
-            scaleY: TOKEN_PLACED_SCALE * 1.25,
+            scaleX: this._foodTokenScale * 1.25,
+            scaleY: this._foodTokenScale * 1.25,
             duration: 120,
             ease: "Back.Out",
             onComplete: () => {
-                token.setScale(TOKEN_PLACED_SCALE);
+                token.setScale(this._foodTokenScale);
                 token.setDepth(5);
             },
         });
@@ -290,8 +297,8 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             targets: token,
             x: token.homeX,
             y: token.homeY,
-            scaleX: FOOD_TOKEN_SCALE,
-            scaleY: FOOD_TOKEN_SCALE,
+            scaleX: this._foodTokenScale,
+            scaleY: this._foodTokenScale,
             duration: 300,
             ease: "Quad.Out",
         });
@@ -303,12 +310,12 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         this._errorMsgIndex++;
 
         const txt = this.add
-            .text(x, y + 50, msg, {
-                fontSize: metrics.fs(18),
+            .text(x, y + Math.round(50 * this.metrics.dpr), msg, {
+                fontSize: this.metrics.fs(18),
                 color: "#ff4444",
                 fontFamily: "SVN-Pequena Neo",
                 stroke: "#000000",
-                strokeThickness: Math.round(3 * metrics.dpr),
+                strokeThickness: Math.round(3 * this.metrics.dpr),
                 align: "center",
             })
             .setOrigin(0.5)

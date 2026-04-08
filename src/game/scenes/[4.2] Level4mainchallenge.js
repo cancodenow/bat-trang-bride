@@ -5,7 +5,7 @@ import {
   createContinueButton,
   createImageButton,
   createModalFrame,
-  createHowToPlay,
+  createCompletionBoard,
   createDevSkipButton,
   createBackButton,
   getResponsiveMetrics } from "../UIHelpers";
@@ -90,9 +90,10 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       .setDepth(0);
 
     // ── Clean bowls (left) ───────────────────────────────────────
+    this._bowlScale = BOWL_SCALE * metrics.dpr;
     this.add
       .image(width * BOWL_X, height * BOWL_Y, "lv4-clean-bowls")
-      .setScale(BOWL_SCALE)
+      .setScale(this._bowlScale)
       .setDepth(1);
 
     // ── Dirty / clean plate (center) ─────────────────────────────
@@ -101,15 +102,16 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     // Current wobbled center (updated each frame)
     this._dishX = this._baseDishX;
     this._dishY = this._baseDishY;
+    this._dishScale = DISH_SCALE * metrics.dpr;
 
     this._dirtyPlate = this.add
       .image(this._dishX, this._dishY, "lv4-dirty-plate")
-      .setScale(DISH_SCALE)
+      .setScale(this._dishScale)
       .setDepth(1);
 
     this._cleanPlate = this.add
       .image(this._dishX, this._dishY, "lv4-clean-plate")
-      .setScale(DISH_SCALE)
+      .setScale(this._dishScale)
       .setDepth(1)
       .setAlpha(0);
 
@@ -119,12 +121,12 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
     // ── Instruction text ─────────────────────────────────────────
     this._instructionText = this.add
-      .text(width / 2, height - Math.round(48 * metrics.dpr), "Hold and trace the INNER circle with your mouse", {
-        fontSize: metrics.fs(20),
+        .text(width / 2, height - Math.round(48 * this.metrics.dpr), "Hold and trace the INNER circle with your mouse", {
+            fontSize: this.metrics.fs(20),
         color: "#ffffff",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: Math.round(4 * metrics.dpr),
+            strokeThickness: Math.round(4 * this.metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5)
@@ -162,8 +164,8 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     if (this._completed) return;
 
     // Wobble: circle center drifts on a slow sine/cosine path
-    this._dishX = this._baseDishX + Math.sin(time * WOBBLE_SPEED) * WOBBLE_AMOUNT;
-    this._dishY = this._baseDishY + Math.cos(time * WOBBLE_SPEED * 0.7) * WOBBLE_AMOUNT;
+    this._dishX = this._baseDishX + Math.sin(time * WOBBLE_SPEED) * WOBBLE_AMOUNT * this.metrics.dpr;
+    this._dishY = this._baseDishY + Math.cos(time * WOBBLE_SPEED * 0.7) * WOBBLE_AMOUNT * this.metrics.dpr;
 
     // Inertia: virtual cursor lags behind real mouse
     this._virtualX += (this._realX - this._virtualX) * INERTIA;
@@ -174,8 +176,8 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       const dx   = this._virtualX - this._dishX;
       const dy   = this._virtualY - this._dishY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const activeRadius = this._activeRing === "inner" ? INNER_RADIUS : OUTER_RADIUS;
-      const inBand = Math.abs(dist - activeRadius) <= TOLERANCE;
+      const activeRadius = this._activeRing === "inner" ? this._innerRadius : this._outerRadius;
+      const inBand = Math.abs(dist - activeRadius) <= TOLERANCE * this.metrics.dpr;
 
       if (inBand) {
         let angleDeg = Phaser.Math.RadToDeg(Math.atan2(dy, dx));
@@ -210,24 +212,27 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     const gfx = this._ringGfx;
     gfx.clear();
 
+    this._innerRadius = INNER_RADIUS * this.metrics.dpr;
+    this._outerRadius = OUTER_RADIUS * this.metrics.dpr;
+
     // Guide rings — thick, semi-transparent, wobble with dish center
-    gfx.lineStyle(CIRCLE_WIDTH, 0xffffff, 0.18);
-    gfx.strokeCircle(this._dishX, this._dishY, INNER_RADIUS);
-    gfx.strokeCircle(this._dishX, this._dishY, OUTER_RADIUS);
+    gfx.lineStyle(CIRCLE_WIDTH * this.metrics.dpr, 0xffffff, 0.18);
+    gfx.strokeCircle(this._dishX, this._dishY, this._innerRadius);
+    gfx.strokeCircle(this._dishX, this._dishY, this._outerRadius);
 
     // Inner progress arc (blue → green when done)
     const innerColor = this._innerDone ? 0x44ff88 : 0x44aaff;
-    this._drawProgressArc(gfx, INNER_RADIUS, this._progress.inner, innerColor);
+    this._drawProgressArc(gfx, this._innerRadius, this._progress.inner, innerColor);
 
     // Outer progress arc (only visible once inner is done)
     if (this._innerDone) {
-      this._drawProgressArc(gfx, OUTER_RADIUS, this._progress.outer, 0x44aaff);
+      this._drawProgressArc(gfx, this._outerRadius, this._progress.outer, 0x44aaff);
     }
   }
 
   _drawProgressArc(gfx, radius, progressSet, color) {
     if (progressSet.size === 0) return;
-    gfx.lineStyle(PROGRESS_WIDTH, color, 0.9);
+    gfx.lineStyle(PROGRESS_WIDTH * this.metrics.dpr, color, 0.9);
     for (const bucket of progressSet) {
       const startRad = Phaser.Math.DegToRad(bucket * ANGLE_STEP);
       const endRad   = Phaser.Math.DegToRad((bucket + 1) * ANGLE_STEP);
@@ -260,12 +265,12 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     this._errorMsgIndex++;
 
     const txt = this.add
-      .text(x, y - 50, msg, {
-        fontSize: metrics.fs(18),
+      .text(x, y - Math.round(50 * this.metrics.dpr), msg, {
+          fontSize: this.metrics.fs(18),
         color: "#ff4444",
         fontFamily: "SVN-Pequena Neo",
         stroke: "#000000",
-        strokeThickness: Math.round(3 * metrics.dpr),
+          strokeThickness: Math.round(3 * this.metrics.dpr),
         align: "center",
       })
       .setOrigin(0.5)
@@ -298,27 +303,21 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     this.tweens.add({
       targets: this._cleanPlate,
       alpha: 1,
-      scaleX: DISH_SCALE * 1.2,
-      scaleY: DISH_SCALE * 1.2,
+      scaleX: this._dishScale * 1.2,
+      scaleY: this._dishScale * 1.2,
       duration: 200,
       ease: "Back.Out",
-      onComplete: () => this._cleanPlate.setScale(DISH_SCALE),
+      onComplete: () => this._cleanPlate.setScale(this._dishScale),
     });
 
     this.time.delayedCall(900, () => this._showSuccessModal());
   }
 
   _showSuccessModal() {
-    const { width, height } = this.scale;
-
-    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.5).setDepth(200);
-
-    this.add.image(width / 2, height / 2, "lv4-finish").setScale(0.5).setDepth(201);
-
-    const { bg: continueBtn } = createContinueButton(this, width / 2, height / 2 + 200, {
-      scale: getResponsiveMetrics(this).buttonScale,
-      onClick: () => this.scene.start("Level4PassScene"),
-    });
-    continueBtn.setDepth(202);
+      const { width, height, buttonScale } = this.metrics;
+      createCompletionBoard(this, "lv4-finish", {
+          contentHeightRatio: 0.5,
+          button: { scale: buttonScale, onClick: () => this.scene.start("Level4PassScene") },
+      });
   }
 }
