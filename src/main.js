@@ -41,10 +41,10 @@ const SCENE_ANALYTICS_MAP = {
     Level2InstructionScene: { checkpointId: "level2.instruction", level: 2 },
     CookingChallengeCompleteScene: { checkpointId: "level2.complete", level: 2, markLevelComplete: true },
     Level3IntroScene: { checkpointId: "level3.intro", level: 3, markLevelStart: true },
-    Level3MainChallengeScene: { level: 3 },
+    Level3MainChallengeScene: { checkpointId: "level3.arrangement.start", level: 3 },
     Level3PassScene: { checkpointId: "level3.complete", level: 3, markLevelComplete: true },
     Level4IntroScene: { checkpointId: "level4.intro", level: 4, markLevelStart: true },
-    Level4MainChallengeScene: { level: 4 },
+    Level4MainChallengeScene: { checkpointId: "level4.washing.start", level: 4 },
     Level4PassScene: { checkpointId: "level4.complete", level: 4, markLevelComplete: true },
     FinishLevelScene: { checkpointId: "game.complete", markGameComplete: true },
 };

@@ -76,7 +76,11 @@ export default class IntroScene extends Phaser.Scene {
 
     showContinueButton() {
         if (this.continueButton) {
-            this.continueButton.destroy();
+            try {
+                this.continueButton.destroy();
+            } catch (e) {
+                console.warn("Continue button already destroyed");
+            }
         }
         const {
             buttonScale: BUTTON_SCALE,
