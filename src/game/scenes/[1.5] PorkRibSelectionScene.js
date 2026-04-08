@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
     preloadSoundAssets,
@@ -21,8 +22,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("marketBg", "/assets/background/market-bg.png");
-        this.load.image("pork-ribs", "/assets/ingredients/pork-ribs.png");
+        preloadAssetGroups(this, ["story-backgrounds", "market-ingredients"]);
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadSoundAssets(this);

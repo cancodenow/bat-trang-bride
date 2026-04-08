@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createBackButton, addCoverBg, getResponsiveMetrics } from "../UIHelpers";
+import { preloadAssetGroups, preloadUIAssets, createBackButton, addCoverBg, getResponsiveMetrics } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
 export default class IngredientSelectionIntroScene extends Phaser.Scene {
@@ -8,10 +8,8 @@ export default class IngredientSelectionIntroScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image(
-            "ingredientIntroBg",
-            "/assets/background/ingredient-intro-bg.png",
-        );
+        preloadAssetGroups(this, ["story-backgrounds"]);
+        preloadUIAssets(this);
     }
 
     create() {

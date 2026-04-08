@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
     createDevSkipButton,
@@ -20,7 +21,7 @@ export default class Level3PassScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("taskBg", "/assets/background/task-bg.png");
+        preloadAssetGroups(this, ["story-backgrounds"]);
         preloadUIAssets(this);
         preloadLevelAssets(this, 3);
         preloadSoundAssets(this);

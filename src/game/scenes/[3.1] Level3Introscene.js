@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, crossfadeMusic, goToScene } from "../UIHelpers";
+import { preloadAssetGroups, preloadUIAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, crossfadeMusic, goToScene } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
 export default class Level3IntroScene extends Phaser.Scene {
@@ -9,7 +9,7 @@ export default class Level3IntroScene extends Phaser.Scene {
 
     preload() {
         preloadUIAssets(this);
-        preloadLevelAssets(this, 2);
+        preloadAssetGroups(this, ["level3-intro-background"]);
         preloadCharacters(this);
         preloadSoundAssets(this);
     }

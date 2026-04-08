@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { loadProgress } from "../progress.js";
+import { startManagedScene } from "../sceneLoading.js";
 
 export default class BootScene extends Phaser.Scene {
     constructor() {
@@ -13,15 +14,15 @@ export default class BootScene extends Phaser.Scene {
             // Don't resume into bad ending scenes directly
             const badEndingScenes = ["BadEndingScene", "BargainBadEndingScene"];
             if (badEndingScenes.includes(sceneKey)) {
-                this.scene.start("OpeningScene");
+                startManagedScene(this, "OpeningScene");
             } else {
                 const data = {};
                 if (challengeIndex != null) data.currentChallengeIndex = challengeIndex;
                 if (stepIndex != null) data.currentStepIndex = stepIndex;
-                this.scene.start(sceneKey, Object.keys(data).length ? data : undefined);
+                startManagedScene(this, sceneKey, Object.keys(data).length ? data : undefined);
             }
         } else {
-            this.scene.start("OpeningScene");
+            startManagedScene(this, "OpeningScene");
         }
     }
 }

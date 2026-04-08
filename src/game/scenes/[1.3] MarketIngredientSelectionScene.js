@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
     preloadSoundAssets,
@@ -23,28 +24,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("marketBg", "/assets/background/market-bg.png");
-
-        const ingredients = [
-            "Vietnamese chicken",
-            "Lime leaves",
-            "Kohlrabi",
-            "Dried squid",
-            "Fresh shrimp",
-            "Carrot",
-            "Pigeon",
-            "Dried lotus seeds",
-            "Dried bamboo shoots",
-            "Dried pork skin",
-            "Shiitake mushrooms",
-            "Pork ribs",
-        ];
-
-        ingredients.forEach((ingredient) => {
-            const key = ingredient.toLowerCase().replace(/\s+/g, "-");
-            this.load.image(key, `/assets/ingredients/${key}.png`);
-        });
-
+        preloadAssetGroups(this, ["story-backgrounds", "market-ingredients"]);
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadSoundAssets(this);
@@ -497,46 +477,35 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     createIngredientEntry(cx, cy, itemName, ingredientData, layout = {}) {
-        const isSelected = this.selectedIngredients[itemName] !== undefined;
         const ingredientKey = itemName.toLowerCase().replace(/\s+/g, "-");
         const scale = layout.scale ?? 1;
         const labelDx = Math.round((layout.labelDx ?? 0) * this.metrics.dpr);
         const labelWidth = Math.round((layout.labelWidth ?? 120) * this.metrics.dpr);
         const nameDy = Math.round((layout.nameDy ?? 2) * this.metrics.dpr);
         const priceDy = Math.round((layout.priceDy ?? 30) * this.metrics.dpr);
-
-        // Ingredient image — the main visual
         const baseSize = Math.round(100 * this.metrics.dpr * scale);
-        const imgSize = isSelected ? baseSize + Math.round(10 * this.metrics.dpr) : baseSize;
-        const imgHeight = imgSize;
-        // Anchor offset: keeps image bottom at the same canvas position as the original
-        // squashed (4:3) layout that the xOffset/yOffset values were calibrated for.
-        const anchorCy = cy - (imgHeight - imgSize * 0.75) / 2;
+        const anchorCy = cy - (baseSize - baseSize * 0.75) / 2;
 
-        // Selection highlight — soft glowing ellipse under the item
-        let glow = null;
-        if (isSelected) {
-            glow = this.add.ellipse(
-                cx,
-                anchorCy + Math.round(20 * this.metrics.dpr),
-                Math.round(120 * this.metrics.dpr * scale),
-                Math.round(30 * this.metrics.dpr * Math.max(0.85, scale)),
-                0x66ff66,
-                0.25,
-            );
-            this.marketWorld.add(glow);
-        }
+        const glow = this.add.ellipse(
+            cx,
+            anchorCy + Math.round(20 * this.metrics.dpr),
+            Math.round(120 * this.metrics.dpr * scale),
+            Math.round(30 * this.metrics.dpr * Math.max(0.85, scale)),
+            0x66ff66,
+            0.25,
+        )
+            .setVisible(false);
+        this.marketWorld.add(glow);
 
         const img = this.add
             .image(cx, anchorCy, ingredientKey)
-            .setDisplaySize(imgSize, imgHeight);
+            .setDisplaySize(baseSize, baseSize);
         this.marketWorld.add(img);
 
-        // Name label
         const nameT = this.add
-            .text(cx + labelDx, anchorCy + imgHeight / 2 + nameDy, itemName, {
+            .text(cx + labelDx, anchorCy + baseSize / 2 + nameDy, itemName, {
                 fontSize: this.metrics.fs(16),
-                color: isSelected ? "#aaffaa" : "#ffffff",
+                color: "#ffffff",
                 fontFamily: "SVN-Pequena Neo",
                 align: "center",
                 wordWrap: { width: labelWidth },
@@ -544,15 +513,14 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .setOrigin(0.5, 0);
         this.marketWorld.add(nameT);
 
-        // Price label
         const priceT = this.add
             .text(
                 cx + labelDx,
-                anchorCy + imgHeight / 2 + priceDy,
+                anchorCy + baseSize / 2 + priceDy,
                 ingredientData.price + "K",
                 {
                     fontSize: this.metrics.fs(17),
-                    color: isSelected ? "#ffff66" : "#ffffff",
+                    color: "#ffffff",
                     fontFamily: "SVN-Pequena Neo",
                     fontStyle: "bold",
                     align: "center",
@@ -561,9 +529,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .setOrigin(0.5, 0);
         this.marketWorld.add(priceT);
 
-        // Clickable hit zone — invisible rectangle covering image + labels
         const hitW = Math.max(this.metrics.minTouchTarget, Math.round(140 * this.metrics.dpr));
-        const hitH = Math.max(this.metrics.minTouchTarget, imgHeight + Math.round(70 * this.metrics.dpr));
+        const hitH = Math.max(this.metrics.minTouchTarget, baseSize + Math.round(70 * this.metrics.dpr));
         const hitZone = this.add.rectangle(
             cx,
             anchorCy + 10,
@@ -575,7 +542,6 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         hitZone.setInteractive({ useHandCursor: true });
         this.marketWorld.add(hitZone);
 
-        // Click to toggle selection
         hitZone.on("pointerdown", () => {
             this.toggleIngredientSelection(ingredientData);
             this.refreshMarketItems();
@@ -583,36 +549,51 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             this.updateSidebar();
         });
 
-        // Hover effect — slight scale bump
         hitZone.on("pointerover", () => {
-            const hoverSize = imgSize + Math.round(12 * this.metrics.dpr);
-            img.setDisplaySize(hoverSize, hoverSize);
+            const currentSize = this.getIngredientEntryBaseSize(entry) + Math.round(12 * this.metrics.dpr);
+            img.setDisplaySize(currentSize, currentSize);
         });
         hitZone.on("pointerout", () => {
-            img.setDisplaySize(imgSize, imgHeight);
+            this.updateIngredientEntryState(entry);
         });
 
-        return { img, nameT, priceT, glow, hitZone, itemName, ingredientData };
+        const entry = {
+            img,
+            nameT,
+            priceT,
+            glow,
+            hitZone,
+            itemName,
+            ingredientData,
+            baseSize,
+            scale,
+        };
+
+        this.updateIngredientEntryState(entry);
+
+        return entry;
+    }
+
+    getIngredientEntryBaseSize(entry) {
+        const isSelected = this.selectedIngredients[entry.itemName] !== undefined;
+
+        return isSelected ? entry.baseSize + Math.round(10 * this.metrics.dpr) : entry.baseSize;
+    }
+
+    updateIngredientEntryState(entry) {
+        const isSelected = this.selectedIngredients[entry.itemName] !== undefined;
+        const imgSize = this.getIngredientEntryBaseSize(entry);
+
+        entry.glow.setVisible(isSelected);
+        entry.img.setDisplaySize(imgSize, imgSize);
+        entry.nameT.setColor(isSelected ? "#aaffaa" : "#ffffff");
+        entry.priceT.setColor(isSelected ? "#ffff66" : "#ffffff");
     }
 
     refreshMarketItems() {
-        // Destroy all ingredient entries
         this.ingredientEntries.forEach((e) => {
-            e.img.destroy();
-            e.nameT.destroy();
-            e.priceT.destroy();
-            if (e.glow) e.glow.destroy();
-            if (e.hitZone) e.hitZone.destroy();
+            this.updateIngredientEntryState(e);
         });
-        this.ingredientEntries = [];
-
-        // Remove everything except bg image and overlay (first 2 children)
-        const keep = 1; // only the bg image remains
-        while (this.marketWorld.list.length > keep) {
-            this.marketWorld.list[keep].destroy();
-        }
-
-        this.populateMarketItems();
     }
 
     // ===================== HOVER SCROLLING =====================

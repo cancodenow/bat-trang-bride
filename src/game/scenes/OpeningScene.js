@@ -1,8 +1,7 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
-    preloadLevelAssets,
-    preloadCharacters,
     preloadSoundAssets,
     createImageButton,
     createDevSkipButton,
@@ -20,12 +19,8 @@ export default class OpeningScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("openingbg", "/assets/background/opening-bg.png");
-        this.load.image("introBg", "/assets/background/intro-bg.png");
-        this.load.image("morningBg", "/assets/background/morning-bg.png");
+        preloadAssetGroups(this, ["story-backgrounds"]);
         preloadUIAssets(this);
-        preloadLevelAssets(this, 1);
-        preloadCharacters(this);
         preloadSoundAssets(this);
     }
 

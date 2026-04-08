@@ -1,5 +1,6 @@
 import { getResponsiveMetrics } from "./responsive.js";
 import { loadProgress } from "../progress.js";
+import { startManagedScene } from "../sceneLoading.js";
 
 // ===================== IMAGE COMPONENT HELPERS =====================
 // Every function reads the PNG's real dimensions via nativeSize() and
@@ -299,7 +300,7 @@ export function createDevSkipButton(scene, nextScene) {
         .setOrigin(1, 0)
         .setDepth(500)
         .setInteractive({ useHandCursor: true })
-        .on("pointerdown", () => scene.scene.start(nextScene));
+        .on("pointerdown", () => startManagedScene(scene, nextScene));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -346,11 +347,7 @@ export function goToScene(scene, key, data = null) {
     const history = scene.game.registry.get("sceneHistory") || [];
     history.push(scene.scene.key);
     scene.game.registry.set("sceneHistory", history);
-    if (data) {
-        scene.scene.start(key, data);
-    } else {
-        scene.scene.start(key);
-    }
+    startManagedScene(scene, key, data);
 }
 
 /**
@@ -406,6 +403,6 @@ export function createBackButton(scene, fallbackScene = "OpeningScene", opts = {
             }
 
             scene.game.registry.set("sceneHistory", history);
-            scene.scene.start(target);
+            startManagedScene(scene, target);
         });
 }

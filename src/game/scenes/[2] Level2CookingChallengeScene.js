@@ -8,6 +8,7 @@ import {
     playSFX,
     crossfadeMusic,
 } from "../UIHelpers";
+import { startManagedScene } from "../sceneLoading.js";
 
 export default class Level2CookingChallengeScene extends Phaser.Scene {
   constructor() {
@@ -585,7 +586,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     if (nextIndex < this.dishes.length) {
       this.loadDish(nextIndex);
     } else {
-      this.scene.start("CookingChallengeCompleteScene");
+      startManagedScene(this, "CookingChallengeCompleteScene");
     }
   }
 }

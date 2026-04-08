@@ -1,5 +1,82 @@
 // ===================== UI ASSET LOADING =====================
-// Call these in a scene's preload(). Phaser skips duplicate loads automatically.
+// Shared asset groups are deduplicated across scenes so gameplay scenes can
+// keep their existing preload calls without re-enqueueing the same files.
+
+const assetRuntimeState = new WeakMap();
+
+function getAssetRuntimeState(game) {
+    let state = assetRuntimeState.get(game);
+
+    if (!state) {
+        state = {
+            queuedKeys: new Set(),
+            loadedGroups: new Set(),
+        };
+        assetRuntimeState.set(game, state);
+    }
+
+    return state;
+}
+
+function queueImage(scene, key, file) {
+    const state = getAssetRuntimeState(scene.game);
+    const assetKey = `image:${key}`;
+
+    if (scene.textures.exists(key) || state.queuedKeys.has(assetKey)) {
+        return false;
+    }
+
+    state.queuedKeys.add(assetKey);
+    scene.load.image(key, "/assets/" + file);
+
+    return true;
+}
+
+function queueAudio(scene, key, file) {
+    const state = getAssetRuntimeState(scene.game);
+    const assetKey = `audio:${key}`;
+
+    if (scene.cache.audio.exists(key) || state.queuedKeys.has(assetKey)) {
+        return false;
+    }
+
+    state.queuedKeys.add(assetKey);
+    scene.load.audio(key, "/assets/" + file);
+
+    return true;
+}
+
+function isAssetAvailable(scene, asset) {
+    if (asset.type === "audio") {
+        return scene.cache.audio.exists(asset.key);
+    }
+
+    return scene.textures.exists(asset.key);
+}
+
+function areGroupAssetsAvailable(sceneOrGame, groupName) {
+    const scene =
+        sceneOrGame && sceneOrGame.textures && sceneOrGame.cache
+            ? sceneOrGame
+            : sceneOrGame.scene.getScenes(false)[0];
+    const assets = ASSET_GROUPS[groupName] || [];
+
+    if (!assets.length) {
+        return true;
+    }
+
+    return assets.every((asset) => isAssetAvailable(scene, asset));
+}
+
+export function areAssetGroupsAvailable(game, groupNames = []) {
+    const scene = game.scene.getScenes(false)[0] || game.scene.keys.BootScene || null;
+
+    if (!scene) {
+        return false;
+    }
+
+    return groupNames.every((groupName) => areGroupAssetsAvailable(scene, groupName));
+}
 
 // --------------- shared UI assets (buttons, boxes, frames) ---------------
 
@@ -20,41 +97,7 @@
  * @param {Phaser.Scene} scene
  */
 export function preloadUIAssets(scene) {
-    const assets = [
-        // buttons
-        { key: "start_journey", file: "button/start-the-journey.png" },
-        { key: "continue_button", file: "button/button-continue.png" },
-        { key: "ui-btn-cancel", file: "button/cancel-button.png" },
-        { key: "ui-btn-pause", file: "button/pause-button.png" },
-        { key: "ui-btn-finish", file: "button/button-finish.png" },
-        { key: "ui-btn-ok", file: "button/button-ok.png" },
-        { key: "ui-btn-done", file: "button/button-done.png" },
-        { key: "ui-btn-try-again", file: "button/button-try-again.png" },
-        { key: "ui-hud-money", file: "button/ui-money.png" },
-        { key: "ui-hud-time", file: "button/ui-time.png" },
-        { key: "ui-choice-button", file: "frame/frame-food.png" },
-        // boxes (fixed: was pointing to non-existent infoframe.png / texbox.png)
-        { key: "ui-box-textbox", file: "box/textbox.png" },
-        { key: "ui-box-infobox", file: "box/infobox.png" },
-        { key: "ui-modal-frame", file: "box/infobox.png" },
-        { key: "ui-dialogue-box", file: "box/textbox.png" },
-        { key: "ui-panel", file: "box/infobox.png" },
-        // frames
-        { key: "ui-success-modal", file: "frame/challenge-complete.png" },
-        { key: "ui-frame-food", file: "frame/frame-food.png" },
-        { key: "ui-frame-challenge", file: "frame/challenge-complete.png" },
-        { key: "ui-frame-dish-unlocked", file: "frame/dish-unlocked-frame.png" },
-        { key: "ui-frame-good-job", file: "frame/challenge-complete.png" },
-        { key: "ui-frame-nicely-done", file: "frame/challenge-complete.png" },
-        { key: "ui-frame-all-done", file: "frame/challenge-complete.png" },
-        { key: "ui-frame-well", file: "frame/challenge-complete.png" },
-    ];
-
-    assets.forEach(({ key, file }) => {
-        if (!scene.textures.exists(key)) {
-            scene.load.image(key, "/assets/ui/" + file);
-        }
-    });
+    preloadAssetGroups(scene, ["shared-ui"]);
 }
 
 // --------------- per-level assets ---------------
@@ -193,6 +236,49 @@ const LEVEL_ASSETS = {
     ],
 };
 
+const STORY_ASSETS = [
+    { key: "openingbg", file: "background/opening-bg.png" },
+    { key: "introBg", file: "background/intro-bg.png" },
+    { key: "morningBg", file: "background/morning-bg.png" },
+    { key: "ingredientIntroBg", file: "background/ingredient-intro-bg.png" },
+    { key: "taskBg", file: "background/task-bg.png" },
+    { key: "marketBg", file: "background/market-bg.png" },
+];
+
+const MARKET_INGREDIENT_ASSETS = [
+    { key: "vietnamese-chicken", file: "ingredients/vietnamese-chicken.png" },
+    { key: "lime-leaves", file: "ingredients/lime-leaves.png" },
+    { key: "kohlrabi", file: "ingredients/kohlrabi.png" },
+    { key: "dried-squid", file: "ingredients/dried-squid.png" },
+    { key: "fresh-shrimp", file: "ingredients/fresh-shrimp.png" },
+    { key: "carrot", file: "ingredients/carrot.png" },
+    { key: "pigeon", file: "ingredients/pigeon.png" },
+    { key: "dried-lotus-seeds", file: "ingredients/dried-lotus-seeds.png" },
+    { key: "dried-bamboo-shoots", file: "ingredients/dried-bamboo-shoots.png" },
+    { key: "dried-pork-skin", file: "ingredients/dried-pork-skin.png" },
+    { key: "shiitake-mushrooms", file: "ingredients/shiitake-mushrooms.png" },
+    { key: "pork-ribs", file: "ingredients/pork-ribs.png" },
+];
+
+const CHARACTER_ASSETS = [
+    { key: "char-wife", file: "characters/wife/wife.png" },
+    { key: "char-wife-angry", file: "characters/wife/wife-angry.png" },
+    { key: "char-wife-cooking", file: "characters/wife/wife-cooking.png" },
+    { key: "char-wife-cry", file: "characters/wife/wife-cry.png" },
+    { key: "char-wife-curious", file: "characters/wife/wife-curious.png" },
+    { key: "char-wife-giggle", file: "characters/wife/wife-giggle.png" },
+    { key: "char-wife-surprised", file: "characters/wife/wife-surprised.png" },
+    { key: "char-husband", file: "characters/husband/husband.png" },
+    { key: "char-husband-sleepy", file: "characters/husband/sleepy-husband.png" },
+    { key: "char-mom", file: "characters/husband-mom/mom.png" },
+    { key: "char-mom-annoyed", file: "characters/husband-mom/mom-annoyed.png" },
+    { key: "char-mom-cook", file: "characters/husband-mom/mom-cook.png" },
+    { key: "char-mom-happy", file: "characters/husband-mom/mom-happy.png" },
+    { key: "char-mom-thrilled", file: "characters/husband-mom/mom-thrilled.png" },
+    { key: "char-seller", file: "characters/seller/seller.png" },
+    { key: "char-seller-annoyed", file: "characters/seller/seller-annoyed.png" },
+];
+
 /**
  * Loads all image assets for a specific level.
  * Call alongside preloadUIAssets() in a scene's preload().
@@ -201,13 +287,7 @@ const LEVEL_ASSETS = {
  * @param {1|2|3|4} level
  */
 export function preloadLevelAssets(scene, level) {
-    const assets = LEVEL_ASSETS[level];
-    if (!assets) return;
-    assets.forEach(({ key, file }) => {
-        if (!scene.textures.exists(key)) {
-            scene.load.image(key, "/assets/" + file);
-        }
-    });
+    preloadAssetGroups(scene, [`level-${level}`]);
 }
 
 // --------------- sound assets ---------------
@@ -245,14 +325,98 @@ const SOUND_ASSETS = {
  * @param {1|2|3|4} [level]
  */
 export function preloadSoundAssets(scene, level) {
-    const load = ({ key, file }) => {
-        if (!scene.cache.audio.exists(key)) {
-            scene.load.audio(key, "/assets/" + file);
-        }
-    };
-    SOUND_ASSETS.shared.forEach(load);
+    const groupNames = ["shared-audio"];
+
     if (level && SOUND_ASSETS[level]) {
-        SOUND_ASSETS[level].forEach(load);
+        groupNames.push(`level-${level}-audio`);
+    }
+
+    preloadAssetGroups(scene, groupNames);
+}
+
+const ASSET_GROUPS = {
+    "shared-ui": [
+        { key: "start_journey", file: "ui/button/start-the-journey.png" },
+        { key: "continue_button", file: "ui/button/button-continue.png" },
+        { key: "ui-btn-cancel", file: "ui/button/cancel-button.png" },
+        { key: "ui-btn-pause", file: "ui/button/pause-button.png" },
+        { key: "ui-btn-finish", file: "ui/button/button-finish.png" },
+        { key: "ui-btn-ok", file: "ui/button/button-ok.png" },
+        { key: "ui-btn-done", file: "ui/button/button-done.png" },
+        { key: "ui-btn-try-again", file: "ui/button/button-try-again.png" },
+        { key: "ui-hud-money", file: "ui/button/ui-money.png" },
+        { key: "ui-hud-time", file: "ui/button/ui-time.png" },
+        { key: "ui-choice-button", file: "ui/frame/frame-food.png" },
+        { key: "ui-box-textbox", file: "ui/box/textbox.png" },
+        { key: "ui-box-infobox", file: "ui/box/infobox.png" },
+        { key: "ui-modal-frame", file: "ui/box/infobox.png" },
+        { key: "ui-dialogue-box", file: "ui/box/textbox.png" },
+        { key: "ui-panel", file: "ui/box/infobox.png" },
+        { key: "ui-success-modal", file: "ui/frame/challenge-complete.png" },
+        { key: "ui-frame-food", file: "ui/frame/frame-food.png" },
+        { key: "ui-frame-challenge", file: "ui/frame/challenge-complete.png" },
+        { key: "ui-frame-dish-unlocked", file: "ui/frame/dish-unlocked-frame.png" },
+        { key: "ui-frame-good-job", file: "ui/frame/challenge-complete.png" },
+        { key: "ui-frame-nicely-done", file: "ui/frame/challenge-complete.png" },
+        { key: "ui-frame-all-done", file: "ui/frame/challenge-complete.png" },
+        { key: "ui-frame-well", file: "ui/frame/challenge-complete.png" },
+    ],
+    "shared-audio": SOUND_ASSETS.shared.map(({ key, file }) => ({ key, file, type: "audio" })),
+    "shared-characters": CHARACTER_ASSETS,
+    "story-backgrounds": STORY_ASSETS,
+    "market-ingredients": MARKET_INGREDIENT_ASSETS,
+    "level-1": LEVEL_ASSETS[1],
+    "level-2": LEVEL_ASSETS[2],
+    "level-3": LEVEL_ASSETS[3],
+    "level-4": LEVEL_ASSETS[4],
+    "level-1-audio": [],
+    "level-2-audio": [],
+    "level-3-audio": [],
+    "level-4-audio": [],
+    "level3-intro-background": [
+        { key: "lv2-cl1-bg-start", file: "level-2/cl1-lv2/bg-level2/cl1-lv2-bg-start.png" },
+    ],
+    "finish-scene-background": [
+        { key: "lv3-bg-cl2", file: "level-3/cl2-lv3/bg-cl2-lv3/table.png" },
+    ],
+};
+
+export function preloadAssetGroups(scene, groupNames = []) {
+    const state = getAssetRuntimeState(scene.game);
+    const pendingGroups = [];
+
+    groupNames.forEach((groupName) => {
+        if (state.loadedGroups.has(groupName)) {
+            return;
+        }
+
+        const groupAssets = ASSET_GROUPS[groupName] || [];
+        let queuedAny = false;
+
+        groupAssets.forEach((asset) => {
+            if (asset.type === "audio") {
+                queuedAny = queueAudio(scene, asset.key, asset.file) || queuedAny;
+                return;
+            }
+
+            queuedAny = queueImage(scene, asset.key, asset.file) || queuedAny;
+        });
+
+        if (queuedAny) {
+            pendingGroups.push(groupName);
+        } else if (groupAssets.every((asset) => isAssetAvailable(scene, asset))) {
+            state.loadedGroups.add(groupName);
+        }
+    });
+
+    if (pendingGroups.length) {
+        scene.load.once("complete", () => {
+            pendingGroups.forEach((groupName) => {
+                if (areGroupAssetsAvailable(scene, groupName)) {
+                    state.loadedGroups.add(groupName);
+                }
+            });
+        });
     }
 }
 

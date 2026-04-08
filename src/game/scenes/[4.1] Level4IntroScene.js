@@ -9,7 +9,6 @@ export default class Level4IntroScene extends Phaser.Scene {
 
   preload() {
     preloadUIAssets(this);
-    preloadLevelAssets(this, 3);
     preloadLevelAssets(this, 4);
     preloadCharacters(this);
     preloadSoundAssets(this);

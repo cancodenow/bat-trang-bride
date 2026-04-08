@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
     createFrame,
@@ -22,7 +23,7 @@ export default class TaskIntroScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("taskBg", "/assets/background/task-bg.png");
+        preloadAssetGroups(this, ["story-backgrounds"]);
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);

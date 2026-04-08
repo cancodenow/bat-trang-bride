@@ -1,6 +1,7 @@
 // ===================== CHARACTER HELPERS =====================
 
 import { DPR, getResponsiveMetrics } from "./responsive";
+import { preloadAssetGroups } from "./assets.js";
 
 /**
  * All character texture keys and their asset paths.
@@ -36,11 +37,7 @@ export const CHARACTER_KEYS = {
  * @param {Phaser.Scene} scene
  */
 export function preloadCharacters(scene) {
-    Object.entries(CHARACTER_KEYS).forEach(([key, file]) => {
-        if (!scene.textures.exists(key)) {
-            scene.load.image(key, "/assets/" + file);
-        }
-    });
+    preloadAssetGroups(scene, ["shared-characters"]);
 }
 
 /**

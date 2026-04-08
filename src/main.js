@@ -1,31 +1,6 @@
 import Phaser from "phaser";
 import BootScene from "./game/scenes/BootScene.js";
-import OpeningScene from "./game/scenes/OpeningScene";
-import IntroScene from "./game/scenes/[Intro 0] IntroScene";
-import MorningScene01 from "./game/scenes/[Intro 1] MorningScene";
-import BadEndingScene from "./game/scenes/[Intro 2] BadEndingScene";
-import Scene02MarketInvite from "./game/scenes/[Intro 3] Scene02MarketInvite";
-import TaskIntroScene from "./game/scenes/[1.1] TaskIntroScene";
-import IngredientSelectionIntroScene from "./game/scenes/[1.2] IngredientSelectionIntroScene";
-import MarketIngredientSelectionScene from "./game/scenes/[1.3] MarketIngredientSelectionScene";
-import CookingChallengePlaceholderScene from "./game/scenes/[2] CookingChallenge";
-import BuyRibsIntroScene from "./game/scenes/[1.4] BuyRibsIntroScene";
-import PorkRibSelectionScene from "./game/scenes/[1.5] PorkRibSelectionScene";
-import BargainScene from "./game/scenes/[1.6] BargainScene";
-import BargainBadEndingScene from "./game/scenes/[1.61] BargainBadEndingScene";
-import Level1PassScene from "./game/scenes/[1.7] Level1PassScene";
-import Level2IntroScene from "./game/scenes/[2.1] Level2IntroScene";
-import Level2InstructionScene from "./game/scenes/[2.2] Level2InstructionScene";
-import Level2CookingGuidedScene from "./game/scenes/[2.3] Level2CookingGuidedScene";
-import CookingChallengeCompleteScene from "./game/scenes/[2.4] CookingChallengeCompleteScene";
-import Level3IntroScene from "./game/scenes/[3.1] Level3Introscene";
-import Level3MainChallengeScene from "./game/scenes/[3.2] Level3mainchallenge";
-import Level3PassScene from "./game/scenes/[3.3] Level3PassScene";
-import Level4IntroScene from "./game/scenes/[4.1] Level4IntroScene";
-import Level4MainChallengeScene from "./game/scenes/[4.2] Level4mainchallenge";
-import Level4PassScene from "./game/scenes/[4.3] Level4PassScene";
-import FinishLevelScene from "./game/scenes/[4.4] FinishLevelScene";
-import RotateDeviceOverlayScene from "./game/scenes/RotateDeviceOverlayScene";
+import SceneLoadingScene from "./game/scenes/SceneLoadingScene.js";
 import { getAnalytics, initAnalytics } from "./game/analytics";
 import { RAW_DPR, getOrientationGameSize, getSafeDevicePixelRatio, getSafeRenderResolution } from "./game/UIHelpers";
 
@@ -46,8 +21,10 @@ function updateViewportCssVars() {
 }
 
 const analytics = getAnalytics();
+const SHOULD_LOG_DEBUG = !import.meta.env.PROD;
 const SCENE_ANALYTICS_MAP = {
     BootScene: {},
+    SceneLoadingScene: {},
     OpeningScene: { checkpointId: "opening.start" },
     IntroScene: { checkpointId: "intro.story" },
     MorningScene01: { checkpointId: "intro.morning.dialogue" },
@@ -126,8 +103,34 @@ function trackSceneAnalytics(sceneKey) {
 initAnalytics({ entryScene: "boot" });
 const _sessionId = analytics.getSessionId();
 const logBootDiagnostics = (...args) => {
-    console.log("[boot]", ...args);
+    if (SHOULD_LOG_DEBUG) {
+        console.log("[boot]", ...args);
+    }
 };
+const logLifecycle = (...args) => {
+    if (SHOULD_LOG_DEBUG) {
+        console.log(...args);
+    }
+};
+
+function instrumentSceneLifecycle(scene) {
+    if (scene.__bbbLifecycleInstrumented) {
+        return;
+    }
+
+    scene.__bbbLifecycleInstrumented = true;
+
+    scene.events.on("start", () => {
+        logLifecycle("[scene] start", scene.scene.key);
+    });
+    scene.events.on("create", () => {
+        logLifecycle("[scene] create", scene.scene.key);
+        trackSceneAnalytics(scene.scene.key);
+    });
+    scene.events.on("shutdown", () => {
+        logLifecycle("[scene] shutdown", scene.scene.key);
+    });
+}
 
 updateViewportCssVars();
 
@@ -172,31 +175,7 @@ const config = {
     },
     scene: [
         BootScene,
-        OpeningScene,
-        IntroScene,
-        MorningScene01,
-        BadEndingScene,
-        Scene02MarketInvite,
-        TaskIntroScene,
-        IngredientSelectionIntroScene,
-        MarketIngredientSelectionScene,
-        BuyRibsIntroScene,
-        PorkRibSelectionScene,
-        BargainScene,
-        BargainBadEndingScene,
-        Level1PassScene,
-        Level2IntroScene,
-        Level2InstructionScene,
-        Level2CookingGuidedScene,
-        CookingChallengeCompleteScene,
-        CookingChallengePlaceholderScene,
-        Level3IntroScene,
-        Level3MainChallengeScene,
-        Level3PassScene,
-        Level4IntroScene,
-        Level4MainChallengeScene,
-        Level4PassScene,
-        FinishLevelScene,
+        SceneLoadingScene,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
@@ -209,7 +188,7 @@ const game = new Phaser.Game(config);
 
 window.addEventListener("pageshow", (e) => {
     analytics.setAppActive(document.visibilityState === "visible");
-    console.log("[lifecycle] pageshow", {
+    logLifecycle("[lifecycle] pageshow", {
         persisted: e.persisted,
         session: _sessionId,
         visibilityState: document.visibilityState,
@@ -221,21 +200,21 @@ window.addEventListener("pagehide", (e) => {
     } else {
         analytics.setAppActive(false);
     }
-    console.log("[lifecycle] pagehide", {
+    logLifecycle("[lifecycle] pagehide", {
         persisted: e.persisted,
         session: _sessionId,
     });
 });
 document.addEventListener("visibilitychange", () => {
     analytics.setAppActive(document.visibilityState === "visible");
-    console.log("[lifecycle] visibilitychange", {
+    logLifecycle("[lifecycle] visibilitychange", {
         state: document.visibilityState,
         session: _sessionId,
     });
 });
 window.addEventListener("resize", () => {
     updateViewportCssVars();
-    console.log("[lifecycle] resize", {
+    logLifecycle("[lifecycle] resize", {
         width: window.innerWidth,
         height: window.innerHeight,
         rawDpr: RAW_DPR,
@@ -250,7 +229,9 @@ window.visualViewport?.addEventListener("scroll", updateViewportCssVars);
 window.__BBB_ANALYTICS__ = analytics;
 
 game.events.once("ready", () => {
-    console.log("[phaser] ready", {
+    game.registry.set("__instrumentSceneLifecycle", instrumentSceneLifecycle);
+
+    logLifecycle("[phaser] ready", {
         renderer: game.renderer.type,
         canvas: {
             width: game.canvas?.width,
@@ -270,16 +251,7 @@ game.events.once("ready", () => {
     });
 
     game.scene.scenes.forEach((scene) => {
-        scene.events.on("start", () => {
-            console.log("[scene] start", scene.scene.key);
-        });
-        scene.events.on("create", () => {
-            console.log("[scene] create", scene.scene.key);
-            trackSceneAnalytics(scene.scene.key);
-        });
-        scene.events.on("shutdown", () => {
-            console.log("[scene] shutdown", scene.scene.key);
-        });
+        instrumentSceneLifecycle(scene);
     });
 
     game.scene.start("BootScene");

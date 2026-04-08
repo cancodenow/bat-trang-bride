@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
-    preloadLevelAssets,
     createFinishButton,
     createDevSkipButton,
     getResponsiveMetrics,
@@ -17,8 +17,8 @@ export default class FinishLevelScene extends Phaser.Scene {
     }
 
     preload() {
+        preloadAssetGroups(this, ["finish-scene-background"]);
         preloadUIAssets(this);
-        preloadLevelAssets(this, 3);
         preloadSoundAssets(this);
     }
 

@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import {
+    preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
     createDialogueBox,
@@ -21,7 +22,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("marketBg", "/assets/background/market-bg.png");
+        preloadAssetGroups(this, ["story-backgrounds"]);
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
