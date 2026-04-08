@@ -23,14 +23,14 @@ import Level3PassScene from "./game/scenes/[3.3] Level3PassScene";
 import Level4IntroScene from "./game/scenes/[4.1] Level4IntroScene";
 import Level4MainChallengeScene from "./game/scenes/[4.2] Level4mainchallenge";
 import Level4PassScene from "./game/scenes/[4.3] Level4PassScene";
+import FinishLevelScene from "./game/scenes/[4.4] FinishLevelScene";
 import RotateDeviceOverlayScene from "./game/scenes/RotateDeviceOverlayScene";
-import { getOrientationGameSize } from "./game/UIHelpers";
+import { DPR, getOrientationGameSize } from "./game/UIHelpers";
 
-const dpr = window.devicePixelRatio || 1;
 const baseGameSize = getOrientationGameSize();
 const initialGameSize = {
-    width: Math.round(baseGameSize.width * dpr),
-    height: Math.round(baseGameSize.height * dpr),
+    width: Math.round(baseGameSize.width * DPR),
+    height: Math.round(baseGameSize.height * DPR),
 };
 
 const config = {
@@ -70,6 +70,7 @@ const config = {
         Level4IntroScene,
         Level4MainChallengeScene,
         Level4PassScene,
+        FinishLevelScene,
         RotateDeviceOverlayScene,
     ],
     scale: {
@@ -82,7 +83,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 game.events.once("ready", () => {
-    if (window.innerWidth < window.innerHeight) {
+    if (game.scale.orientation === Phaser.Scale.PORTRAIT) {
         game.scene.start("RotateDeviceOverlayScene");
         game.scene.bringToTop("RotateDeviceOverlayScene");
     } else {
