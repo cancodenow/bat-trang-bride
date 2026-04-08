@@ -43,6 +43,5 @@ export default class OpeningScene extends Phaser.Scene {
         startButton.label.setPosition(buttonX, buttonY);
 
         createDevSkipButton(this, "IntroScene");
-        bindResponsiveScene(this, () => this.scene.restart());
     }
 }

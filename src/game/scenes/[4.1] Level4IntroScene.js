@@ -46,23 +46,57 @@ export default class Level4IntroScene extends Phaser.Scene {
   }
 
   showFamilyMeal() {
-    const { width, height } = this.scale;
+    const metrics = getResponsiveMetrics(this);
+    const { width, height, dpr } = metrics;
 
-    this.runner.destroy();
+    this.destroyRunner(this.runner);
 
-    // Cover everything with the family meal image
     this.add
       .image(width / 2, height / 2, "lv4-family-meal")
       .setDisplaySize(width, height)
       .setDepth(10);
 
-    // After 5 seconds, jump to the challenge
-    this.time.delayedCall(3000, () => {
-      this.cameras.main.fadeOut(800, 0, 0, 0);
+    this.familyMealDialogueLines = [
+      {
+        text: "Mom: Taylor, everything turned out beautifully. This feast feels complete with you here.",
+      },
+      {
+        text: "Taylor: Thank you, Mom. I'm glad I could help bring everyone together.",
+      },
+      {
+        text: "Tùng: Eat while it's warm. After dinner, we'll clean up together.",
+      },
+    ];
+
+    this.runner = new DialogueRunner(this, {
+      box: { x: width / 2, y: height - Math.round(120 * dpr), w: Math.round(700 * dpr), h: Math.round(150 * dpr) },
+      lines: this.familyMealDialogueLines,
+      onComplete: () => this.startLevel4Challenge(),
     });
+
+    this.runner.boxObj.setDepth(20);
+    this.runner.textObj.setDepth(21);
+    this.runner.hintObj.setDepth(21);
+  }
+
+  startLevel4Challenge() {
+    this.destroyRunner(this.runner);
 
     this.cameras.main.once("camerafadeoutcomplete", () => {
       this.scene.start("Level4MainChallengeScene");
     });
+
+    this.cameras.main.fadeOut(800, 0, 0, 0);
+  }
+
+  destroyRunner(runner) {
+    if (!runner) return;
+
+    runner.destroy();
+    runner.boxObj?.destroy();
+    runner.textObj?.destroy();
+    runner.hintObj?.destroy();
+    runner.charLeft?.destroy();
+    runner.charRight?.destroy();
   }
 }

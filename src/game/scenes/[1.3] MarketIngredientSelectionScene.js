@@ -179,7 +179,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             this.showInstructionModal();
         }
 
-        bindResponsiveScene(this, () => this.scene.restart(this.getSceneState()));
+        // bindResponsiveScene(this, () => this.scene.restart(this.getSceneState()));
     }
 
     getSceneState() {

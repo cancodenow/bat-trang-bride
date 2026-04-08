@@ -55,14 +55,14 @@ export default class IntroScene extends Phaser.Scene {
 
         createDevSkipButton(this, "MorningScene01");
         createBackButton(this);
-        bindResponsiveScene(this, () =>
-            this.scene.restart({
-                lineIndex: this.runner?._completed
-                    ? this.runner.lines.length
-                    : this.runner?.lineIndex || 0,
-                showContinueButton: Boolean(this.continueButton),
-            }),
-        );
+        // bindResponsiveScene(this, () =>
+        //     this.scene.restart({
+        //         lineIndex: this.runner?._completed
+        //             ? this.runner.lines.length
+        //             : this.runner?.lineIndex || 0,
+        //         showContinueButton: Boolean(this.continueButton),
+        //     }),
+        // );
     }
 
     showContinueButton() {
