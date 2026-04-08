@@ -82,6 +82,19 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+// Lifecycle diagnostics — distinguish full reload vs scene restart on iOS
+const _sessionId = Math.random().toString(36).slice(2);
+console.log("[boot] page loaded, session:", _sessionId, new Date().toISOString());
+window.addEventListener("pageshow", (e) => {
+    console.log("[lifecycle] pageshow, persisted:", e.persisted, "session:", _sessionId);
+});
+window.addEventListener("pagehide", (e) => {
+    console.log("[lifecycle] pagehide, persisted:", e.persisted);
+});
+document.addEventListener("visibilitychange", () => {
+    console.log("[lifecycle] visibilitychange:", document.visibilityState);
+});
+
 game.events.once("ready", () => {
     if (game.scale.orientation === Phaser.Scale.PORTRAIT) {
         game.scene.start("RotateDeviceOverlayScene");
