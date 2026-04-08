@@ -25,13 +25,57 @@ import Level4MainChallengeScene from "./game/scenes/[4.2] Level4mainchallenge";
 import Level4PassScene from "./game/scenes/[4.3] Level4PassScene";
 import FinishLevelScene from "./game/scenes/[4.4] FinishLevelScene";
 import RotateDeviceOverlayScene from "./game/scenes/RotateDeviceOverlayScene";
-import { DPR, getOrientationGameSize } from "./game/UIHelpers";
+import { RAW_DPR, getOrientationGameSize, getSafeDevicePixelRatio, getSafeRenderResolution } from "./game/UIHelpers";
 
 const baseGameSize = getOrientationGameSize();
+const SAFE_DPR = getSafeDevicePixelRatio();
+const SAFE_RENDER_RESOLUTION = getSafeRenderResolution(baseGameSize.height);
 const initialGameSize = {
-    width: Math.round(baseGameSize.width * DPR),
-    height: Math.round(baseGameSize.height * DPR),
+    width: baseGameSize.width * SAFE_DPR,
+    height: baseGameSize.height * SAFE_DPR,
 };
+
+function updateViewportCssVars() {
+    const root = document.documentElement;
+    const viewport = window.visualViewport;
+    const viewportHeight = Math.round(viewport?.height || window.innerHeight || 0);
+
+    root.style.setProperty("--app-height", `${viewportHeight}px`);
+}
+
+const _sessionId = Math.random().toString(36).slice(2);
+const logBootDiagnostics = (...args) => {
+    console.log("[boot]", ...args);
+};
+
+updateViewportCssVars();
+
+window.addEventListener("error", (event) => {
+    console.error("[runtime] error", {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error,
+    });
+});
+window.addEventListener("unhandledrejection", (event) => {
+    console.error("[runtime] unhandledrejection", event.reason);
+});
+
+logBootDiagnostics("page loaded", {
+    session: _sessionId,
+    isoTime: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    viewport: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    },
+    rawDpr: RAW_DPR,
+    safeDpr: SAFE_DPR,
+    safeRenderResolution: SAFE_RENDER_RESOLUTION,
+    gameSize: initialGameSize,
+});
 
 const config = {
     type: Phaser.AUTO,
@@ -43,6 +87,7 @@ const config = {
         antialias: true,
         antialiasGL: true,
         pixelArt: false,
+        resolution: SAFE_RENDER_RESOLUTION,
     },
     scene: [
 
@@ -82,24 +127,78 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-// Lifecycle diagnostics — distinguish full reload vs scene restart on iOS
-const _sessionId = Math.random().toString(36).slice(2);
-console.log("[boot] page loaded, session:", _sessionId, new Date().toISOString());
 window.addEventListener("pageshow", (e) => {
-    console.log("[lifecycle] pageshow, persisted:", e.persisted, "session:", _sessionId);
+    console.log("[lifecycle] pageshow", {
+        persisted: e.persisted,
+        session: _sessionId,
+        visibilityState: document.visibilityState,
+    });
 });
 window.addEventListener("pagehide", (e) => {
-    console.log("[lifecycle] pagehide, persisted:", e.persisted);
+    console.log("[lifecycle] pagehide", {
+        persisted: e.persisted,
+        session: _sessionId,
+    });
 });
 document.addEventListener("visibilitychange", () => {
-    console.log("[lifecycle] visibilitychange:", document.visibilityState);
+    console.log("[lifecycle] visibilitychange", {
+        state: document.visibilityState,
+        session: _sessionId,
+    });
 });
+window.addEventListener("resize", () => {
+    updateViewportCssVars();
+    console.log("[lifecycle] resize", {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        rawDpr: RAW_DPR,
+        safeDpr: SAFE_DPR,
+        safeRenderResolution: SAFE_RENDER_RESOLUTION,
+        session: _sessionId,
+    });
+});
+window.addEventListener("orientationchange", updateViewportCssVars);
+window.visualViewport?.addEventListener("resize", updateViewportCssVars);
+window.visualViewport?.addEventListener("scroll", updateViewportCssVars);
 
 game.events.once("ready", () => {
+    console.log("[phaser] ready", {
+        renderer: game.renderer.type,
+        canvas: {
+            width: game.canvas?.width,
+            height: game.canvas?.height,
+            cssWidth: game.canvas?.style?.width,
+            cssHeight: game.canvas?.style?.height,
+        },
+        scale: {
+            width: game.scale.width,
+            height: game.scale.height,
+            orientation: game.scale.orientation,
+        },
+        safeDpr: SAFE_DPR,
+        rawDpr: RAW_DPR,
+        safeRenderResolution: SAFE_RENDER_RESOLUTION,
+        session: _sessionId,
+    });
+
+    game.scene.scenes.forEach((scene) => {
+        scene.events.on("start", () => {
+            console.log("[scene] start", scene.scene.key);
+        });
+        scene.events.on("create", () => {
+            console.log("[scene] create", scene.scene.key);
+        });
+        scene.events.on("shutdown", () => {
+            console.log("[scene] shutdown", scene.scene.key);
+        });
+    });
+
     if (game.scale.orientation === Phaser.Scale.PORTRAIT) {
+        console.log("[scene] boot target", "RotateDeviceOverlayScene");
         game.scene.start("RotateDeviceOverlayScene");
         game.scene.bringToTop("RotateDeviceOverlayScene");
     } else {
+        console.log("[scene] boot target", "OpeningScene");
         game.scene.start("OpeningScene");
     }
 });

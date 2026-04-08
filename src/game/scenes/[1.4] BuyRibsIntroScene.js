@@ -47,14 +47,14 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         });
 
         // Dialogue box
-        createDialogueBox(this, width / 2, height - Math.round(140 * dpr), width - Math.round(100 * dpr), Math.round(200 * dpr), {
+        createDialogueBox(this, width / 2, height - Math.round(140 * dpr), width / 2, Math.round(200 * dpr), {
             fillColor: 0x1a2a3a,
             fillAlpha: 0.92,
             strokeColor: 0x5a8aaa,
         });
 
         // Speaker label
-        this.add.text(Math.round(80 * dpr), height - Math.round(230 * dpr), "Mom", {
+        this.add.text(width / 4 + Math.round(20 * dpr), height - Math.round(230 * dpr), "Mom", {
             fontSize: fs(18),
             color: "#ffcc00",
             fontFamily: "SVN-Pequena Neo",

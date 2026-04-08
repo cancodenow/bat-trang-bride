@@ -4,8 +4,39 @@ const PHONE_SMALL_MAX = 430;
 const PHONE_LARGE_MAX = 820;
 const LANDSCAPE_MODAL_BASE_SIZE = Object.freeze({ width: 860, height: 498 });
 const RESPONSIVE_CHANGE_DEBOUNCE_MS = 120;
+const MOBILE_UA_REGEX = /iPhone|iPad|iPod|Android|Mobile/i;
 
-export const DPR = window.devicePixelRatio || 1;
+export const RAW_DPR = window.devicePixelRatio || 1;
+
+export function isMobileDevice() {
+    const userAgent = navigator.userAgent || "";
+
+    return MOBILE_UA_REGEX.test(userAgent);
+}
+
+export function getSafeDevicePixelRatio() {
+    if (isMobileDevice()) {
+        return 1;
+    }
+
+    return RAW_DPR;
+}
+
+export function getSafeRenderResolution(baseHeight = LANDSCAPE_GAME_SIZE.height) {
+    const rawDpr = RAW_DPR;
+
+    if (!isMobileDevice()) {
+        return rawDpr;
+    }
+
+    const viewportHeight = Math.max(window.innerHeight || 0, window.innerWidth || 0);
+    const targetCanvasHeight = Math.max(baseHeight, Math.min(1400, Math.round(viewportHeight * 1.6)));
+    const heightBoundDpr = targetCanvasHeight / baseHeight;
+
+    return Math.max(1, Math.min(rawDpr, heightBoundDpr));
+}
+
+export const DPR = getSafeRenderResolution();
 
 const RESPONSIVE_RULES = Object.freeze({
     portrait: Object.freeze({
@@ -143,7 +174,7 @@ export function getResponsiveMetrics(sceneOrScale) {
                 : "desktop";
     const rules = isPortrait ? RESPONSIVE_RULES.portrait : RESPONSIVE_RULES.landscape;
     const { spacing, typography, touch, dialogue, modal, buttons, sidebar, challengeChoices } = rules;
-    const dpr = DPR;
+    const dpr = getSafeDevicePixelRatio();
 
     const edgePadding = Math.round(width * spacing.edgePaddingRatio);
     const topInset = spacing.topInset != null ? Math.round(spacing.topInset * dpr) : Math.round(height * spacing.topInsetRatio);

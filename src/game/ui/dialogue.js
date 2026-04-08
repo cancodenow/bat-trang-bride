@@ -169,6 +169,7 @@ export class DialogueRunner {
                         flipX: config.chars.left.flipX || false,
                     },
                 );
+                this.charLeft.setDepth(10); // ensure chars are below the box
             }
             if (config.chars.right) {
                 const key =
@@ -185,6 +186,7 @@ export class DialogueRunner {
                         flipX: config.chars.right.flipX !== false,
                     },
                 );
+                this.charRight.setDepth(10);
             }
         }
 

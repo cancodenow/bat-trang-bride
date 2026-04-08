@@ -1,6 +1,7 @@
 import Phaser from "phaser";
+import { getSafeDevicePixelRatio } from "../UIHelpers";
 
-const DPR = window.devicePixelRatio || 1;
+const DPR = getSafeDevicePixelRatio();
 const fs = (n) => `${Math.round(n * DPR)}px`;
 
 export default class RotateDeviceOverlayScene extends Phaser.Scene {

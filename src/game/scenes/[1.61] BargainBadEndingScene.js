@@ -9,6 +9,7 @@ import {
     getResponsiveMetrics,
     crossfadeMusic,
     playSFX,
+    playMusic,
 } from "../UIHelpers";
 
 export default class BargainBadEndingScene extends Phaser.Scene {
@@ -26,7 +27,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
         const { width, height, fs, dpr, buttonScale } = metrics;
 
         playSFX(this, "wrong");
-        crossfadeMusic(this, "tiktok-music");
+        playMusic(this, "bgm");
 
         this.cameras.main.setBackgroundColor("#000000");
 
