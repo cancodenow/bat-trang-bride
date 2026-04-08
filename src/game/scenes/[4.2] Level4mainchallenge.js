@@ -67,6 +67,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
     const metrics = getResponsiveMetrics(this);
+      this.metrics = metrics;
 
     // ── State ────────────────────────────────────────────────────
     this._activeRing    = "inner";
@@ -239,21 +240,16 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
   // ── How-to-play ───────────────────────────────────────────────
 
   _showHowToPlay() {
-    const { width, height } = this.scale;
-    const { container } = createModalFrame(this, 0, 0, { overlayAlpha: 0.7 });
+      const { width, height, modal, buttonScale } = this.metrics;
+      const { container } = createModalFrame(this, modal.width, modal.heigth, { overlayAlpha: 0.7, fitTexture: true, textureKey: "lv4-how-to-play" });
     this._instructionModal = container;
 
-    const htp = createHowToPlay(this, width / 2, height / 2 - 40, "lv4-how-to-play", {
-      scale: 0.3,
-      depth: 300,
-    });
-
-    const { bg: startBtn } = createContinueButton(this, width / 2, height / 2 + 230, {
-      scale: getResponsiveMetrics(this).buttonScale,
+      const { bg: startBtn } = createContinueButton(this, width / 2, modal.buttonY, {
+          scale: buttonScale,
       onClick: () => this._instructionModal.destroy(),
     });
 
-    this._instructionModal.add([htp, startBtn]);
+      this._instructionModal.add([startBtn]);
   }
 
   // ── Error text ────────────────────────────────────────────────

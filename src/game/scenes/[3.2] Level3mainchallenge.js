@@ -69,6 +69,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
         const metrics = getResponsiveMetrics(this);
+        this.metrics = metrics;
         this.W = width;
         this.H = height;
 
@@ -198,21 +199,16 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Instruction modal ─────────────────────────────────────────
 
     _showHowToPlay() {
-        const { width, height } = this.scale;
-        const { container } = createModalFrame(this, 0, 0, { overlayAlpha: 0.7 });
+        const { width, modal, buttonScale } = this.metrics;
+        const { container } = createModalFrame(this, modal.width, modal.height, { overlayAlpha: 0.7, fitTexture: true, textureKey: "lv3-how-to-play-2" });
         this._instructionModal = container;
 
-        const htp = createHowToPlay(this, width / 2, height / 2 - 40, "lv3-how-to-play-2", {
-            scale: 0.3,
-            depth: 300,
-        });
-
-        const { bg: startBtn } = createContinueButton(this, width / 2, height / 2 + 230, {
-            scale: getResponsiveMetrics(this).buttonScale,
+        const { bg: startBtn } = createContinueButton(this, width / 2, modal.buttonY, {
+            scale: buttonScale,
             onClick: () => this._instructionModal.destroy(),
         });
 
-        this._instructionModal.add([htp, startBtn]);
+        this._instructionModal.add([startBtn]);
     }
 
     // ── Drag logic ────────────────────────────────────────────────
