@@ -12,6 +12,7 @@ import {
   preloadSoundAssets,
   playMusic,
   playSFX } from "../UIHelpers";
+import { getAnalytics } from "../analytics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — edit these to adjust layout & feel
@@ -195,6 +196,11 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
           this._innerDone  = true;
           this._activeRing = "outer";
           this._instructionText.setText("Great! Now trace the OUTER circle");
+          getAnalytics().markCheckpoint({
+            sceneKey: this.scene.key,
+            checkpointId: "level4.washing.outer-ring",
+            level: 4,
+          });
         } else if (this._activeRing === "outer" && this._progress.outer.size >= TOTAL_BUCKETS) {
           this._completed = true;
           this._drawRings();
@@ -258,7 +264,14 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
 
       const { bg: startBtn } = createContinueButton(this, width / 2, modal.buttonY, {
           scale: buttonScale,
-      onClick: () => this._instructionModal.destroy(),
+      onClick: () => {
+        this._instructionModal.destroy();
+        getAnalytics().markCheckpoint({
+          sceneKey: this.scene.key,
+          checkpointId: "level4.washing.start",
+          level: 4,
+        });
+      },
     });
 
       this._instructionModal.add([startBtn]);

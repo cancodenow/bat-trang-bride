@@ -13,6 +13,7 @@ import {
     crossfadeMusic,
     playSFX,
 } from "../UIHelpers";
+import { getAnalytics } from "../analytics";
 
 export default class MorningScene01 extends Phaser.Scene {
     constructor() {
@@ -111,6 +112,10 @@ export default class MorningScene01 extends Phaser.Scene {
 
     showChoiceButtons() {
         const { dpr, width, height, buttonScale } = getResponsiveMetrics(this);
+        getAnalytics().markCheckpoint({
+            sceneKey: this.scene.key,
+            checkpointId: "intro.morning.choice",
+        });
 
         this.runner.hintObj.setText("Make a choice:");
 

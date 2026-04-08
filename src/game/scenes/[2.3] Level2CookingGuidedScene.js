@@ -12,6 +12,7 @@ import {
     playSFX,
     crossfadeMusic,
 } from "../UIHelpers";
+import { getAnalytics } from "../analytics";
 
 export default class Level2CookingGuidedScene extends Phaser.Scene {
     constructor() {
@@ -238,6 +239,11 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         this.metrics = getResponsiveMetrics(this);
 
         const challenge = this.challenges[index];
+        getAnalytics().markCheckpoint({
+            sceneKey: this.scene.key,
+            checkpointId: `level2.challenge${index + 1}.start`,
+            level: 2,
+        });
 
         // Show bg_start, click to begin step 1
         this.bgImage = this.add
@@ -293,6 +299,11 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
 
         const challenge = this.challenges[this.currentChallengeIndex];
         const step = challenge.steps[stepIndex];
+        getAnalytics().markCheckpoint({
+            sceneKey: this.scene.key,
+            checkpointId: `level2.challenge${this.currentChallengeIndex + 1}.step${stepIndex + 1}`,
+            level: 2,
+        });
 
         // Background for this step
         this.bgImage = this.add

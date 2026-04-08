@@ -15,6 +15,7 @@ import {
   playSFX,
   crossfadeMusic
 } from "../UIHelpers";
+import { getAnalytics } from "../analytics";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — change these to adjust layout
@@ -219,7 +220,14 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
 
         const { bg: startBtn } = createContinueButton(this, width / 2, modal.buttonY, {
             scale: buttonScale,
-            onClick: () => this._instructionModal.destroy(),
+            onClick: () => {
+                this._instructionModal.destroy();
+                getAnalytics().markCheckpoint({
+                    sceneKey: this.scene.key,
+                    checkpointId: "level3.arrangement.start",
+                    level: 3,
+                });
+            },
         });
 
         this._instructionModal.add([startBtn]);
