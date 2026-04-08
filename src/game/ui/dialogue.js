@@ -5,11 +5,9 @@ import { createBox } from "./containers.js";
 import { createCharacter } from "./characters.js";
 import { getResponsiveMetrics } from "./responsive.js";
 
-const DEFAULT_DIALOGUE_FONT_SIZE = "22px";
-const DEFAULT_HINT_FONT_SIZE = "18px";
 const DIALOGUE_TEXT_WIDTH_RATIO = 0.85;
 const HINT_Y_RATIO = 0.35;
-const CONTENT_EDGE_PADDING_RATIO = 0.12;
+const CONTENT_EDGE_PADDING_RATIO = 0.24;
 const TEXT_HINT_GAP_RATIO = 0.08;
 const HINT_BASE_COLOR = "#fff4c2";
 const HINT_STROKE_COLOR = "#6f5630";
@@ -71,8 +69,8 @@ export class DialogueRunner {
      * @param {Function} config.onComplete  - called when all lines are exhausted
      * @param {Function} [config.onLineChange] - called when line changes: (lineIndex, lineData) => {}
      * @param {number} [config.skipTo=0]    - start at this line index
-     * @param {boolean} [config.typewriter=false]     - reserved for future use, no-op for now
-     * @param {number}  [config.typewriterSpeed=40]   - reserved for future use
+     * @param {boolean} [config.typewriter=true]     - enable character-by-character reveal
+     * @param {number}  [config.typewriterSpeed=80]   - characters per second
      */
     constructor(scene, config) {
         this.scene = scene;
@@ -89,6 +87,7 @@ export class DialogueRunner {
         };
         this.config = {
             ...config,
+            typewriter: config.typewriter !== false, // default to true
             box: responsiveBox,
         };
         this.lines = config.lines || [];
@@ -208,11 +207,7 @@ export class DialogueRunner {
         }
 
         const line = this.lines[this.lineIndex];
-
-        // Update text
-        this.textObj.setText(line.text);
         this.textObj.setColor(line.color || "#111010");
-        this._centerTextVertically();
 
         // Update characters
         if (this.charLeft && line.charLeft) {
@@ -222,15 +217,65 @@ export class DialogueRunner {
             this.charRight.setTexture(line.charRight);
         }
 
+        if (this.config.typewriter) {
+            this._startTypewriter(line.text);
+        } else {
+            this.textObj.setText(line.text);
+            this._centerTextVertically();
+        }
+
         // Trigger line change callback
         this.config.onLineChange?.(this.lineIndex, line);
     }
 
+    /** @private */
+    _startTypewriter(fullText) {
+        this._typeFullText = fullText;
+        this._typeCharIndex = 0;
+        this._typing = true;
+
+        this.textObj.setText("");
+        this._centerTextVertically();
+
+        this.hintTween.pause();
+        this.hintObj.setAlpha(1).setText("▼ Tap to skip");
+
+        const msPerChar = 1000 / (this.config.typewriterSpeed || 80);
+        this._typeTimer = this.scene.time.addEvent({
+            delay: msPerChar,
+            repeat: fullText.length - 1,
+            callback: () => {
+                this._typeCharIndex++;
+                this.textObj.setText(fullText.slice(0, this._typeCharIndex));
+                this._centerTextVertically();
+                if (this._typeCharIndex >= fullText.length) {
+                    this._finishTypewriter();
+                }
+            },
+        });
+    }
+
+    /** @private */
+    _finishTypewriter() {
+        this._typing = false;
+        this._typeTimer?.remove(false);
+        this._typeTimer = null;
+        this.textObj.setText(this._typeFullText);
+        this._centerTextVertically();
+        this.hintObj.setAlpha(1).setText("▼ Tap to continue");
+        this.hintTween.resume();
+    }
+
     /**
-     * Advance to next line or call onComplete
+     * Advance to next line or call onComplete.
+     * If typewriter animation is running, first tap skips to full text.
      */
     advance() {
         if (this._completed) return;
+        if (this._typing) {
+            this._finishTypewriter();
+            return;
+        }
         this.lineIndex++;
         if (this.lineIndex < this.lines.length) {
             this._showLine();
@@ -254,13 +299,8 @@ export class DialogueRunner {
     }
 
     _centerTextVertically() {
-        const textHeight = this.textObj.height;
         const topPadding = Math.max(
             this._dialogueFontSize,
-            this.config.box.h * CONTENT_EDGE_PADDING_RATIO,
-        );
-        const bottomPadding = Math.max(
-            this._hintFontSize,
             this.config.box.h * CONTENT_EDGE_PADDING_RATIO,
         );
         const hintGap = Math.max(
@@ -271,18 +311,17 @@ export class DialogueRunner {
         const contentTop = this._boxTop + topPadding;
         const contentBottom = Math.min(
             hintTop - hintGap,
-            this._boxBottom - bottomPadding,
+            this._boxBottom - this._hintFontSize,
         );
-        const availableHeight = Math.max(contentBottom - contentTop, textHeight);
-        const contentCenterY = contentTop + availableHeight / 2;
-
-        this.textObj.setY(contentCenterY);
+        this.textObj.setY(contentTop + (contentBottom - contentTop) / 2);
     }
 
     /**
-     * Remove the click listener
+     * Remove the click listener and cancel any active typewriter timer.
      */
     destroy() {
+        this._typeTimer?.remove(false);
+        this._typeTimer = null;
         this.hintTween?.stop();
         this.scene.input.off("pointerdown", this._clickHandler);
     }
