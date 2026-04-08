@@ -1060,8 +1060,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     showLevelCompleteModal() {
-        const { width, height } = this.metrics;
-        const { buttonScale } = this.metrics;
+        const { width, height, dpr } = this.metrics;
 
         this.confirmButton.disableInteractive();
 
@@ -1069,12 +1068,36 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
             .setDepth(199);
 
-        createCompletionBoard(this, "lv1-finish", {
+        const layout = createCompletionBoard(this, "lv1-finish", {
             depth: 200,
             maxWidthRatio: 0.68,
             maxHeightRatio: 0.56,
             contentHeightRatio: 0.5,
-            button: { scale: buttonScale, onClick: () => this.scene.start("BuyRibsIntroScene") },
         });
+
+        const hint = this.add
+            .text(layout.centerX, layout.buttonY, "▼ Tap to continue", {
+                fontSize: this.metrics.fs(18),
+                color: "#fff4c2",
+                fontFamily: "SVN-Pequena Neo",
+                stroke: "#6f5630",
+                strokeThickness: Math.round(3 * dpr),
+            })
+            .setOrigin(0.5)
+            .setShadow(0, 2, "#000000", Math.round(6 * dpr), false, true)
+            .setDepth(201);
+
+        this.tweens.add({
+            targets: hint,
+            alpha: 0.35,
+            scaleX: 1.08,
+            scaleY: 1.08,
+            duration: 650,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.InOut",
+        });
+
+        this.input.once("pointerdown", () => this.scene.start("BuyRibsIntroScene"));
     }
 }
