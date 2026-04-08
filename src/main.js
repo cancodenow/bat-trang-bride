@@ -116,7 +116,6 @@ const config = {
         Level4MainChallengeScene,
         Level4PassScene,
         FinishLevelScene,
-        RotateDeviceOverlayScene,
     ],
     scale: {
         mode: Phaser.Scale.FIT,
@@ -193,12 +192,5 @@ game.events.once("ready", () => {
         });
     });
 
-    if (game.scale.orientation === Phaser.Scale.PORTRAIT) {
-        console.log("[scene] boot target", "RotateDeviceOverlayScene");
-        game.scene.start("RotateDeviceOverlayScene");
-        game.scene.bringToTop("RotateDeviceOverlayScene");
-    } else {
-        console.log("[scene] boot target", "OpeningScene");
-        game.scene.start("OpeningScene");
-    }
+    game.scene.start("OpeningScene");
 });
