@@ -80,6 +80,7 @@ class AnalyticsService {
         }
 
         this.isInitialized = true;
+        console.log("[analytics] init", { mode: this.isProduction ? "production" : "dev", session: this.meta.sessionId, restored: Boolean(restoredMeta) });
         this._ensureGtag();
         this._persistMeta();
         this.setAppActive(document.visibilityState === "visible");
@@ -276,10 +277,11 @@ class AnalyticsService {
             bounce: typeof payload.bounce === "boolean" ? payload.bounce : undefined,
         };
 
-        console.log("[analytics]", eventName, eventPayload);
-
         if (this.isProduction && FORWARDED_EVENTS.has(eventName) && typeof window.gtag === "function") {
+            console.log("[analytics] → GA4", eventName, eventPayload);
             window.gtag("event", eventName, eventPayload);
+        } else {
+            console.log("[analytics] local-only", eventName, eventPayload);
         }
     }
 
@@ -412,6 +414,7 @@ class AnalyticsService {
         }
 
         if (!this.isProduction) {
+            console.log("[analytics] GA forwarding disabled (dev mode)");
             return;
         }
 
