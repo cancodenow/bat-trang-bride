@@ -10,7 +10,9 @@ import {
     preloadSoundAssets,
     playMusic,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level2InstructionScene extends Phaser.Scene {
     constructor() {
@@ -24,6 +26,7 @@ export default class Level2InstructionScene extends Phaser.Scene {
     }
 
     create(data = {}) {
+        updateCheckpoint("Level2InstructionScene", "level2.instruction");
         this.metrics = getResponsiveMetrics(this);
         this._hasInstructionModal = data.showInstruction !== false;
 
@@ -34,7 +37,7 @@ export default class Level2InstructionScene extends Phaser.Scene {
         if (this._hasInstructionModal) {
             this.showInstructionModal();
         } else {
-            this.scene.start("Level2CookingGuidedScene");
+            goToScene(this, "Level2CookingGuidedScene");
         }
 
         createDevSkipButton(this, "Level2CookingGuidedScene");
@@ -55,7 +58,7 @@ export default class Level2InstructionScene extends Phaser.Scene {
             onClick: () => {
                 this._hasInstructionModal = false;
                 this.instructionModal.destroy();
-                this.scene.start("Level2CookingGuidedScene");
+                goToScene(this, "Level2CookingGuidedScene");
             },
             scale: buttonScale,
         });

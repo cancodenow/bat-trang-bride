@@ -1,5 +1,6 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, goToScene } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level4IntroScene extends Phaser.Scene {
   constructor() {
@@ -15,6 +16,7 @@ export default class Level4IntroScene extends Phaser.Scene {
   }
 
   create() {
+    updateCheckpoint("Level4IntroScene", "level4.intro");
     const metrics = getResponsiveMetrics(this);
     const { width, height, dpr } = metrics;
 
@@ -86,7 +88,7 @@ export default class Level4IntroScene extends Phaser.Scene {
     this.destroyRunner(this.runner);
 
     this.cameras.main.once("camerafadeoutcomplete", () => {
-      this.scene.start("Level4MainChallengeScene");
+      goToScene(this, "Level4MainChallengeScene");
     });
 
     this.cameras.main.fadeOut(800, 0, 0, 0);

@@ -9,7 +9,9 @@ import {
     preloadSoundAssets,
     playSFX,
     playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class CookingChallengeCompleteScene extends Phaser.Scene {
     constructor() {
@@ -23,6 +25,7 @@ export default class CookingChallengeCompleteScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("CookingChallengeCompleteScene", "level2.complete");
         const { width, height } = this.scale;
         const { buttonScale } = getResponsiveMetrics(this);
 
@@ -36,7 +39,7 @@ export default class CookingChallengeCompleteScene extends Phaser.Scene {
 
         createCompletionBoard(this, "lv2-finish", {
             contentHeightRatio: 0.5,
-            button: { scale: buttonScale, onClick: () => this.scene.start("Level3IntroScene") },
+            button: { scale: buttonScale, onClick: () => goToScene(this, "Level3IntroScene") },
         });
 
         createDevSkipButton(this, "Level3IntroScene");

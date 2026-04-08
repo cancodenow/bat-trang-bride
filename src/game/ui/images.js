@@ -1,4 +1,5 @@
 import { getResponsiveMetrics } from "./responsive.js";
+import { loadProgress } from "../progress.js";
 
 // ===================== IMAGE COMPONENT HELPERS =====================
 // Every function reads the PNG's real dimensions via nativeSize() and
@@ -339,22 +340,31 @@ export function createSplashImage(scene, x, y, key, opts = {}) {
  *
  * @param {Phaser.Scene} scene  - current scene
  * @param {string} key          - scene key to go to
+ * @param {object} [data]       - optional scene data to pass to next scene
  */
-export function goToScene(scene, key) {
+export function goToScene(scene, key, data = null) {
     const history = scene.game.registry.get("sceneHistory") || [];
     history.push(scene.scene.key);
     scene.game.registry.set("sceneHistory", history);
-    scene.scene.start(key);
+    if (data) {
+        scene.scene.start(key, data);
+    } else {
+        scene.scene.start(key);
+    }
 }
 
 /**
  * Creates a back button fixed to the top-left corner.
  * Goes to the previous scene in history, or fallbackScene if history is empty.
+ * Can also use progress data for bad ending retry targets or resume fallback.
  *
  * @param {Phaser.Scene} scene
  * @param {string} [fallbackScene]  - scene key to use if no history (default: "OpeningScene")
+ * @param {object} [opts]           - options for progress-based navigation
+ * @param {string} [opts.badEndingKey] - for bad ending scenes, reads retryTarget from progress
+ * @param {boolean} [opts.useProgressFallback] - if true, uses progress.resumeTarget when history empty
  */
-export function createBackButton(scene, fallbackScene = "OpeningScene") {
+export function createBackButton(scene, fallbackScene = "OpeningScene", opts = {}) {
     const metrics = getResponsiveMetrics(scene);
     scene.add
         .text(metrics.edgePadding, metrics.topInset, "← Back", {
@@ -380,8 +390,22 @@ export function createBackButton(scene, fallbackScene = "OpeningScene") {
         })
         .on("pointerdown", () => {
             const history = scene.game.registry.get("sceneHistory") || [];
-            const prev = history.pop() || fallbackScene;
+            let target = history.pop();
+
+            if (!target) {
+                // Progress-based fallback
+                if (opts.badEndingKey) {
+                    const progress = loadProgress();
+                    target = progress?.badEndings?.[opts.badEndingKey]?.retryTarget?.sceneKey;
+                }
+                if (!target && opts.useProgressFallback) {
+                    const progress = loadProgress();
+                    target = progress?.resumeTarget?.sceneKey;
+                }
+                if (!target) target = fallbackScene;
+            }
+
             scene.game.registry.set("sceneHistory", history);
-            scene.scene.start(prev);
+            scene.scene.start(target);
         });
 }

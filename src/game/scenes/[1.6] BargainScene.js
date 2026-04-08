@@ -11,8 +11,10 @@ import {
     getResponsiveMetrics,
     playMusic,
     playSFX,
+    goToScene,
 } from "../UIHelpers";
 import { createImageButton } from "../ui/buttons.js";
+import { updateCheckpoint } from "../progress.js";
 
 export default class BargainScene extends Phaser.Scene {
     constructor() {
@@ -28,6 +30,7 @@ export default class BargainScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("BargainScene", "level1.bargain-choice");
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
@@ -113,7 +116,7 @@ export default class BargainScene extends Phaser.Scene {
             width / 2 + Math.round(180 * dpr),
             height - Math.round(240 * dpr),
             "",
-            { textureKey: "lv1-opt-no-bargain", scale: buttonScale, onClick: () => this.scene.start("BargainBadEndingScene") },
+            { textureKey: "lv1-opt-no-bargain", scale: buttonScale, onClick: () => goToScene(this, "BargainBadEndingScene") },
         );
 
         this.choiceContainer.add([btn1, btn2]);
@@ -144,7 +147,7 @@ export default class BargainScene extends Phaser.Scene {
             if (this.walkStep < this.walkAwayDialogue.length) {
                 this.showWalkDialogue();
             } else {
-                this.scene.start("Level1PassScene");
+                goToScene(this, "Level1PassScene");
             }
         });
     }

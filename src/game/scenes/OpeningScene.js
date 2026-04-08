@@ -10,7 +10,9 @@ import {
     getResponsiveMetrics,
     bindResponsiveScene,
     playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class OpeningScene extends Phaser.Scene {
     constructor() {
@@ -28,6 +30,7 @@ export default class OpeningScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("OpeningScene", "opening.start");
         const metrics = getResponsiveMetrics(this);
 
         // Play intro music
@@ -39,7 +42,7 @@ export default class OpeningScene extends Phaser.Scene {
         const startButton = createImageButton(this, 0, 0, "", {
             textureKey: "start_journey",
             scale: 0.5,
-            onClick: () => this.scene.start("IntroScene"),
+            onClick: () => goToScene(this, "IntroScene"),
         });
 
         const buttonX = bgImg.x + bgImg.displayWidth * 0.1;

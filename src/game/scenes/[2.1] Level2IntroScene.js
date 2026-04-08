@@ -11,7 +11,9 @@ import {
     preloadSoundAssets,
     playMusic,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level2IntroScene extends Phaser.Scene {
     constructor() {
@@ -26,6 +28,7 @@ export default class Level2IntroScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level2IntroScene", "level2.intro");
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
@@ -68,7 +71,7 @@ export default class Level2IntroScene extends Phaser.Scene {
         this.cameras.main.fadeOut(1500, 0, 0, 0);
 
         this.time.delayedCall(1500, () => {
-            this.scene.start("Level2CookingGuidedScene");
+            goToScene(this, "Level2CookingGuidedScene");
         });
     }
 }

@@ -13,7 +13,9 @@ import {
     getResponsiveMetrics,
     bindResponsiveScene,
     playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class MarketIngredientSelectionScene extends Phaser.Scene {
     constructor() {
@@ -49,6 +51,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
     }
 
     create(data = {}) {
+        updateCheckpoint("MarketIngredientSelectionScene", "level1.market-selection");
         const { width, height } = this.scale;
         this.width = width;
         this.height = height;
@@ -1098,6 +1101,6 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             ease: "Sine.InOut",
         });
 
-        this.input.once("pointerdown", () => this.scene.start("BuyRibsIntroScene"));
+        this.input.once("pointerdown", () => goToScene(this, "BuyRibsIntroScene"));
     }
 }

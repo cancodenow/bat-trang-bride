@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import BootScene from "./game/scenes/BootScene.js";
 import OpeningScene from "./game/scenes/OpeningScene";
 import IntroScene from "./game/scenes/[Intro 0] IntroScene";
 import MorningScene01 from "./game/scenes/[Intro 1] MorningScene";
@@ -46,6 +47,7 @@ function updateViewportCssVars() {
 
 const analytics = getAnalytics();
 const SCENE_ANALYTICS_MAP = {
+    BootScene: {},
     OpeningScene: { checkpointId: "opening.start" },
     IntroScene: { checkpointId: "intro.story" },
     MorningScene01: { checkpointId: "intro.morning.dialogue" },
@@ -169,7 +171,7 @@ const config = {
         resolution: SAFE_RENDER_RESOLUTION,
     },
     scene: [
-
+        BootScene,
         OpeningScene,
         IntroScene,
         MorningScene01,
@@ -280,5 +282,5 @@ game.events.once("ready", () => {
         });
     });
 
-    game.scene.start("OpeningScene");
+    game.scene.start("BootScene");
 });

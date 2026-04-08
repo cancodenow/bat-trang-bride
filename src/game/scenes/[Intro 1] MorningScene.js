@@ -12,8 +12,10 @@ import {
     createImageButton,
     crossfadeMusic,
     playSFX,
+    goToScene,
 } from "../UIHelpers";
 import { getAnalytics } from "../analytics";
+import { updateCheckpoint } from "../progress.js";
 
 export default class MorningScene01 extends Phaser.Scene {
     constructor() {
@@ -29,6 +31,7 @@ export default class MorningScene01 extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("MorningScene01", "intro.morning.dialogue");
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr } = metrics;
 
@@ -124,7 +127,7 @@ export default class MorningScene01 extends Phaser.Scene {
             textureKey: "lv1-opt-wake-tiktok",
             hoverScale: true,
             scale: buttonScale,
-            onClick: () => this.scene.start("BadEndingScene"),
+            onClick: () => goToScene(this, "BadEndingScene"),
         });
 
 
@@ -133,7 +136,7 @@ export default class MorningScene01 extends Phaser.Scene {
             textureKey: "lv1-opt-wake-get-up",
             hoverScale: true,
             scale: buttonScale,
-            onClick: () => this.scene.start("Scene02MarketInvite"),
+            onClick: () => goToScene(this, "Scene02MarketInvite"),
         });
     }
 }

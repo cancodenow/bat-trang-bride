@@ -10,7 +10,9 @@ import {
     crossfadeMusic,
     playSFX,
     playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint, markBadEnding } from "../progress.js";
 
 export default class BargainBadEndingScene extends Phaser.Scene {
     constructor() {
@@ -23,6 +25,8 @@ export default class BargainBadEndingScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("BargainBadEndingScene", "level1.bad-ending");
+        markBadEnding("bargainFail", { sceneKey: "BuyRibsIntroScene", checkpointId: "level1.buy-ribs-intro" });
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
 
@@ -62,10 +66,11 @@ export default class BargainBadEndingScene extends Phaser.Scene {
         // Restart button
         createTryAgainButton(this, width / 2, height / 2 + 180, {
             onClick: () =>
-                this.scene.start("BargainScene", { skipToChoice: "choice1" }),
+                goToScene(this, "BargainScene", { skipToChoice: "choice1" }),
             scale: buttonScale
         });
         createDevSkipButton(this, "BuyRibsIntroScene");
-        createBackButton(this);
+        // Back button uses progress to return to retry target (BuyRibsIntroScene)
+        createBackButton(this, "OpeningScene", { badEndingKey: "bargainFail" });
     }
 }

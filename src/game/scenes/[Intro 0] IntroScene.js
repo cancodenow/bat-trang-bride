@@ -12,7 +12,9 @@ import {
     bindResponsiveScene,
     createContinueButton,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class IntroScene extends Phaser.Scene {
     constructor() {
@@ -29,6 +31,7 @@ export default class IntroScene extends Phaser.Scene {
     }
 
     create(data = {}) {
+        updateCheckpoint("IntroScene", "intro.story");
         const metrics = getResponsiveMetrics(this);
 
         // Crossfade to TikTok-style wedding music
@@ -84,7 +87,7 @@ export default class IntroScene extends Phaser.Scene {
 
         this.continueButton = createContinueButton(this, width / 2, height - bottomInset, {
             scale: BUTTON_SCALE,
-            onClick: () => this.scene.start("MorningScene01"),
+            onClick: () => goToScene(this, "MorningScene01"),
         });
     }
 }

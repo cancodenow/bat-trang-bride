@@ -11,8 +11,11 @@ import {
   getResponsiveMetrics,
   preloadSoundAssets,
   playMusic,
-  playSFX } from "../UIHelpers";
+  playSFX,
+  goToScene,
+} from "../UIHelpers";
 import { getAnalytics } from "../analytics";
+import { updateCheckpoint } from "../progress.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — edit these to adjust layout & feel
@@ -70,6 +73,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
   }
 
   create() {
+    updateCheckpoint("Level4MainChallengeScene", "level4.washing.start");
     const { width, height } = this.scale;
     const metrics = getResponsiveMetrics(this);
       this.metrics = metrics;
@@ -338,7 +342,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       const { width, height, buttonScale } = this.metrics;
       createCompletionBoard(this, "lv4-finish", {
           contentHeightRatio: 0.5,
-          button: { scale: buttonScale, onClick: () => this.scene.start("Level4PassScene") },
+          button: { scale: buttonScale, onClick: () => goToScene(this, "Level4PassScene") },
       });
   }
 }

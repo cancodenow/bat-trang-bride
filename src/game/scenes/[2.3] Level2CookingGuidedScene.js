@@ -11,8 +11,10 @@ import {
     playMusic,
     playSFX,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
 import { getAnalytics } from "../analytics";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level2CookingGuidedScene extends Phaser.Scene {
     constructor() {
@@ -170,6 +172,11 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         this.currentStepIndex = data.currentStepIndex || 0;
         this.currentView = data.view || "instruction";
 
+        updateCheckpoint("Level2CookingGuidedScene", `level2.challenge${this.currentChallengeIndex + 1}.step${this.currentStepIndex + 1}`, {
+            challengeIndex: this.currentChallengeIndex,
+            stepIndex: this.currentStepIndex
+        });
+
         // Background visible behind the instruction modal
         this.add.image(this.W / 2, this.H / 2, "lv2-cl1-bg-start").setDisplaySize(this.W, this.H).setDepth(0);
         this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.35).setDepth(1);
@@ -303,6 +310,10 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
             sceneKey: this.scene.key,
             checkpointId: `level2.challenge${this.currentChallengeIndex + 1}.step${stepIndex + 1}`,
             level: 2,
+        });
+        updateCheckpoint("Level2CookingGuidedScene", `level2.challenge${this.currentChallengeIndex + 1}.step${stepIndex + 1}`, {
+            challengeIndex: this.currentChallengeIndex,
+            stepIndex: this.currentStepIndex
         });
 
         // Background for this step
@@ -464,7 +475,7 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         if (next < this.challenges.length) {
             this.loadChallenge(next);
         } else {
-            this.scene.start("CookingChallengeCompleteScene");
+            goToScene(this, "CookingChallengeCompleteScene");
         }
     }
 }

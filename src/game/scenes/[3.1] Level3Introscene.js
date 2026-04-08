@@ -1,5 +1,6 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, crossfadeMusic } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, crossfadeMusic, goToScene } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level3IntroScene extends Phaser.Scene {
     constructor() {
@@ -14,6 +15,7 @@ export default class Level3IntroScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level3IntroScene", "level3.intro");
         playMusic(this, "bgm");
 
         const metrics = getResponsiveMetrics(this);
@@ -40,7 +42,7 @@ export default class Level3IntroScene extends Phaser.Scene {
                 right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
-            onComplete: () => this.scene.start("Level3MainChallengeScene"),
+            onComplete: () => goToScene(this, "Level3MainChallengeScene"),
         });
 
         createDevSkipButton(this, "Level3MainChallengeScene");

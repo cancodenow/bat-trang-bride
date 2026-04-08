@@ -7,7 +7,10 @@ import {
     createContinueButton,
     playSFX,
     playMusic,
+    createBackButton,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint, markBadEnding } from "../progress.js";
 
 export default class BadEndingScene extends Phaser.Scene {
     constructor() {
@@ -20,6 +23,8 @@ export default class BadEndingScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("BadEndingScene", "intro.bad-ending");
+        markBadEnding("introTikTok", { sceneKey: "MorningScene01", checkpointId: "intro.morning.choice" });
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
 
@@ -54,9 +59,12 @@ export default class BadEndingScene extends Phaser.Scene {
 
         // Restart button
         createContinueButton(this, width / 2, height / 2 + 120 * dpr, {
-            onClick: () => this.scene.start("MorningScene01", { skipToChoice: true }),
+            onClick: () => goToScene(this, "MorningScene01", { skipToChoice: true }),
             scale: buttonScale,
         });
+
+        // Back button uses progress to return to retry target
+        createBackButton(this, "OpeningScene", { badEndingKey: "introTikTok" });
 
         createDevSkipButton(this, "MorningScene01");
     }

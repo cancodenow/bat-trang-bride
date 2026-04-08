@@ -11,7 +11,9 @@ import {
     getResponsiveMetrics,
     createImageButton,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class BuyRibsIntroScene extends Phaser.Scene {
     constructor() {
@@ -26,6 +28,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("BuyRibsIntroScene", "level1.buy-ribs-intro");
         crossfadeMusic(this, "market-music");
 
         const metrics = getResponsiveMetrics(this);
@@ -82,7 +85,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         createImageButton(this, width / 2, height - 60 * dpr, "", {
             textureKey: "lv1-opt-tasks-of-course",
             scale: buttonScale,
-            onClick: () => this.scene.start("PorkRibSelectionScene"),
+            onClick: () => goToScene(this, "PorkRibSelectionScene"),
         });
         createDevSkipButton(this, "PorkRibSelectionScene");
         createBackButton(this);

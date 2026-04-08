@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { preloadUIAssets, createBackButton, addCoverBg, getResponsiveMetrics } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class IngredientSelectionIntroScene extends Phaser.Scene {
     constructor() {
@@ -14,6 +15,7 @@ export default class IngredientSelectionIntroScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("IngredientSelectionIntroScene", "level1.market-selection");
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs } = metrics;
 

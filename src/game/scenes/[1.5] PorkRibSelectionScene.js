@@ -10,8 +10,10 @@ import {
     getResponsiveMetrics,
     playMusic,
     playSFX,
+    goToScene,
 } from "../UIHelpers";
 import { createImageButton } from "../ui/buttons.js";
+import { updateCheckpoint } from "../progress.js";
 
 export default class PorkRibSelectionScene extends Phaser.Scene {
     constructor() {
@@ -27,6 +29,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("PorkRibSelectionScene", "level1.pork-rib-selection");
         this.metrics = getResponsiveMetrics(this);
         const { width, height } = this.scale;
         const { fs, dpr } = this.metrics;
@@ -275,7 +278,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             width / 2 + Math.round(160 * dpr),
             frameY + Math.round(80 * dpr),
             "",
-            { textureKey: "lv1-opt-ribs-yes", scale: YES_SCALE, onClick: () => this.scene.start("BargainScene") },
+            { textureKey: "lv1-opt-ribs-yes", scale: YES_SCALE, onClick: () => goToScene(this, "BargainScene") },
         );
 
         const NO_SCALE = 0.15;
@@ -284,7 +287,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             width / 2 - Math.round(160 * dpr),
             frameY + Math.round(80 * dpr),
             "",
-            { textureKey: "lv1-opt-no-bargain", scale: NO_SCALE, onClick: () => this.scene.start("BargainBadEndingScene") },
+            { textureKey: "lv1-opt-no-bargain", scale: NO_SCALE, onClick: () => goToScene(this, "BargainBadEndingScene") },
         );
 
         container.add([msg, yesBtn, momBtn]);

@@ -11,7 +11,9 @@ import {
     getResponsiveMetrics,
     playSFX,
     crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Scene02MarketInvite extends Phaser.Scene {
     constructor() {
@@ -26,6 +28,7 @@ export default class Scene02MarketInvite extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Scene02MarketInvite", "intro.market-invite");
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
@@ -88,7 +91,7 @@ export default class Scene02MarketInvite extends Phaser.Scene {
 
         // After fade, transition to TaskIntroScene
         this.time.delayedCall(1500, () => {
-            this.scene.start("TaskIntroScene");
+            goToScene(this, "TaskIntroScene");
         });
     }
 }

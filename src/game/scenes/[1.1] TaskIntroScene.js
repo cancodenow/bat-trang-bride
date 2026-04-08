@@ -12,7 +12,9 @@ import {
     getResponsiveMetrics,
     createImageButton,
     playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class TaskIntroScene extends Phaser.Scene {
     constructor() {
@@ -28,6 +30,7 @@ export default class TaskIntroScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("TaskIntroScene", "level1.task-intro");
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
@@ -97,7 +100,7 @@ export default class TaskIntroScene extends Phaser.Scene {
         createImageButton(this, width / 2, height - 60 * dpr, "", {
             textureKey: "lv1-opt-tasks-of-course",
             scale: buttonScale,
-            onClick: () => this.scene.start("MarketIngredientSelectionScene"),
+            onClick: () => goToScene(this, "MarketIngredientSelectionScene"),
         });
     }
 }

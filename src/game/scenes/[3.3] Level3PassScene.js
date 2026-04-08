@@ -9,8 +9,10 @@ import {
     getResponsiveMetrics,
     preloadSoundAssets,
     playSFX,
-    playMusic
+    playMusic,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level3PassScene extends Phaser.Scene {
     constructor() {
@@ -25,6 +27,7 @@ export default class Level3PassScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level3PassScene", "level3.complete");
         playMusic(this, "win");
 
         const { buttonScale } = getResponsiveMetrics(this);
@@ -33,7 +36,7 @@ export default class Level3PassScene extends Phaser.Scene {
 
         createCompletionBoard(this, "lv3-finish", {
             contentHeightRatio: 0.5,
-            button: { scale: buttonScale, onClick: () => this.scene.start("Level4IntroScene") },
+            button: { scale: buttonScale, onClick: () => goToScene(this, "Level4IntroScene") },
         });
 
         createDevSkipButton(this, "Level4IntroScene");

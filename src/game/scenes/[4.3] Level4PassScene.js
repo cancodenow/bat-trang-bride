@@ -10,7 +10,9 @@ import {
     preloadSoundAssets,
     playMusic,
     playSFX,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level4PassScene extends Phaser.Scene {
     constructor() {
@@ -24,6 +26,7 @@ export default class Level4PassScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level4PassScene", "level4.complete");
         const { width, height } = this.scale;
         const { buttonScale } = getResponsiveMetrics(this);
 
@@ -41,7 +44,7 @@ export default class Level4PassScene extends Phaser.Scene {
 
         const { bg: button } = createFinishButton(this, centerX, buttonY, {
             scale: buttonScale,
-            onClick: () => this.scene.start("FinishLevelScene"),
+            onClick: () => goToScene(this, "FinishLevelScene"),
         });
         button.setDepth(depth + 1);
 

@@ -10,7 +10,9 @@ import {
     getResponsiveMetrics,
     crossfadeMusic,
     playSFX,
+    goToScene,
 } from "../UIHelpers";
+import { updateCheckpoint } from "../progress.js";
 
 export default class Level1PassScene extends Phaser.Scene {
     constructor() {
@@ -25,6 +27,7 @@ export default class Level1PassScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level1PassScene", "level1.complete");
         playSFX(this, "food-step");
         crossfadeMusic(this, "win");
 
@@ -34,7 +37,7 @@ export default class Level1PassScene extends Phaser.Scene {
 
         createCompletionBoard(this, "lv1-finish", {
             contentHeightRatio: 0.5,
-            button: { scale: buttonScale, onClick: () => this.scene.start("Level2IntroScene") },
+            button: { scale: buttonScale, onClick: () => goToScene(this, "Level2IntroScene") },
         });
 
         createDevSkipButton(this, "Level2IntroScene");

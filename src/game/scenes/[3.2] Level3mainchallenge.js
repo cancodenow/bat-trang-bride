@@ -12,10 +12,12 @@ import {
     addCoverBg,
     preloadSoundAssets,
     playMusic,
-  playSFX,
-  crossfadeMusic
+    playSFX,
+    crossfadeMusic,
+    goToScene,
 } from "../UIHelpers";
 import { getAnalytics } from "../analytics";
+import { updateCheckpoint } from "../progress.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — change these to adjust layout
@@ -74,6 +76,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     }
 
     create() {
+        updateCheckpoint("Level3MainChallengeScene", "level3.arrangement.start");
         playMusic(this, "bgm");
 
         const { width, height } = this.scale;
@@ -383,7 +386,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             buttonGap: Math.round(20 * metrics.dpr),
             button: {
                 scale: metrics.buttonScale,
-                onClick: () => this.scene.start("Level4IntroScene"),
+                onClick: () => goToScene(this, "Level4IntroScene"),
             },
         });
     }
