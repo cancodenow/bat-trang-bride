@@ -8,6 +8,9 @@ import {
     createBackButton,
     getResponsiveMetrics,
     addCoverBg,
+    preloadSoundAssets,
+    playMusic,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class Level2IntroScene extends Phaser.Scene {
@@ -19,11 +22,14 @@ export default class Level2IntroScene extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 2);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
+
+        playMusic(this, "bgm");
 
         addCoverBg(this, "lv2-intro-bg");
 

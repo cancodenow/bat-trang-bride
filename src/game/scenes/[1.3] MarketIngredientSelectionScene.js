@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
+    preloadSoundAssets,
     createImageButton,
     createContinueButton,
     createModalFrame,
@@ -11,6 +12,7 @@ import {
     createBackButton,
     getResponsiveMetrics,
     bindResponsiveScene,
+    playMusic,
 } from "../UIHelpers";
 
 export default class MarketIngredientSelectionScene extends Phaser.Scene {
@@ -43,6 +45,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
+        preloadSoundAssets(this);
     }
 
     create(data = {}) {
@@ -51,6 +54,8 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.height = height;
         this.metrics = getResponsiveMetrics(this);
         this._hasInstructionModal = data.showInstruction !== false;
+
+        playMusic(this, "market-music");
 
         this.cameras.main.setBackgroundColor("#ffffff");
 

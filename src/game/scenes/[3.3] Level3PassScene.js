@@ -7,6 +7,9 @@ import {
     createCompletionBoard,
     addCoverBg,
     getResponsiveMetrics,
+    preloadSoundAssets,
+    playSFX,
+    playMusic
 } from "../UIHelpers";
 
 export default class Level3PassScene extends Phaser.Scene {
@@ -18,9 +21,12 @@ export default class Level3PassScene extends Phaser.Scene {
         this.load.image("taskBg", "/assets/background/task-bg.png");
         preloadUIAssets(this);
         preloadLevelAssets(this, 3);
+        preloadSoundAssets(this);
     }
 
     create() {
+        playMusic(this, "win");
+
         const { buttonScale } = getResponsiveMetrics(this);
 
         addCoverBg(this, "taskBg", { depth: 0 });

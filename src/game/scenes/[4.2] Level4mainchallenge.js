@@ -8,7 +8,10 @@ import {
   createCompletionBoard,
   createDevSkipButton,
   createBackButton,
-  getResponsiveMetrics } from "../UIHelpers";
+  getResponsiveMetrics,
+  preloadSoundAssets,
+  playMusic,
+  playSFX } from "../UIHelpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TUNING — edit these to adjust layout & feel
@@ -62,6 +65,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
   preload() {
     preloadUIAssets(this);
     preloadLevelAssets(this, 4);
+    preloadSoundAssets(this);
   }
 
   create() {
@@ -108,6 +112,8 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       .image(this._dishX, this._dishY, "lv4-dirty-plate")
       .setScale(this._dishScale)
       .setDepth(1);
+
+    playMusic(this, "bgm");
 
     this._cleanPlate = this.add
       .image(this._dishX, this._dishY, "lv4-clean-plate")
@@ -199,6 +205,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
         if (time - this._lastErrorTime > ERROR_THROTTLE_MS) {
           this._lastErrorTime = time;
           this._showErrorText(this._virtualX, this._virtualY);
+          playSFX(this, "wrong");
         }
       }
     }
@@ -296,6 +303,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
   // ── Completion ────────────────────────────────────────────────
 
   _onComplete() {
+    playSFX(this, "clap");
     this._ringGfx.clear();
     this._instructionText.destroy();
     this._dirtyPlate.destroy();

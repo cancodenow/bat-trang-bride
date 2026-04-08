@@ -4,12 +4,14 @@ import {
     preloadLevelAssets,
     createFrame,
     preloadCharacters,
+    preloadSoundAssets,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
     DialogueRunner,
     getResponsiveMetrics,
     createImageButton,
+    playMusic,
 } from "../UIHelpers";
 
 export default class TaskIntroScene extends Phaser.Scene {
@@ -22,11 +24,15 @@ export default class TaskIntroScene extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
+
+        // Start gameplay music for Level 1
+        playMusic(this, "bgm");
 
         addCoverBg(this, "taskBg");
 

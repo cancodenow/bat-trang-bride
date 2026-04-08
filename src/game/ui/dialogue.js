@@ -69,6 +69,7 @@ export class DialogueRunner {
      *                                        If omitted entirely, no characters are created.
      * @param {Array}  config.lines         - [{ text, charLeft?, charRight?, color? }]
      * @param {Function} config.onComplete  - called when all lines are exhausted
+     * @param {Function} [config.onLineChange] - called when line changes: (lineIndex, lineData) => {}
      * @param {number} [config.skipTo=0]    - start at this line index
      * @param {boolean} [config.typewriter=false]     - reserved for future use, no-op for now
      * @param {number}  [config.typewriterSpeed=40]   - reserved for future use
@@ -218,6 +219,9 @@ export class DialogueRunner {
         if (this.charRight && line.charRight) {
             this.charRight.setTexture(line.charRight);
         }
+
+        // Trigger line change callback
+        this.config.onLineChange?.(this.lineIndex, line);
     }
 
     /**

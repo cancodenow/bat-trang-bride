@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic } from "../UIHelpers";
 
 export default class Level4IntroScene extends Phaser.Scene {
   constructor() {
@@ -11,6 +11,7 @@ export default class Level4IntroScene extends Phaser.Scene {
     preloadLevelAssets(this, 3);
     preloadLevelAssets(this, 4);
     preloadCharacters(this);
+    preloadSoundAssets(this);
   }
 
   create() {
@@ -20,6 +21,8 @@ export default class Level4IntroScene extends Phaser.Scene {
     this.add.image(width / 2, height / 2, "lv4-intro-bg").setDisplaySize(width, height);
 
     this.cameras.main.setBackgroundColor("#3a3a4a");
+
+    playMusic(this, "bgm");
 
     // Dialogue lines — charLeft: Taylor, charRight: mom speaking
     this.dialogueLines = [

@@ -3,12 +3,15 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     preloadCharacters,
+    preloadSoundAssets,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
     DialogueRunner,
     getResponsiveMetrics,
     createImageButton,
+    crossfadeMusic,
+    playSFX,
 } from "../UIHelpers";
 
 export default class MorningScene01 extends Phaser.Scene {
@@ -21,11 +24,15 @@ export default class MorningScene01 extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr } = metrics;
+
+        // Crossfade to bedroom/rustling sound
+        crossfadeMusic(this, "bed-music");
 
         addCoverBg(this, "morningBg");
 
@@ -90,6 +97,12 @@ export default class MorningScene01 extends Phaser.Scene {
             lines: this.dialogueLines,
             onComplete: () => this.showChoiceButtons(),
             skipTo: skipToChoice ? this.dialogueLines.length - 1 : 0,
+            onLineChange: (index) => {
+                // Play pan sound when mom is mentioned (line 3)
+                if (index === 3) {
+                    playSFX(this, "pan");
+                }
+            },
         });
 
         createDevSkipButton(this, "Scene02MarketInvite");

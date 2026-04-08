@@ -1,5 +1,13 @@
 import Phaser from "phaser";
-import { preloadUIAssets, createDevSkipButton, getResponsiveMetrics, createContinueButton } from "../UIHelpers";
+import {
+    preloadUIAssets,
+    preloadSoundAssets,
+    createDevSkipButton,
+    getResponsiveMetrics,
+    createContinueButton,
+    playSFX,
+    playMusic,
+} from "../UIHelpers";
 
 export default class BadEndingScene extends Phaser.Scene {
     constructor() {
@@ -8,11 +16,16 @@ export default class BadEndingScene extends Phaser.Scene {
 
     preload() {
         preloadUIAssets(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
+
+        // Play wrong sound then TikTok music
+        playSFX(this, "wrong");
+        playMusic(this, "tiktok-music");
 
         this.cameras.main.setBackgroundColor("#000000");
 

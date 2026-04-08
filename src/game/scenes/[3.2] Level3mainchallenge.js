@@ -9,7 +9,11 @@ import {
     createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
-    addCoverBg
+    addCoverBg,
+    preloadSoundAssets,
+    playMusic,
+  playSFX,
+  crossfadeMusic
 } from "../UIHelpers";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -65,9 +69,12 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 3);
+        preloadSoundAssets(this);
     }
 
     create() {
+        playMusic(this, "bgm");
+
         const { width, height } = this.scale;
         const metrics = getResponsiveMetrics(this);
         this.metrics = metrics;
@@ -260,6 +267,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Correct placement ─────────────────────────────────────────
 
     _placeToken(token, slot) {
+        playSFX(this, "correct");
         slot.filled = true;
         token.placed = true;
         token.disableInteractive();
@@ -288,6 +296,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Wrong drop — return to board ──────────────────────────────
 
     _returnToken(token, fromX, fromY) {
+        playSFX(this, "wrong");
         token.setDepth(10);
 
         // Show error text near where the player dropped
@@ -341,6 +350,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Completion ────────────────────────────────────────────────
 
     _onAllPlaced() {
+        playSFX(this, "win");
         // Remove empty tray, bring full tray on top
         this._emptyTray.destroy();
         this._fullTray.setAlpha(1).setDepth(10);

@@ -6,6 +6,9 @@ import {
     createBackButton,
     createCompletionBoard,
     getResponsiveMetrics,
+    preloadSoundAssets,
+    playSFX,
+    playMusic,
 } from "../UIHelpers";
 
 export default class CookingChallengeCompleteScene extends Phaser.Scene {
@@ -16,11 +19,15 @@ export default class CookingChallengeCompleteScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 2);
+        preloadSoundAssets(this);
     }
 
     create() {
         const { width, height } = this.scale;
         const { buttonScale } = getResponsiveMetrics(this);
+
+        playSFX(this, "food-step");
+        playMusic(this, "win");
 
         this.add
             .image(width / 2, height / 2, "lv2-cl1-bg-start")

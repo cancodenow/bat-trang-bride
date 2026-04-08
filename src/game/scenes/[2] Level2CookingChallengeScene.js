@@ -1,12 +1,25 @@
 import Phaser from "phaser";
-import { createDevSkipButton , createBackButton, getResponsiveMetrics } from "../UIHelpers";
+import {
+    createDevSkipButton,
+    createBackButton,
+    getResponsiveMetrics,
+    preloadSoundAssets,
+    playMusic,
+    playSFX,
+    crossfadeMusic,
+} from "../UIHelpers";
 
 export default class Level2CookingChallengeScene extends Phaser.Scene {
   constructor() {
     super("Level2CookingChallengeScene");
   }
 
+  preload() {
+    preloadSoundAssets(this);
+  }
+
   create() {
+    playMusic(this, "bgm");
     const { width, height } = this.scale;
     this.metrics = getResponsiveMetrics(this);
     this.W = width;

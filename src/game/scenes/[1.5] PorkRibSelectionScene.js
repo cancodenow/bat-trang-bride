@@ -2,11 +2,14 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
+    preloadSoundAssets,
     createModalFrame,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
+    playMusic,
+    playSFX,
 } from "../UIHelpers";
 import { createImageButton } from "../ui/buttons.js";
 
@@ -20,12 +23,15 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         this.load.image("pork-ribs", "/assets/ingredients/pork-ribs.png");
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
+        preloadSoundAssets(this);
     }
 
     create() {
         this.metrics = getResponsiveMetrics(this);
         const { width, height } = this.scale;
         const { fs, dpr } = this.metrics;
+
+        playMusic(this, "market-music");
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -227,11 +233,13 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
 
     checkSelection() {
         if (this.quantity < 5) {
+            playSFX(this, "wrong");
             this.statusText.setText(
                 "That is not enough pork ribs. \nPlease choose more to make a full kilogram",
             );
             this.statusText.setColor("#ff6666");
         } else {
+            playSFX(this, "correct");
             this.showBargainModal();
         }
     }

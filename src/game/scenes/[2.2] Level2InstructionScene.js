@@ -7,6 +7,9 @@ import {
     createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
+    preloadSoundAssets,
+    playMusic,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class Level2InstructionScene extends Phaser.Scene {
@@ -17,11 +20,14 @@ export default class Level2InstructionScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 2);
+        preloadSoundAssets(this);
     }
 
     create(data = {}) {
         this.metrics = getResponsiveMetrics(this);
         this._hasInstructionModal = data.showInstruction !== false;
+
+        playMusic(this, "bgm");
 
         this.cameras.main.setBackgroundColor("#1a1a2e");
 

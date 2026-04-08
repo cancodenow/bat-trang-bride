@@ -210,11 +210,27 @@ export function preloadLevelAssets(scene, level) {
     });
 }
 
-// --------------- sound assets (scaffold — add files to public/assets/sounds/) ---------------
+// --------------- sound assets ---------------
 
 const SOUND_ASSETS = {
-    // Keep these empty until sound files are added under public/assets/sounds/.
-    shared: [],
+    // Shared sounds used across multiple levels
+    shared: [
+        { key: "bgm", file: "sound/bgm.mp3" },
+        { key: "intro-music", file: "sound/intro.mp3" },
+        { key: "market-music", file: "sound/market.mp3" },
+        { key: "bed-music", file: "sound/bed.mp3" },
+        { key: "tiktok-music", file: "sound/tiktok.mp3" },
+        { key: "clap", file: "sound/clap.mp3" },
+        { key: "correct", file: "sound/correct.mp3" },
+        { key: "conversation", file: "sound/conversation-noise.mp3" },
+        { key: "eating", file: "sound/eating-noise.mp3" },
+        { key: "food-step", file: "sound/food-step.mp3" },
+        { key: "pan", file: "sound/pan.mp3" },
+        { key: "unlock", file: "sound/unlock.mp3" },
+        { key: "win", file: "sound/win.mp3" },
+        { key: "wrong", file: "sound/wrong.mp3" },
+    ],
+    // Level-specific sounds (empty for now, add as needed)
     1: [],
     2: [],
     3: [],
@@ -237,5 +253,129 @@ export function preloadSoundAssets(scene, level) {
     SOUND_ASSETS.shared.forEach(load);
     if (level && SOUND_ASSETS[level]) {
         SOUND_ASSETS[level].forEach(load);
+    }
+}
+
+// --------------- sound playback helpers ---------------
+
+/**
+ * Plays background music in a scene.
+ * Stops ALL currently playing music first (from any scene).
+ * Waits for audio to be decoded before playing to avoid delays.
+ *
+ * @param {Phaser.Scene} scene
+ * @param {string} key - Audio key (e.g., "bgm", "intro-music", "market-music")
+ * @param {object} config - Optional Phaser sound config (loop, volume, etc.)
+ */
+export function playMusic(scene, key, config = {}) {
+    // Stop ALL currently playing sounds to ensure clean transition
+    const soundManager = scene.sound;
+
+    // Stop ALL currently playing sounds (including same key to prevent duplicates)
+    soundManager.getAllPlaying().forEach((sound) => {
+        sound.stop();
+    });
+
+    // Check if sound exists before playing
+    if (!scene.cache.audio.exists(key)) {
+        console.warn(`Sound key "${key}" not found in cache`);
+        return;
+    }
+
+    const defaultConfig = { loop: true, volume: 0.5 };
+    scene._currentMusic = scene.sound.add(key, { ...defaultConfig, ...config });
+
+    // Wait for audio to be decoded before playing to avoid delay
+    if (scene.cache.audio.get(key).isDecoding) {
+        scene.cache.audio.once(`${key}decoded`, () => {
+            if (scene._currentMusic && scene._currentMusic.key === key) {
+                scene._currentMusic.play();
+            }
+        });
+    } else {
+        scene._currentMusic.play();
+    }
+}
+
+/**
+ * Stops the currently playing background music.
+ *
+ * @param {Phaser.Scene} scene
+ */
+export function stopMusic(scene) {
+    if (scene._currentMusic) {
+        scene._currentMusic.stop();
+        scene._currentMusic = null;
+    }
+}
+
+/**
+ * Plays a one-shot sound effect.
+ * Waits for audio to be decoded before playing to avoid delays.
+ *
+ * @param {Phaser.Scene} scene
+ * @param {string} key - Audio key (e.g., "correct", "wrong", "clap", "win")
+ * @param {object} config - Optional Phaser sound config (volume, etc.)
+ */
+export function playSFX(scene, key, config = {}) {
+    if (!scene.cache.audio.exists(key)) {
+        console.warn(`SFX key "${key}" not found in cache`);
+        return;
+    }
+
+    const defaultConfig = { volume: 0.6 };
+    const sound = scene.sound.add(key, { ...defaultConfig, ...config });
+
+    // Wait for audio to be decoded before playing to avoid delay
+    const audioCache = scene.cache.audio.get(key);
+    if (audioCache && audioCache.isDecoding) {
+        scene.cache.audio.once(`${key}decoded`, () => {
+            sound.play();
+        });
+    } else {
+        sound.play();
+    }
+}
+
+/**
+ * Fades out ALL currently playing music and fades in new music.
+ * Useful for smooth transitions between scenes.
+ *
+ * @param {Phaser.Scene} scene
+ * @param {string} newKey - New music key to fade in
+ * @param {number} duration - Fade duration in ms (default: 1000)
+ */
+export function crossfadeMusic(scene, newKey, duration = 1000) {
+    // Stop ALL currently playing sounds to ensure clean transition
+    const soundManager = scene.sound;
+    const currentlyPlaying = [];
+
+    // Collect ALL playing sounds (including same key to prevent duplicates)
+    soundManager.getAllPlaying().forEach((sound) => {
+        currentlyPlaying.push(sound);
+    });
+
+    if (currentlyPlaying.length > 0) {
+        // Fade out all playing music
+        currentlyPlaying.forEach((sound) => {
+            scene.tweens.add({
+                targets: sound,
+                volume: 0,
+                duration: duration,
+                onComplete: () => sound.stop(),
+            });
+        });
+    }
+
+    // Fade in new music
+    if (scene.cache.audio.exists(newKey)) {
+        const newMusic = scene.sound.add(newKey, { loop: true, volume: 0 });
+        scene._currentMusic = newMusic;
+        newMusic.play();
+        scene.tweens.add({
+            targets: newMusic,
+            volume: 0.5,
+            duration: duration,
+        });
     }
 }

@@ -10,6 +10,7 @@ import {
     addCoverBg,
     getResponsiveMetrics,
     createImageButton,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class BuyRibsIntroScene extends Phaser.Scene {
@@ -25,6 +26,8 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
     }
 
     create() {
+        crossfadeMusic(this, "market-music");
+
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
 

@@ -3,11 +3,13 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     preloadCharacters,
+    preloadSoundAssets,
     createImageButton,
     createDevSkipButton,
     addCoverBg,
     getResponsiveMetrics,
     bindResponsiveScene,
+    playMusic,
 } from "../UIHelpers";
 
 export default class OpeningScene extends Phaser.Scene {
@@ -22,10 +24,14 @@ export default class OpeningScene extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
+
+        // Play intro music
+        playMusic(this, "intro-music");
 
         const bgImg = addCoverBg(this, "openingbg");
         this.cameras.main.setBackgroundColor("#151fe0");

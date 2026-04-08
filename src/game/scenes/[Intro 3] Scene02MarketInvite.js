@@ -4,10 +4,13 @@ import {
     preloadLevelAssets,
     DialogueRunner,
     preloadCharacters,
+    preloadSoundAssets,
     createDevSkipButton,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
+    playSFX,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class Scene02MarketInvite extends Phaser.Scene {
@@ -19,11 +22,15 @@ export default class Scene02MarketInvite extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
+
+        // Fade out any previous music and play footsteps
+        crossfadeMusic(this, "food-step", 500);
 
         addCoverBg(this, "lv1-bg-homeyard");
 

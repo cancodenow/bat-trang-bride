@@ -2,12 +2,15 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
+    preloadSoundAssets,
     DialogueRunner,
     createDevSkipButton,
     preloadCharacters,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
+    playMusic,
+    playSFX,
 } from "../UIHelpers";
 import { createImageButton } from "../ui/buttons.js";
 
@@ -21,11 +24,14 @@ export default class BargainScene extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
+
+        playMusic(this, "market-music");
 
         this.cameras.main.setBackgroundColor("#103c5a");
         addCoverBg(this, "marketBg");

@@ -5,6 +5,8 @@ import {
     createFinishButton,
     createDevSkipButton,
     getResponsiveMetrics,
+    preloadSoundAssets,
+    playMusic,
 } from "../UIHelpers";
 
 export default class FinishLevelScene extends Phaser.Scene {
@@ -15,6 +17,7 @@ export default class FinishLevelScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 3);
+        preloadSoundAssets(this);
     }
 
     create() {
@@ -29,6 +32,8 @@ export default class FinishLevelScene extends Phaser.Scene {
             .image(width / 2, height / 2, "lv3-bg-cl2")
             .setDisplaySize(width, height)
             .setDepth(0);
+
+        playMusic(this, "bgm");
 
         this.add
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.55)

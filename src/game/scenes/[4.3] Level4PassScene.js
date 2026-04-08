@@ -7,6 +7,9 @@ import {
     createBackButton,
     createCompletionBoard,
     getResponsiveMetrics,
+    preloadSoundAssets,
+    playMusic,
+    playSFX,
 } from "../UIHelpers";
 
 export default class Level4PassScene extends Phaser.Scene {
@@ -17,6 +20,7 @@ export default class Level4PassScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 4);
+        preloadSoundAssets(this);
     }
 
     create() {
@@ -27,6 +31,9 @@ export default class Level4PassScene extends Phaser.Scene {
             .image(width / 2, height / 2, "lv4-bg")
             .setDisplaySize(width, height)
             .setDepth(0);
+
+        playSFX(this, "clap");
+        playMusic(this, "win");
 
         const { centerX, buttonY, depth } = createCompletionBoard(this, "lv4-finish", {
             contentHeightRatio: 0.5,

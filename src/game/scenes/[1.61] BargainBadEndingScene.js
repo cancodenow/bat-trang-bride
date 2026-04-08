@@ -1,11 +1,14 @@
 import Phaser from "phaser";
 import {
     preloadUIAssets,
+    preloadSoundAssets,
     createImageButton,
     createDevSkipButton,
     createBackButton,
     createTryAgainButton,
     getResponsiveMetrics,
+    crossfadeMusic,
+    playSFX,
 } from "../UIHelpers";
 
 export default class BargainBadEndingScene extends Phaser.Scene {
@@ -15,11 +18,15 @@ export default class BargainBadEndingScene extends Phaser.Scene {
 
     preload() {
         preloadUIAssets(this);
+        preloadSoundAssets(this);
     }
 
     create() {
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
+
+        playSFX(this, "wrong");
+        crossfadeMusic(this, "tiktok-music");
 
         this.cameras.main.setBackgroundColor("#000000");
 

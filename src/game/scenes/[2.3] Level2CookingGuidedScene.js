@@ -6,7 +6,11 @@ import {
     createModalFrame,
     createDevSkipButton,
     createBackButton,
-    getResponsiveMetrics
+    getResponsiveMetrics,
+    preloadSoundAssets,
+    playMusic,
+    playSFX,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class Level2CookingGuidedScene extends Phaser.Scene {
@@ -17,6 +21,7 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
     preload() {
         preloadUIAssets(this);
         preloadLevelAssets(this, 2);
+        preloadSoundAssets(this);
     }
 
     create(data = {}) {
@@ -24,6 +29,8 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         this.W = width;
         this.H = height;
         this.metrics = getResponsiveMetrics(this);
+
+        playMusic(this, "bgm");
 
         // ===================== CHALLENGE DATA =====================
 
@@ -384,9 +391,11 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
                 this.lockIcons = true;
                 if (isCorrect) {
                     icon.setTint(0x66ff66);
+                    playSFX(this, "correct");
                     this.time.delayedCall(600, () => this.onCorrect());
                 } else {
                     icon.setTint(0xff4444);
+                    playSFX(this, "wrong");
                     this.time.delayedCall(600, () => {
                         icon.clearTint();
                         icon.setDisplaySize(iconSize, iconSize);

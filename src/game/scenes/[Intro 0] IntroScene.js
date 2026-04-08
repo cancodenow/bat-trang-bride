@@ -3,6 +3,7 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     preloadCharacters,
+    preloadSoundAssets,
     DialogueRunner,
     createDevSkipButton,
     createBackButton,
@@ -10,6 +11,7 @@ import {
     getResponsiveMetrics,
     bindResponsiveScene,
     createContinueButton,
+    crossfadeMusic,
 } from "../UIHelpers";
 
 export default class IntroScene extends Phaser.Scene {
@@ -23,10 +25,14 @@ export default class IntroScene extends Phaser.Scene {
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
         preloadCharacters(this);
+        preloadSoundAssets(this);
     }
 
     create(data = {}) {
         const metrics = getResponsiveMetrics(this);
+
+        // Crossfade to TikTok-style wedding music
+        crossfadeMusic(this, "tiktok-music");
 
         addCoverBg(this, "introBg");
 

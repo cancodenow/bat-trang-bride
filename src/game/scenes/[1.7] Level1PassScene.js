@@ -2,11 +2,14 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
+    preloadSoundAssets,
     createDevSkipButton,
     createBackButton,
     createCompletionBoard,
     addCoverBg,
     getResponsiveMetrics,
+    crossfadeMusic,
+    playSFX,
 } from "../UIHelpers";
 
 export default class Level1PassScene extends Phaser.Scene {
@@ -18,9 +21,13 @@ export default class Level1PassScene extends Phaser.Scene {
         this.load.image("marketBg", "/assets/background/market-bg.png");
         preloadUIAssets(this);
         preloadLevelAssets(this, 1);
+        preloadSoundAssets(this);
     }
 
     create() {
+        playSFX(this, "food-step");
+        crossfadeMusic(this, "win");
+
         const { buttonScale } = getResponsiveMetrics(this);
 
         addCoverBg(this, "marketBg", { depth: 0 });
