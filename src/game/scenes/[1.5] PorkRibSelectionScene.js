@@ -279,7 +279,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             );
             this.statusText.setColor("#ffffff");
         } else {
-            this.statusText.setText("1kg selected, but total exceeds budget.\nBargaining is required.");
+            this.statusText.setText("1kg selected, but total exceeds budget.");
             this.statusText.setColor("#ff6666");
         }
     }
