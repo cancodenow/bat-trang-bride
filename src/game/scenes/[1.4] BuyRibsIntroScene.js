@@ -3,16 +3,14 @@ import {
     preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
-    createDialogueBox,
     createDevSkipButton,
     preloadCharacters,
-    createCharacter,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
-    createImageButton,
     crossfadeMusic,
     goToScene,
+    DialogueRunner,
 } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
@@ -30,10 +28,10 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
 
     create() {
         updateCheckpoint("BuyRibsIntroScene", "level1.buy-ribs-intro");
-        crossfadeMusic(this, "market-music");
+        crossfadeMusic(this, "market-music", { volume: 0.3 });
 
         const metrics = getResponsiveMetrics(this);
-        const { width, height, fs, dpr, buttonScale } = metrics;
+        const { width, height, dpr, buttonScale } = metrics;
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -41,54 +39,44 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         addCoverBg(this, "marketBg");
         this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.4);
 
-        // Characters
-        createCharacter(this, width * 0.2, height - Math.round(20 * dpr), "char-wife", {
-            scale: 0.5,
-        });
-        createCharacter(this, width * 0.8, height - Math.round(20 * dpr), "char-mom-happy", {
-            scale: 0.5,
-            flipX: true,
-        });
-
-        // Dialogue box
-        createDialogueBox(this, width / 2, height - Math.round(140 * dpr), width / 2, Math.round(200 * dpr), {
-            fillColor: 0x1a2a3a,
-            fillAlpha: 0.92,
-            strokeColor: 0x5a8aaa,
-        });
-
-        // Speaker label
-        this.add.text(width / 4 + Math.round(20 * dpr), height - Math.round(230 * dpr), "Mom", {
-            fontSize: fs(18),
-            color: "#ffcc00",
-            fontFamily: "SVN-Pequena Neo",
-            fontStyle: "bold",
-        });
-
-        // Dialogue text
-        this.add
-            .text(
-                width / 2,
-                height - Math.round(150 * dpr),
-                "Oh, you're so capable — you bought everything correctly.\nGo buy 1kg of pork ribs for me, then we'll head home.",
+        // Dialogue
+        this.runner = new DialogueRunner(this, {
+            box: {
+                x: width / 2,
+                y: height - Math.round(100 * dpr),
+                w: Math.round(780 * dpr),
+                h: Math.round(130 * dpr),
+            },
+            chars: {
+                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
+                right: { x: width * 0.8, y: height + Math.round(70 * dpr), scale: 0.5, flipX: true },
+            },
+            lines: [
                 {
-                    fontSize: fs(20),
-                    color: "#000000",
-                    fontFamily: "SVN-Pequena Neo",
-                    align: "center",
-                    wordWrap: { width: width - Math.round(200 * dpr) },
-                    lineSpacing: Math.round(8 * dpr),
+                    text: "Mom: Oh, you're so capable — you bought everything correctly.",
+                    charLeft: "char-wife",
+                    charRight: "char-mom-happy",
                 },
-            )
-            .setOrigin(0.5);
-
-        // Button
-        createImageButton(this, width / 2, height - 60 * dpr, "", {
-            textureKey: "lv1-opt-tasks-of-course",
-            scale: buttonScale,
-            onClick: () => goToScene(this, "PorkRibSelectionScene"),
+                {
+                    text: "Mom: Go buy 1kg of pork ribs for me, then we'll head home.",
+                    charLeft: "char-wife",
+                    charRight: "char-mom-happy",
+                },
+            ],
+            onComplete: () => this.showActionButton(),
         });
+
         createDevSkipButton(this, "PorkRibSelectionScene");
         createBackButton(this);
+    }
+
+    showActionButton() {
+        const { width, height, dpr, buttonScale } = getResponsiveMetrics(this);
+
+        this.runner.positionContinueButton({
+            scale: buttonScale * 0.8,
+            onClick: () => goToScene(this, "PorkRibSelectionScene"),
+            gap: Math.round(-20 * dpr),
+        });
     }
 }

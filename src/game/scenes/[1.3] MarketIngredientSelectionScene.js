@@ -38,7 +38,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.metrics = getResponsiveMetrics(this);
         this._hasInstructionModal = data.showInstruction !== false;
 
-        playMusic(this, "market-music");
+        playMusic(this, "market-music", { volume: 0.3 });
 
         this.cameras.main.setBackgroundColor("#ffffff");
 

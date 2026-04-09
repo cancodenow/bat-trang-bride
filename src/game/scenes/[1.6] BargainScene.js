@@ -35,7 +35,7 @@ export default class BargainScene extends Phaser.Scene {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
-        playMusic(this, "market-music");
+        playMusic(this, "market-music", { volume: 0.3 });
 
         this.cameras.main.setBackgroundColor("#103c5a");
         addCoverBg(this, "marketBg");

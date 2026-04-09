@@ -34,7 +34,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         const { width, height } = this.scale;
         const { fs, dpr } = this.metrics;
 
-        playMusic(this, "market-music");
+        playMusic(this, "market-music", { volume: 0.3 });
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -326,7 +326,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         const { bg: yesBtn } = createImageButton(
             this,
             width / 2,
-            frameY + Math.round(80 * dpr),
+            frameY + Math.round(120 * dpr),
             "",
             { textureKey: "lv1-opt-ribs-yes", scale: YES_SCALE, onClick: () => goToScene(this, "BargainScene") },
         );
