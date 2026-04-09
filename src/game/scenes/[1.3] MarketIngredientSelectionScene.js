@@ -137,7 +137,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
                 items: [
                     { name: "Shiitake mushrooms", slotX: 0.01, slotY: 0.65, scale: 0.78, priceDy: 40 },
                     { name: "Carrot", slotX: 0.15, slotY: 0.55, scale: 0.85 },
-                    { name: "Dried lotus seeds", slotX: 0.32, slotY: 0.5, scale: 0.85, labelWidth: 100, priceDy: 40 },
+                    { name: "Dried lotus seeds", slotX: 0.64, slotY: 0.72, scale: 0.85, labelWidth: 100, priceDy: 40 },
                     { name: "Kohlrabi", slotX: 0.40, slotY: 0.55, scale: 0.85, labelWidth: 130 },
                     { name: "Lime leaves", slotX: 0.80, slotY: 0.48, scale: 0.75, nameDy: 2 },
                     { name: "Dried bamboo shoots", slotX: 0.78, slotY: 0.68, scale: 0.95, priceDy: 40 },
@@ -148,7 +148,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             {
                 title: "Stall 2",
                 items: [
-                    { name: "Pigeon", slotX: 0.05, slotY: 0.57, scale: 0.88, labelWidth: 110 },
+                    { name: "Pigeon", slotX: 0.36, slotY: 0.49, scale: 0.88, labelWidth: 110 },
                     { name: "Vietnamese chicken", slotX: 0.14, slotY: 0.57, scale: 0.95, labelWidth: 120, priceDy: 40 },
                     { name: "Pork ribs", slotX: 0.3, slotY: 0.57, scale: 0.90, labelWidth: 120 },
                     { name: "Fresh shrimp", slotX: 0.5, slotY: 0.57, scale: 0.88, labelWidth: 120 },
@@ -414,7 +414,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.marketWorld = this.add.container(this.MARKET_X, 0);
 
         const bgImg = this.add
-            .image(this.MARKET_WORLD_W / 2, viewportCenterY, "marketBg")
+            .image(this.MARKET_WORLD_W / 2, viewportCenterY, "lv1-bg-market")
             .setDisplaySize(this.MARKET_WORLD_W, this.MARKET_VIEW_H);
         this.marketWorld.add(bgImg);
 
@@ -837,12 +837,15 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this._dishCard = container;
     }
 
-    setCurrentDish(dish) {
+    setCurrentDish(dish, options = {}) {
         this.currentDish = dish;
         this.selectedIngredients = {};
-        this.refreshMarketItems();
-        this.updateSidebar();
-        this.updateBasketPanel();
+        // Skip redundant updates when called from validateSelection (already updated)
+        if (!options.skipRefresh) {
+            this.refreshMarketItems();
+            this.updateSidebar();
+            this.updateBasketPanel();
+        }
     }
 
     switchToNextIncompleteDish() {
@@ -895,17 +898,16 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
             this.completedDishes[this.currentDish.id] = true;
             this.showImmediateFeedback("✓ CORRECT!", "#66ff66");
 
-            this.selectedIngredients = {};
-            this.updateBasketPanel();
+            // Single batch update after marking complete - dish switch will refresh again
             this.updateSidebar();
-            this.refreshMarketItems();
 
-            this.time.delayedCall(1500, () => {
+            // Faster transition (600ms vs 1500ms) - snappier UX
+            this.time.delayedCall(600, () => {
                 this.switchToNextIncompleteDish();
             });
 
             if (Object.keys(this.completedDishes).length === 6) {
-                this.time.delayedCall(2500, () => {
+                this.time.delayedCall(1600, () => {
                     this.showLevelCompleteModal();
                 });
             }
