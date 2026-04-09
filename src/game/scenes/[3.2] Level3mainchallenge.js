@@ -24,12 +24,16 @@ import { updateCheckpoint } from "../progress.js";
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Set true to draw numbered circles at every slot & token position for tuning
-const DEBUG_POSITIONS = true;
+const DEBUG_POSITIONS = false;
 
 // Scale of food tokens at rest, while dragging, and when placed
 const TOKEN_SCALE = 0.2;
 const TOKEN_DRAG_SCALE = 0.1;
 const TOKEN_PLACED_SCALE = 0.3;
+const INFO_CARD_SCALE = 0.15;
+const INFO_CARD_OFFSET_X = 120;
+const INFO_CARD_OFFSET_Y = -80;
+const INFO_CARD_DEPTH = 20;
 
 // Scale of the dish tray image (center of screen)
 const TRAY_SCALE = 1.2;
@@ -55,6 +59,15 @@ const BOARD_TOKEN_ROW_GAP = 200; // vertical distance between rows (px)
 
 // Scale of each food token image (separate from the drop-zone radius)
 const FOOD_TOKEN_SCALE = TOKEN_SCALE;
+
+const DISH_CARD_KEYS = [
+    "lv3-dish-card-bamboo",
+    "lv3-dish-card-shrimp-rolls",
+    "lv3-dish-card-chicken",
+    "lv3-dish-card-pork-puff",
+    "lv3-dish-card-pigeon",
+    "lv3-dish-card-kohlrabi",
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -190,11 +203,13 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             token.on("pointerover", () => {
                 if (!token.placed && this._dragging === null) {
                     token.setScale(this._foodTokenScale * 1.1);
+                    this._showInfoCard(token);
                 }
             });
             token.on("pointerout", () => {
                 if (!token.placed && this._dragging === null) {
                     token.setScale(this._foodTokenScale);
+                    this._hideInfoCard(token);
                 }
             });
             token.on("pointerdown", () => this._startDrag(token));
@@ -241,6 +256,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     _startDrag(token) {
         if (token.placed) return;
         this._dragging = token;
+        this._hideInfoCard(token);
         token.setDepth(100).setScale(TOKEN_DRAG_SCALE);
         this._clearErrorText();
     }
@@ -390,5 +406,30 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
                 onClick: () => goToScene(this, "Level4IntroScene"),
             },
         });
+    }
+
+    _showInfoCard(token) {
+        this._hideInfoCard(token);
+        const { width, height } = this.metrics;
+
+        const cardKey = DISH_CARD_KEYS[token.slotIndex];
+        const cardScale = INFO_CARD_SCALE * this.metrics.dpr;
+        const cardX = token.x + (INFO_CARD_OFFSET_X * this.metrics.dpr);
+        const cardY = token.y + (INFO_CARD_OFFSET_Y * this.metrics.dpr);
+
+        const card = this.add
+            .image(cardX, cardY, cardKey)
+            .setScale(cardScale)
+            .setOrigin(0, 0.5)
+            .setDepth(INFO_CARD_DEPTH);
+
+        token._infoCard = card;
+    }
+
+    _hideInfoCard(token) {
+        if (token._infoCard && token._infoCard.active) {
+            token._infoCard.destroy();
+            token._infoCard = null;
+        }
     }
 }

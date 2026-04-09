@@ -218,6 +218,13 @@ const LEVEL_ASSETS = {
         { key: "lv3-food-1", file: "level-3/food/no-plate/no-plate-poached-chicken-with-lime-leaves.png" },
         { key: "lv3-food-2", file: "level-3/food/no-plate/no-plate-crispy-shrimp-rolls.png" },
         { key: "lv3-food-3", file: "level-3/food/no-plate/no-plate-stir-fried-kohlrabi-with-squid.png" },
+        // infor cards
+        { key: "lv3-dish-card-pork-puff", file: "level-1/dish-hover-info-card/infor-card-pork-puff-skin-soup.png" },
+        { key: "lv3-dish-card-shrimp-rolls", file: "level-1/dish-hover-info-card/infor-card-crispy-shrimp-rolls.png" },
+        { key: "lv3-dish-card-pigeon", file: "level-1/dish-hover-info-card/infor-card-slow-braised-pigeon-with-lotus-seeds.png" },
+        { key: "lv3-dish-card-bamboo", file: "level-1/dish-hover-info-card/infor-card-bamboo-shoot-shredded-squid-soup.png" },
+        { key: "lv3-dish-card-chicken", file: "level-1/dish-hover-info-card/infor-card-poached-chicken-with-lime-leaves.png" },
+        { key: "lv3-dish-card-kohlrabi", file: "level-1/dish-hover-info-card/infor-card-stir-fried-kohlrabi-with-squid.png" },
         // how-to-play
         { key: "lv3-how-to-play-1", file: "level-3/how-to-play-lv3-1.png" },
         { key: "lv3-how-to-play-2", file: "level-3/how-to-play-lv3-2.png" },
