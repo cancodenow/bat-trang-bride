@@ -37,8 +37,7 @@ export default class IntroScene extends Phaser.Scene {
         const dialogueHalfHeight = Math.round(metrics.dialogue.height / 2);
         const dialogueY = Math.max(metrics.topInset + dialogueHalfHeight, metrics.dialogue.y - dialogueLift);
 
-        // Crossfade to TikTok-style wedding music
-        crossfadeMusic(this, "tiktok-music");
+        crossfadeMusic(this, "wedding");
 
         addCoverBg(this, "introBg");
 

@@ -297,6 +297,7 @@ const SOUND_ASSETS = {
     shared: [
         { key: "bgm", file: "sound/bgm.mp3" },
         { key: "intro-music", file: "sound/intro.mp3" },
+        { key: "wedding", file: "sound/wedding.mp3" },
         { key: "market-music", file: "sound/market.mp3" },
         { key: "bed-music", file: "sound/bed.mp3" },
         { key: "tiktok-music", file: "sound/tiktok.mp3" },
@@ -508,8 +509,9 @@ export function playSFX(scene, key, config = {}) {
  * @param {Phaser.Scene} scene
  * @param {string} newKey - New music key to fade in
  * @param {number} duration - Fade duration in ms (default: 1000)
+ * @param {object} config - Optional Phaser sound config for the new music (loop, volume, etc.)
  */
-export function crossfadeMusic(scene, newKey, duration = 1000) {
+export function crossfadeMusic(scene, newKey, duration = 1000, config = {}) {
     // Stop ALL currently playing sounds to ensure clean transition
     const soundManager = scene.sound;
     const currentlyPlaying = [];
@@ -531,6 +533,8 @@ export function crossfadeMusic(scene, newKey, duration = 1000) {
         });
     }
 
+    const defaultConfig = { volume: 0.5 };
+
     // Fade in new music
     if (scene.cache.audio.exists(newKey)) {
         const newMusic = scene.sound.add(newKey, { loop: true, volume: 0 });
@@ -538,7 +542,7 @@ export function crossfadeMusic(scene, newKey, duration = 1000) {
         newMusic.play();
         scene.tweens.add({
             targets: newMusic,
-            volume: 0.5,
+            volume: config.volume || defaultConfig.volume,
             duration: duration,
         });
     }
