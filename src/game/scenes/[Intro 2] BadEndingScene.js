@@ -4,7 +4,7 @@ import {
     preloadSoundAssets,
     createDevSkipButton,
     getResponsiveMetrics,
-    createContinueButton,
+    createTryAgainButton,
     playSFX,
     playMusic,
     createBackButton,
@@ -58,9 +58,10 @@ export default class BadEndingScene extends Phaser.Scene {
             .setOrigin(0.5);
 
         // Restart button
-        createContinueButton(this, width / 2, height / 2 + 120 * dpr, {
-            onClick: () => goToScene(this, "MorningScene01", { skipToChoice: true }),
-            scale: buttonScale,
+        createTryAgainButton(this, width / 2, height / 2 + 120 * dpr, {
+            onClick: () =>
+                goToScene(this, "MorningScene01", { skipToChoice: true }),
+            scale: buttonScale
         });
 
         // Back button uses progress to return to retry target

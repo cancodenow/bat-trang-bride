@@ -28,7 +28,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
 
     create() {
         updateCheckpoint("BuyRibsIntroScene", "level1.buy-ribs-intro");
-        crossfadeMusic(this, "market-music", { volume: 0.3 });
+        crossfadeMusic(this, "market-music", 1000, { volume: 0.3 });
 
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr, buttonScale } = metrics;
