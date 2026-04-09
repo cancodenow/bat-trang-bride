@@ -99,26 +99,34 @@ export default class BargainScene extends Phaser.Scene {
     }
 
     createChoiceButtons() {
-        const { width, height } = this.scale;
-        const { dpr, buttonScale } = getResponsiveMetrics(this);
+        const metrics = getResponsiveMetrics(this);
+        const { dpr, buttonScale } = metrics;
+
+        // Position buttons relative to dialogue box center for symmetry
+        const dialogueBox = this.runner.config.box;
+        const centerX = dialogueBox.x;
+        const buttonY = dialogueBox.y - dialogueBox.h / 2 - Math.round(60 * dpr);
 
         // Button 1 — correct: bargain
         const { bg: btn1 } = createImageButton(
             this,
-            width / 2 - Math.round(180 * dpr),
-            height - Math.round(240 * dpr),
+            0,
+            buttonY,
             "",
             { textureKey: "lv1-opt-bargain", scale: buttonScale, onClick: () => this.onCorrectChoice() },
         );
+        btn1.setPosition(centerX - dialogueBox.w / 2 + btn1.displayWidth / 2 + Math.round(40 * metrics.dpr), buttonY);
+
 
         // Button 2 — wrong: accept price
         const { bg: btn2 } = createImageButton(
             this,
-            width / 2 + Math.round(180 * dpr),
-            height - Math.round(240 * dpr),
+            0,
+            buttonY,
             "",
             { textureKey: "lv1-opt-no-bargain", scale: buttonScale, onClick: () => goToScene(this, "BargainBadEndingScene") },
         );
+        btn2.setPosition(centerX + dialogueBox.w / 2 - btn2.displayWidth / 2 - Math.round(40 * metrics.dpr), buttonY);
 
         this.choiceContainer.add([btn1, btn2]);
     }

@@ -115,7 +115,8 @@ export default class MorningScene01 extends Phaser.Scene {
     }
 
     showChoiceButtons() {
-        const { dpr, width, height, buttonScale } = getResponsiveMetrics(this);
+        const metrics = getResponsiveMetrics(this);
+        const { dpr, buttonScale } = metrics;
         getAnalytics().markCheckpoint({
             sceneKey: this.scene.key,
             checkpointId: "intro.morning.choice",
@@ -123,21 +124,27 @@ export default class MorningScene01 extends Phaser.Scene {
 
         this.runner.hintObj.setText("Make a choice:");
 
+        // Position buttons relative to dialogue box center for symmetry
+        const dialogueBox = this.runner.config.box;
+        const centerX = dialogueBox.x;
+        const buttonY = dialogueBox.y - dialogueBox.h / 2 - Math.round(60 * dpr);
+
         // Option: Keep scrolling TikTok → bad ending
-        createImageButton(this, width / 2 - Math.round(200 * dpr), height - Math.round(200 * dpr), "", {
+        const btn1 = createImageButton(this, 0, buttonY, "", {
             textureKey: "lv1-opt-wake-tiktok",
             hoverScale: true,
             scale: buttonScale,
             onClick: () => goToScene(this, "BadEndingScene"),
-        });
-
+        }).bg;
+        btn1.setX(centerX - dialogueBox.w / 2 + btn1.displayWidth / 2 + Math.round(40 * dpr));
 
         // Option: Get up → continue
-        createImageButton(this, width / 2 + Math.round(200 * dpr), height - Math.round(200 * dpr), "", {
+        const btn2 = createImageButton(this, 0, buttonY, "", {
             textureKey: "lv1-opt-wake-get-up",
             hoverScale: true,
             scale: buttonScale,
             onClick: () => goToScene(this, "Scene02MarketInvite"),
-        });
+        }).bg;
+        btn2.setX(centerX + dialogueBox.w / 2 - btn2.displayWidth / 2 - Math.round(40 * dpr));
     }
 }
