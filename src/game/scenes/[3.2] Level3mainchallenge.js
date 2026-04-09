@@ -294,6 +294,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Correct placement ─────────────────────────────────────────
 
     _placeToken(token, slot) {
+        this._hideInfoCard(token);
         playSFX(this, "correct");
         slot.filled = true;
         token.placed = true;
@@ -324,6 +325,7 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
     // ── Wrong drop — return to board ──────────────────────────────
 
     _returnToken(token, fromX, fromY) {
+        this._hideInfoCard(token);
         playSFX(this, "wrong");
         token.setDepth(10);
 
@@ -431,5 +433,10 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
             token._infoCard.destroy();
             token._infoCard = null;
         }
+    }
+
+    shutdown() {
+        // Clean up any remaining info cards on all tokens
+        this._tokens.forEach(token => this._hideInfoCard(token));
     }
 }
