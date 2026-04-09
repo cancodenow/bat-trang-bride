@@ -33,9 +33,6 @@ export default class IntroScene extends Phaser.Scene {
     create(data = {}) {
         updateCheckpoint("IntroScene", "intro.story");
         const metrics = getResponsiveMetrics(this);
-        const dialogueLift = Math.round(48 * metrics.dpr);
-        const dialogueHalfHeight = Math.round(metrics.dialogue.height / 2);
-        const dialogueY = Math.max(metrics.topInset + dialogueHalfHeight, metrics.dialogue.y - dialogueLift);
 
         crossfadeMusic(this, "wedding");
 
@@ -44,7 +41,7 @@ export default class IntroScene extends Phaser.Scene {
         this.runner = new DialogueRunner(this, {
             box: {
                 x: metrics.dialogue.x,
-                y: dialogueY,
+                y: metrics.dialogue.y,
                 w: metrics.dialogue.width,
                 h: metrics.dialogue.height,
             },

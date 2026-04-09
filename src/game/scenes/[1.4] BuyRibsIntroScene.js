@@ -31,7 +31,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         crossfadeMusic(this, "market-music", 1000, { volume: 0.3 });
 
         const metrics = getResponsiveMetrics(this);
-        const { width, height, dpr, buttonScale } = metrics;
+        const { width, height, dpr } = metrics;
 
         this.cameras.main.setBackgroundColor("#103c5a");
 
@@ -42,14 +42,14 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
         // Dialogue
         this.runner = new DialogueRunner(this, {
             box: {
-                x: width / 2,
-                y: height - Math.round(100 * dpr),
-                w: Math.round(780 * dpr),
-                h: Math.round(130 * dpr),
+                x: metrics.dialogue.x,
+                y: metrics.dialogue.y,
+                w: metrics.dialogue.width,
+                h: metrics.dialogue.height,
             },
             chars: {
-                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
-                right: { x: width * 0.8, y: height + Math.round(70 * dpr), scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height, scale: 0.5 },
+                right: { x: width * 0.8, y: height, scale: 0.5, flipX: true },
             },
             lines: [
                 {

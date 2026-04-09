@@ -1,6 +1,6 @@
-import { getResponsiveMetrics } from "./responsive.js";
 import { loadProgress } from "../progress.js";
 import { startManagedScene } from "../sceneLoading.js";
+import { getResponsiveMetrics } from "./responsive.js";
 
 // ===================== IMAGE COMPONENT HELPERS =====================
 // Every function reads the PNG's real dimensions via nativeSize() and

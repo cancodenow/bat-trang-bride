@@ -90,14 +90,14 @@ export default class MorningScene01 extends Phaser.Scene {
 
         this.runner = new DialogueRunner(this, {
             box: {
-                x: width / 2,
-                y: height - Math.round(100 * dpr),
-                w: Math.round(780 * dpr),
-                h: Math.round(130 * dpr),
+                x: metrics.dialogue.x,
+                y: metrics.dialogue.y,
+                w: metrics.dialogue.width,
+                h: metrics.dialogue.height,
             },
             chars: {
-                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
-                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height, scale: 0.5 },
+                right: { x: width * 0.8, y: height, scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showChoiceButtons(),

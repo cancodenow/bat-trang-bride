@@ -342,7 +342,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
       const { width, height, buttonScale } = this.metrics;
       createCompletionBoard(this, "lv4-finish", {
           contentHeightRatio: 0.5,
-          button: { scale: buttonScale, onClick: () => goToScene(this, "Level4PassScene") },
+          button: { scale: buttonScale, onClick: () => goToScene(this, "FinishLevelScene") },
       });
   }
 }

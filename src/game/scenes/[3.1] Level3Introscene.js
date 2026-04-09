@@ -36,10 +36,15 @@ export default class Level3IntroScene extends Phaser.Scene {
 
         // Initialize DialogueRunner with dialogue configuration
         this.runner = new DialogueRunner(this, {
-            box: { x: width / 2, y: height - Math.round(120 * dpr), w: Math.round(750 * dpr), h: Math.round(150 * dpr) },
+            box: {
+                x: metrics.dialogue.x,
+                y: metrics.dialogue.y,
+                w: metrics.dialogue.width,
+                h: metrics.dialogue.height,
+            },
             chars: {
-                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
-                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height, scale: 0.5 },
+                right: { x: width * 0.8, y: height, scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => goToScene(this, "Level3MainChallengeScene"),

@@ -70,14 +70,14 @@ export default class BargainScene extends Phaser.Scene {
         // Runner handles initial 3-line dialogue
         this.runner = new DialogueRunner(this, {
             box: {
-                x: width / 2,
-                y: height - Math.round(160 * dpr),
-                w: width - Math.round(100 * dpr),
-                h: Math.round(240 * dpr),
+                x: metrics.dialogue.x,
+                y: metrics.dialogue.y,
+                w: metrics.dialogue.width,
+                h: metrics.dialogue.height,
             },
             chars: {
-                left: { x: width * 0.2, y: height + Math.round(70 * dpr), scale: 0.5 },
-                right: { x: width * 0.8, y: height + Math.round(50 * dpr), scale: 0.5, flipX: true },
+                left: { x: width * 0.2, y: height, scale: 0.5 },
+                right: { x: width * 0.8, y: height, scale: 0.5, flipX: true },
             },
             lines: this.dialogueLines,
             onComplete: () => this.showChoices(),

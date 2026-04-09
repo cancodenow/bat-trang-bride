@@ -52,10 +52,6 @@ const RESPONSIVE_RULES = Object.freeze({
         touch: Object.freeze({
             minTouchTarget: 86,
         }),
-        dialogue: Object.freeze({
-            widthRatio: 0.95,
-            height: 240,
-        }),
         modal: Object.freeze({
             widthRatio: 0.9,
             heightRatio: 0.52,
@@ -94,7 +90,7 @@ const RESPONSIVE_RULES = Object.freeze({
         }),
         dialogue: Object.freeze({
             widthRatio: 0.8,
-            maxWidth: 1100,
+            maxWidth: 800,
             height: 150,
         }),
         modal: Object.freeze({
@@ -172,8 +168,9 @@ export function getResponsiveMetrics(sceneOrScale) {
             : viewportShortSide <= PHONE_LARGE_MAX
                 ? "phone-large"
                 : "desktop";
-    const rules = isPortrait ? RESPONSIVE_RULES.portrait : RESPONSIVE_RULES.landscape;
-    const { spacing, typography, touch, dialogue, modal, buttons, sidebar, challengeChoices } = rules;
+    const rules = RESPONSIVE_RULES.landscape;
+    const { spacing, typography, touch, modal, buttons, sidebar, challengeChoices } = rules;
+    const dialogue = RESPONSIVE_RULES.landscape.dialogue;
     const dpr = getSafeDevicePixelRatio();
 
     const edgePadding = Math.round(width * spacing.edgePaddingRatio);
@@ -185,7 +182,7 @@ export function getResponsiveMetrics(sceneOrScale) {
 
     const dialogueWidth = Math.min(
         Math.round(width * dialogue.widthRatio),
-        dialogue.maxWidth ?? Math.round(width * dialogue.widthRatio),
+        dialogue.maxWidth * dpr ?? Math.round(width * dialogue.widthRatio),
     );
     const dialogueHeight = Math.round(dialogue.height * dpr);
     const dialogueY = height - bottomInset - Math.round(dialogueHeight / 2);

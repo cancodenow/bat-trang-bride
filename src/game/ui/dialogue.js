@@ -6,7 +6,7 @@ import { createCharacter } from "./characters.js";
 import { getResponsiveMetrics, getBottomButtonY, getDialogueYAboveButton } from "./responsive.js";
 import { createContinueButton, getContinueButtonHeight } from "./buttons.js";
 
-const TEXT_WIDTH_RATIO = 0.92;
+const TEXT_WIDTH_RATIO = 0.88;
 const HINT_Y_RATIO = 0.35;
 const CONTENT_TOP_PADDING = 0.18;
 const CONTENT_BOTTOM_PADDING = 0.1;
@@ -92,7 +92,7 @@ export class DialogueRunner {
 
         this.lines = config.lines || [];
         this.lineIndex = config.skipTo || 0;
-        this._dialogueFontSize = parseFontSize(metrics.fs(20));
+        this._dialogueFontSize = parseFontSize(metrics.fs(18));
         this._hintFontSize = parseFontSize(metrics.fs(18), 14);
         this._textAreaWidth = Math.max(
             Math.round(responsiveBox.w * TEXT_WIDTH_RATIO),

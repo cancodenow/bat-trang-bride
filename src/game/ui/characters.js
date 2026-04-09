@@ -1,6 +1,6 @@
 // ===================== CHARACTER HELPERS =====================
 
-import { DPR, getResponsiveMetrics } from "./responsive";
+import { getResponsiveMetrics } from "./responsive";
 import { preloadAssetGroups } from "./assets.js";
 
 /**
