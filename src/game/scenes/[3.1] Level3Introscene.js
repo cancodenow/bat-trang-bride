@@ -22,7 +22,7 @@ export default class Level3IntroScene extends Phaser.Scene {
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
-        this.add.image(width / 2, height / 2, "lv2-cl1-bg-start").setDisplaySize(width, height);
+        this.add.image(width / 2, height / 2, "lv3-cl1-bg-start").setDisplaySize(width, height);
 
         this.cameras.main.setBackgroundColor("#3a3a4a");
 

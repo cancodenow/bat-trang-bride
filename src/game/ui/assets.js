@@ -188,6 +188,7 @@ const LEVEL_ASSETS = {
         // finish screen
         { key: "lv3-finish", file: "level-3/finish-level-3.png" },
         // backgrounds
+        { key: "lv3-cl1-bg-start", file: "level-3/cl1-lv3/bg-cl1-lv3/table.png" },
         { key: "lv3-bg-cl2", file: "level-3/cl2-lv3/bg-cl2-lv3/table.png" },
         // UI elements
         // dish options (English labels)
@@ -382,7 +383,7 @@ const ASSET_GROUPS = {
     "level-3-audio": [],
     "level-4-audio": [],
     "level3-intro-background": [
-        { key: "lv2-cl1-bg-start", file: "level-2/cl1-lv2/bg-level2/cl1-lv2-bg-start.png" },
+        { key: "lv3-cl1-bg-start", file: "level-2/cl1-lv2/bg-level2/cl1-lv2-bg-start.png" },
     ],
     "finish-scene-background": [
         { key: "lv3-bg-cl2", file: "level-3/cl2-lv3/bg-cl2-lv3/table.png" },

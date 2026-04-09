@@ -518,7 +518,7 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         // Dish unlocked image
         this.add
             .image(this.W / 2, this.H / 2 - 60, challenge.dishUnlocked)
-            .setScale(0.06 * this.metrics.dpr);
+            .setScale(0.3 * this.metrics.dpr);
 
         // Random compliment dialogue from mom
         const complimentLines = [
