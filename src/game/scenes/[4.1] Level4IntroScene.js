@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, goToScene } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, goToScene, purgeLevelAssets } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
 export default class Level4IntroScene extends Phaser.Scene {
@@ -16,6 +16,7 @@ export default class Level4IntroScene extends Phaser.Scene {
 
   create() {
     updateCheckpoint("Level4IntroScene", "level4.intro");
+    purgeLevelAssets(this.game, 3);
     const metrics = getResponsiveMetrics(this);
     const { width, height, dpr } = metrics;
 

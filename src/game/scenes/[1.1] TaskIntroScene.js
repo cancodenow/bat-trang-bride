@@ -32,6 +32,7 @@ export default class TaskIntroScene extends Phaser.Scene {
 
     create() {
         updateCheckpoint("TaskIntroScene", "level1.task-intro");
+
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 
@@ -103,5 +104,9 @@ export default class TaskIntroScene extends Phaser.Scene {
             scale: buttonScale,
             onClick: () => goToScene(this, "MarketIngredientSelectionScene"),
         });
+    }
+
+    destroy() {
+        purgeStoryAssets(this.game);
     }
 }

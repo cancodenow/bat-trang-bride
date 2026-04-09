@@ -12,6 +12,7 @@ import {
     playMusic,
     crossfadeMusic,
     goToScene,
+    purgeLevelAssets,
 } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
@@ -29,6 +30,7 @@ export default class Level2IntroScene extends Phaser.Scene {
 
     create() {
         updateCheckpoint("Level2IntroScene", "level2.intro");
+        purgeLevelAssets(this.game, 1);
         const metrics = getResponsiveMetrics(this);
         const { width, height, dpr } = metrics;
 

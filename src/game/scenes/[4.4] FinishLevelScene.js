@@ -8,6 +8,7 @@ import {
     preloadSoundAssets,
     playMusic,
     goToScene,
+    purgeLevelAssets,
 } from "../UIHelpers";
 import { updateCheckpoint, markGameFinished } from "../progress.js";
 
@@ -25,6 +26,7 @@ export default class FinishLevelScene extends Phaser.Scene {
     create() {
         updateCheckpoint("FinishLevelScene", "game.complete");
         markGameFinished();
+        purgeLevelAssets(this.game, 4);
         const metrics = getResponsiveMetrics(this);
         const { width, height, edgePadding, topInset, bottomInset, dpr, buttonScale, fs } = metrics;
         const panelWidth = Math.min(width - edgePadding * 2, Math.round((metrics.isPortrait ? 760 : 980) * dpr));

@@ -248,7 +248,7 @@ const STORY_ASSETS = [
     { key: "introBg", file: "background/intro-bg.png" },
     { key: "morningBg", file: "background/morning-bg.png" },
     { key: "ingredientIntroBg", file: "background/ingredient-intro-bg.png" },
-    { key: "taskBg", file: "background/task-bg.png" },
+    { key: "taskBg", file: "background/market-bg.png" },
     { key: "marketBg", file: "background/market-bg.png" },
 ];
 
@@ -552,5 +552,84 @@ export function crossfadeMusic(scene, newKey, duration = 1000, config = {}) {
             volume: config.volume || defaultConfig.volume,
             duration: duration,
         });
+    }
+}
+
+// ===================== ASSET PURGE (Mobile Memory Management) =====================
+
+/**
+ * Purges all texture assets for a specific level from Phaser's cache.
+ * Idempotent - safe to call multiple times.
+ * Only purges image textures (skips audio).
+ *
+ * @param {Phaser.Game} game
+ * @param {1|2|3|4} level
+ */
+export function purgeLevelAssets(game, level) {
+    const scene = game.scene.getScenes(false)[0];
+    if (!scene) return;
+
+    const state = getAssetRuntimeState(game);
+    const levelAssets = LEVEL_ASSETS[level] || [];
+    const groupName = `level-${level}`;
+    let removedCount = 0;
+
+    levelAssets.forEach((asset) => {
+        // Skip audio assets - only purge image textures
+        if (asset.type === "audio") return;
+
+        const assetKey = `image:${asset.key}`;
+
+        // Remove from Phaser texture cache if exists
+        if (scene.textures.exists(asset.key)) {
+            scene.textures.remove(asset.key);
+            removedCount++;
+        }
+
+        // Clear from runtime state tracking so assets can be reloaded
+        state.queuedKeys.delete(assetKey);
+    });
+
+    // Clear the loaded group flag
+    state.loadedGroups.delete(groupName);
+
+    if (removedCount > 0) {
+        console.log(`[Purge] Level ${level}: removed ${removedCount} textures`);
+    }
+}
+
+/**
+ * Purges all story background assets from Phaser's cache.
+ * Idempotent - safe to call multiple times.
+ * Call when transitioning from story phases to gameplay.
+ *
+ * @param {Phaser.Game} game
+ */
+export function purgeStoryAssets(game) {
+    const scene = game.scene.getScenes(false)[0];
+    if (!scene) return;
+
+    const state = getAssetRuntimeState(game);
+    const groupName = "story-backgrounds";
+    let removedCount = 0;
+
+    STORY_ASSETS.forEach((asset) => {
+        const assetKey = `image:${asset.key}`;
+
+        // Remove from Phaser texture cache if exists
+        if (scene.textures.exists(asset.key)) {
+            scene.textures.remove(asset.key);
+            removedCount++;
+        }
+
+        // Clear from runtime state tracking
+        state.queuedKeys.delete(assetKey);
+    });
+
+    // Clear the loaded group flag
+    state.loadedGroups.delete(groupName);
+
+    if (removedCount > 0) {
+        console.log(`[Purge] Story assets: removed ${removedCount} textures`);
     }
 }
