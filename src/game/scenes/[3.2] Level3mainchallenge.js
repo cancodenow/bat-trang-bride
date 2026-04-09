@@ -24,15 +24,15 @@ import { updateCheckpoint } from "../progress.js";
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Set true to draw numbered circles at every slot & token position for tuning
-const DEBUG_POSITIONS = false;
+const DEBUG_POSITIONS = true;
 
 // Scale of food tokens at rest, while dragging, and when placed
 const TOKEN_SCALE = 0.2;
 const TOKEN_DRAG_SCALE = 0.1;
-const TOKEN_PLACED_SCALE = 0.20;
+const TOKEN_PLACED_SCALE = 0.3;
 
 // Scale of the dish tray image (center of screen)
-const TRAY_SCALE = 0.8;
+const TRAY_SCALE = 1.2;
 
 // Scale of the board image (left side)
 const BOARD_SCALE = 0.3 * 2.8;
@@ -40,13 +40,14 @@ const BOARD_SCALE = 0.3 * 2.8;
 // Drop zone offsets relative to tray center — one entry per slot (6 total).
 // Positive dx → right, positive dy → down.
 const SLOT_OFFSETS = [
-    { dx: -140, dy: -60 }, // slot 0 — top-left
-    { dx: 100, dy: -80 }, // slot 1 — top-right
-    { dx: -140, dy: 60 }, // slot 2 — mid-left
-    { dx: 100, dy: 50 }, // slot 3 — mid-right
-    { dx: -10, dy: 110 }, // slot 4 — bot-left
-    { dx: -10, dy: -150 }, // slot 5 — bot-right
+    { dx: -210, dy: -90 }, // slot 0 — top-left
+    { dx: 150, dy: -120 }, // slot 1 — top-right
+    { dx: -210, dy: 90 }, // slot 2 — mid-left
+    { dx: 150, dy: 75 }, // slot 3 — mid-right
+    { dx: -15, dy: 165 }, // slot 4 — bot-left
+    { dx: -15, dy: -225 }, // slot 5 — bot-right
 ];
+const DROP_RADIUS = 90; // px — how close to a slot center counts as a drop
 
 // Grid layout for food tokens on the board (2 cols × 3 rows)
 const BOARD_TOKEN_COL_GAP = 250; // horizontal distance between columns (px)
@@ -57,7 +58,6 @@ const FOOD_TOKEN_SCALE = TOKEN_SCALE;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DROP_RADIUS = 60; // px — how close to a slot center counts as a drop
 const ERROR_MESSAGES = [
     "Not here, dear. Try another spot.",
     "Almost, dear. Look at the tray again.",
@@ -283,17 +283,18 @@ export default class Level3MainChallengeScene extends Phaser.Scene {
         token.placed = true;
         token.disableInteractive();
 
+        this._placeTokenScale = TOKEN_PLACED_SCALE * this.metrics.dpr;
         // Snap + scale pop tween
         this.tweens.add({
             targets: token,
             x: slot.x,
             y: slot.y,
-            scaleX: this._foodTokenScale * 1.25,
-            scaleY: this._foodTokenScale * 1.25,
+            scaleX: this._placeTokenScale * 1.2,
+            scaleY: this._placeTokenScale * 1.2,
             duration: 120,
             ease: "Back.Out",
             onComplete: () => {
-                token.setScale(this._foodTokenScale);
+                token.setScale(this._placeTokenScale);
                 token.setDepth(5);
             },
         });
