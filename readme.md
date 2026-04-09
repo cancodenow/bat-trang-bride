@@ -66,5 +66,5 @@ Current scene progression includes:
 
 - Source files use ES modules and double quotes.
 - Scene order matters because runtime flow is explicitly controlled.
-- The browser game title in `src/main.js` is currently `Bat trang's Bride`, while the in-game narrative title and README use `Becoming a Bát Tràng Bride`.
+- The browser game title in `src/main.js` is currently `Bát Tràng's Bride`, while the in-game narrative title and README use `Becoming a Bát Tràng Bride`.
 - There is no configured test suite or linter in `package.json`; `npm run build` is the main sanity check after changes.

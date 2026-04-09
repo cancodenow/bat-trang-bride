@@ -182,7 +182,7 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-    title: "Bat trang's Bride"
+  title: "Bát Tràng's Bride"
 };
 
 const game = new Phaser.Game(config);

@@ -144,7 +144,7 @@ export default class BargainScene extends Phaser.Scene {
         this.walkAwayDialogue = [
             { text: "Taylor: If that's the price, then I'll pass.", charLeft: "char-wife", charRight: "char-seller-annoyed" },
             { text: "* footsteps... *", charLeft: "char-wife", charRight: "char-seller-annoyed", color: "#888888" },
-            { text: "Seller: WAIT! You're Ms. Hang's daughter-in-law, right?\nFine, take it — I'm giving you that price because I like your family.", charLeft: "char-wife", charRight: "char-seller" },
+            { text: "Seller: WAIT! You're Ms. Hằng's daughter-in-law, right?\nFine, take it — I'm giving you that price because I like your family.", charLeft: "char-wife", charRight: "char-seller" },
             { text: "Taylor: Thank you.", charLeft: "char-wife-giggle", charRight: "char-seller" },
         ];
 

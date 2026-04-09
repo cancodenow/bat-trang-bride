@@ -34,7 +34,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
       {
         title: "Bamboo Shoot and Dried Squid Soup",
         textTemplate:
-          "Bamboo shoot and dried squid soup is a signature soup in the Bat Trang feast, known for the combination of [1] and [2]. To cook this dish, the bamboo shoots need to be [3] so they soften and expand, while the squid only needs to be [4]. Because the bamboo shoots take longer to soften, they must be [5], while the squid is usually [6] to preserve its sweetness and aroma.",
+          "Bamboo shoot and dried squid soup is a signature soup in the Bát Tràng feast, known for the combination of [1] and [2]. To cook this dish, the bamboo shoots need to be [3] so they soften and expand, while the squid only needs to be [4]. Because the bamboo shoots take longer to soften, they must be [5], while the squid is usually [6] to preserve its sweetness and aroma.",
         answers: {
           1: "dried bamboo shoots",
           2: "dried squid",

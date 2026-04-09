@@ -45,12 +45,12 @@ export default class TaskIntroScene extends Phaser.Scene {
         // Dialogue lines — charLeft: wife listening, charRight: mom speaking
         this.dialogueLines = [
             {
-                text: "Mom: Today, following tradition, our family is making a Bat Trang feast for lunch.",
+                text: "Mom: Today, following tradition, our family is making a Bát Tràng feast for lunch.",
                 charLeft: "char-wife",
                 charRight: "char-mom-cook",
             },
             {
-                text: "Mom: A typical Bat Trang feast includes six dishes:",
+                text: "Mom: A typical Bát Tràng feast includes six dishes:",
                 charLeft: "char-wife-curious",
                 charRight: "char-mom-cook",
             },

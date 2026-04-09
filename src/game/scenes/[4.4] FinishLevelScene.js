@@ -67,7 +67,7 @@ export default class FinishLevelScene extends Phaser.Scene {
             .setOrigin(0.5)
             .setDepth(3);
 
-        this.add
+        const instagramText = this.add
             .text(width / 2, panelY + Math.round(130 * dpr), "Follow us on IG @colamduc.heritage", {
                 fontSize: metrics.isPortrait ? fs(20) : fs(18),
                 color: "#f7d89c",
@@ -78,6 +78,20 @@ export default class FinishLevelScene extends Phaser.Scene {
             })
             .setOrigin(0.5)
             .setDepth(3);
+
+        instagramText
+            .setInteractive({ useHandCursor: true })
+            .on("pointerover", () => {
+                instagramText.setColor("#fff4dc");
+                instagramText.setUnderline(true);
+            })
+            .on("pointerout", () => {
+                instagramText.setColor("#f7d89c");
+                instagramText.setUnderline(false);
+            })
+            .on("pointerdown", () => {
+                window.open("https://www.instagram.com/colamduc.heritage/", "_blank", "noopener,noreferrer");
+            });
 
         this.add
             .text(width / 2, panelY + Math.round(180 * dpr), "Check out our menu", {
