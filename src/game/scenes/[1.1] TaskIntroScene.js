@@ -14,6 +14,7 @@ import {
     createImageButton,
     playMusic,
     goToScene,
+    purgeStoryAssets,
 } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
