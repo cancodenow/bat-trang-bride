@@ -24,10 +24,34 @@ function hasTexture(scene, key) {
     return scene.textures.exists(key);
 }
 
-function nativeSize(scene, key, scale = 0.5) {
+/**
+ * Get the native display size of a texture at a given scale.
+ * @param {Phaser.Scene} scene
+ * @param {string} key - texture key
+ * @param {number} [scale=0.5]
+ * @returns {{w: number, h: number}} width and height in pixels
+ */
+export function getNativeSize(scene, key, scale = 0.5) {
     const { dpr } = getResponsiveMetrics(scene);
     const frame = scene.textures.getFrame(key);
     return { w: frame.realWidth * scale * dpr, h: frame.realHeight * scale * dpr };
+}
+
+/**
+ * Get the expected display height of a continue button.
+ * @param {Phaser.Scene} scene
+ * @param {number} [scale=0.5]
+ * @returns {number} button height in pixels
+ */
+export function getContinueButtonHeight(scene, scale = 0.5) {
+    const { minTouchTarget } = getResponsiveMetrics(scene);
+    const textureKey = "continue_button";
+    if (hasTexture(scene, textureKey)) {
+        const { h } = getNativeSize(scene, textureKey, scale);
+        return Math.max(h, Math.round(minTouchTarget * 0.7));
+    }
+    // Fallback: estimate text button height
+    return Math.round(minTouchTarget * 0.7);
 }
 
 /**
@@ -69,7 +93,7 @@ export function createImageButton(scene, x, y, label, opts = {}) {
     };
 
     if (hasTexture(scene, textureKey)) {
-        const { w: nw, h: nh } = nativeSize(scene, textureKey, opts.scale || 0.5);
+        const { w: nw, h: nh } = getNativeSize(scene, textureKey, opts.scale || 0.5);
         const btnW = Math.max(opts.width || nw, metrics.minTouchTarget);
         const btnH = Math.max(opts.height || nh, Math.round(metrics.minTouchTarget * 0.7));
 
@@ -198,7 +222,7 @@ export function createChoiceButton(scene, x, y, label, opts = {}) {
     };
 
     if (hasTexture(scene, textureKey)) {
-        const { w: nw, h: nh } = nativeSize(scene, textureKey, opts.scale || 0.5);
+        const { w: nw, h: nh } = getNativeSize(scene, textureKey, opts.scale || 0.5);
         const btnW = Math.max(opts.width || nw, metrics.minTouchTarget);
         const btnH = Math.max(opts.height || nh, Math.round(metrics.minTouchTarget * 0.72));
 

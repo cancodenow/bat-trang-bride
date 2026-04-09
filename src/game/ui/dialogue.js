@@ -3,20 +3,22 @@
 
 import { createBox } from "./containers.js";
 import { createCharacter } from "./characters.js";
-import { getResponsiveMetrics } from "./responsive.js";
+import { getResponsiveMetrics, getBottomButtonY, getDialogueYAboveButton } from "./responsive.js";
+import { createContinueButton, getContinueButtonHeight } from "./buttons.js";
 
-const DIALOGUE_TEXT_WIDTH_RATIO = 0.85;
+const TEXT_WIDTH_RATIO = 0.92;
 const HINT_Y_RATIO = 0.35;
-const CONTENT_EDGE_PADDING_RATIO = 0.24;
-const TEXT_HINT_GAP_RATIO = 0.08;
-const HINT_BASE_COLOR = "#fff4c2";
-const HINT_STROKE_COLOR = "#6f5630";
-const HINT_SHADOW_COLOR = "#000000";
-const HINT_PULSE_ALPHA = 0.35;
+const CONTENT_TOP_PADDING = 0.18;
+const CONTENT_BOTTOM_PADDING = 0.1;
+const TEXT_HINT_GAP = 0.06;
+const HINT_COLOR = "#fff4c2";
+const HINT_STROKE = "#6f5630";
+const HINT_SHADOW = "#000000";
+const HINT_PULSE_MIN_ALPHA = 0.35;
 const HINT_PULSE_SCALE = 1.08;
-const HINT_PULSE_DURATION_MS = 650;
+const HINT_PULSE_MS = 650;
 
-function parsePixelFontSize(fontSize, fallback = 22) {
+function parseFontSize(fontSize, fallback = 22) {
     if (typeof fontSize === "number") return fontSize;
     const parsed = Number.parseFloat(fontSize);
     return Number.isFinite(parsed) ? parsed : fallback;
@@ -32,11 +34,7 @@ function parsePixelFontSize(fontSize, fallback = 22) {
  * @param {number} w   - desired display width
  * @param {number} h   - desired display height
  * @param {object} opts
- * @param {string}  [opts.textureKey="ui-box-textbox"]
- * @param {number}  [opts.fillColor=0x444444]
- * @param {number}  [opts.fillAlpha=1]
- * @param {number}  [opts.strokeColor]
- * @param {number}  [opts.strokeWidth=2]
+ * @param {string} [opts.textureKey="ui-box-textbox"]
  * @returns {Phaser.GameObjects.Image|Phaser.GameObjects.Rectangle}
  */
 export function createDialogueBox(scene, x, y, w, h, opts = {}) {
@@ -44,10 +42,6 @@ export function createDialogueBox(scene, x, y, w, h, opts = {}) {
         textureKey: opts.textureKey || "ui-box-textbox",
         width: w,
         height: h,
-        fillColor: opts.fillColor,
-        fillAlpha: opts.fillAlpha,
-        strokeColor: opts.strokeColor,
-        strokeWidth: opts.strokeWidth,
     });
 }
 
@@ -75,27 +69,33 @@ export class DialogueRunner {
     constructor(scene, config) {
         this.scene = scene;
         const metrics = getResponsiveMetrics(scene);
+
+        // Resolve box position: use config y if provided and within upper screen area,
+        // otherwise use responsive default
+        const boxY = config.box.y && config.box.y < metrics.height * 0.7
+            ? config.box.y
+            : metrics.dialogue.y;
+
         const responsiveBox = {
-            ...config.box,
             x: config.box.x ?? metrics.dialogue.x,
-            y:
-                config.box.y && config.box.y < metrics.height * 0.7
-                    ? config.box.y
-                    : metrics.dialogue.y,
+            y: boxY,
             w: Math.min(config.box.w || metrics.dialogue.width, metrics.dialogue.width),
             h: Math.max(config.box.h || metrics.dialogue.height, metrics.dialogue.height),
         };
+
         this.config = {
             ...config,
             typewriter: config.typewriter !== false, // default to true
+            typewriterSpeed: config.typewriterSpeed || 80,
             box: responsiveBox,
         };
+
         this.lines = config.lines || [];
         this.lineIndex = config.skipTo || 0;
-        this._dialogueFontSize = parsePixelFontSize(metrics.fs(22));
-        this._hintFontSize = parsePixelFontSize(metrics.fs(18), 14);
+        this._dialogueFontSize = parseFontSize(metrics.fs(20));
+        this._hintFontSize = parseFontSize(metrics.fs(18), 14);
         this._textAreaWidth = Math.max(
-            Math.round(responsiveBox.w * DIALOGUE_TEXT_WIDTH_RATIO),
+            Math.round(responsiveBox.w * TEXT_WIDTH_RATIO),
             this._dialogueFontSize * 4,
         );
         this._boxTop = responsiveBox.y - responsiveBox.h / 2;
@@ -103,7 +103,7 @@ export class DialogueRunner {
 
         // Create box
         this.boxObj = createBox(scene, responsiveBox.x, responsiveBox.y, {
-            textureKey: responsiveBox.textureKey || "ui-box-textbox",
+            textureKey: "ui-box-textbox",
             width: responsiveBox.w,
             height: responsiveBox.h,
         });
@@ -127,21 +127,21 @@ export class DialogueRunner {
                 "▼ Tap to continue",
                 {
                     fontSize: metrics.fs(18),
-                    color: HINT_BASE_COLOR,
+                    color: HINT_COLOR,
                     fontFamily: "SVN-Pequena Neo",
-                    stroke: HINT_STROKE_COLOR,
+                    stroke: HINT_STROKE,
                     strokeThickness: Math.round(3 * metrics.dpr),
                 },
             )
             .setOrigin(0.5)
-            .setShadow(0, 2, HINT_SHADOW_COLOR, Math.round(6 * metrics.dpr), false, true);
+            .setShadow(0, 2, HINT_SHADOW, Math.round(6 * metrics.dpr), false, true);
 
         this.hintTween = scene.tweens.add({
             targets: this.hintObj,
-            alpha: HINT_PULSE_ALPHA,
+            alpha: HINT_PULSE_MIN_ALPHA,
             scaleX: HINT_PULSE_SCALE,
             scaleY: HINT_PULSE_SCALE,
-            duration: HINT_PULSE_DURATION_MS,
+            duration: HINT_PULSE_MS,
             yoyo: true,
             repeat: -1,
             ease: "Sine.InOut",
@@ -153,38 +153,27 @@ export class DialogueRunner {
         // scenes don't have to repeat the key.
         this.charLeft = null;
         this.charRight = null;
+
+        const DEFAULT_CHAR_KEY = "char-wife";
+
         if (config.chars) {
             const firstLine = this.lines[this.lineIndex] || {};
+
             if (config.chars.left) {
-                const key =
-                    config.chars.left.key || firstLine.charLeft || "char-wife";
-            this.charLeft = createCharacter(
-                    scene,
-                    config.chars.left.x,
-                    config.chars.left.y,
-                    key,
-                    {
-                        scale: config.chars.left.scale,
-                        flipX: config.chars.left.flipX || false,
-                    },
-                );
-                this.charLeft.setDepth(10); // ensure chars are below the box
+                const key = config.chars.left.key || firstLine.charLeft || DEFAULT_CHAR_KEY;
+                this.charLeft = createCharacter(scene, config.chars.left.x, config.chars.left.y, key, {
+                    scale: config.chars.left.scale,
+                    flipX: config.chars.left.flipX || false,
+                });
+                this.charLeft.setDepth(10);
             }
+
             if (config.chars.right) {
-                const key =
-                    config.chars.right.key ||
-                    firstLine.charRight ||
-                    "char-wife";
-                this.charRight = createCharacter(
-                    scene,
-                    config.chars.right.x,
-                    config.chars.right.y,
-                    key,
-                    {
-                        scale: config.chars.right.scale,
-                        flipX: config.chars.right.flipX !== false,
-                    },
-                );
+                const key = config.chars.right.key || firstLine.charRight || DEFAULT_CHAR_KEY;
+                this.charRight = createCharacter(scene, config.chars.right.x, config.chars.right.y, key, {
+                    scale: config.chars.right.scale,
+                    flipX: config.chars.right.flipX ?? true,
+                });
                 this.charRight.setDepth(10);
             }
         }
@@ -234,20 +223,24 @@ export class DialogueRunner {
         this._typeCharIndex = 0;
         this._typing = true;
 
+        // Pre-calculate full text height so centering stays stable during animation
+        this.textObj.setText(fullText);
+        const fullTextHeight = this.textObj.height;
+
         this.textObj.setText("");
-        this._centerTextVertically();
+        this._centerTextVertically(fullTextHeight);
 
         this.hintTween.pause();
         this.hintObj.setAlpha(1).setText("▼ Tap to skip");
 
-        const msPerChar = 1000 / (this.config.typewriterSpeed || 80);
+        const msPerChar = 1000 / this.config.typewriterSpeed;
         this._typeTimer = this.scene.time.addEvent({
             delay: msPerChar,
             repeat: fullText.length - 1,
             callback: () => {
                 this._typeCharIndex++;
                 this.textObj.setText(fullText.slice(0, this._typeCharIndex));
-                this._centerTextVertically();
+                this._centerTextVertically(fullTextHeight);
                 if (this._typeCharIndex >= fullText.length) {
                     this._finishTypewriter();
                 }
@@ -261,7 +254,7 @@ export class DialogueRunner {
         this._typeTimer?.remove(false);
         this._typeTimer = null;
         this.textObj.setText(this._typeFullText);
-        this._centerTextVertically();
+        this._centerTextVertically();  // Use actual height now that text is complete
         this.hintObj.setAlpha(1).setText("▼ Tap to continue");
         this.hintTween.resume();
     }
@@ -298,22 +291,32 @@ export class DialogueRunner {
         this._centerTextVertically();
     }
 
-    _centerTextVertically() {
-        const topPadding = Math.max(
-            this._dialogueFontSize,
-            this.config.box.h * CONTENT_EDGE_PADDING_RATIO,
-        );
-        const hintGap = Math.max(
-            this._hintFontSize,
-            this.config.box.h * TEXT_HINT_GAP_RATIO,
-        );
-        const hintTop = this.hintObj.y - this.hintObj.height / 2;
-        const contentTop = this._boxTop + topPadding;
-        const contentBottom = Math.min(
-            hintTop - hintGap,
-            this._boxBottom - this._hintFontSize,
-        );
-        this.textObj.setY(contentTop + (contentBottom - contentTop) / 2);
+    _centerTextVertically(fixedHeight) {
+        const box = this.config.box;
+
+        // Margins as percentage of box height
+        const TOP_MARGIN_RATIO = 0.12;      // 12% from top edge
+        const BOTTOM_MARGIN_RATIO = 0.18;   // 18% from bottom (above hint)
+
+        // Calculate available vertical space for text
+        const availableTop = this._boxTop + box.h * TOP_MARGIN_RATIO;
+        const availableBottom = this._boxBottom - box.h * BOTTOM_MARGIN_RATIO;
+        const availableHeight = availableBottom - availableTop;
+
+        // Use provided fixed height (for typewriter) or current text height
+        const textHeight = fixedHeight ?? this.textObj.height;
+
+        // If text is taller than available space, align to top with small margin
+        // Otherwise center within available space
+        let targetY;
+        if (textHeight > availableHeight) {
+            console.log("Larger Larger, text > avail")
+            targetY = availableTop + box.h * 0.02; // Small top padding when overflowing
+        } else {
+            targetY = availableTop + (availableHeight - textHeight) / 2;
+        }
+
+        this.textObj.setY(targetY);
     }
 
     /**
@@ -324,5 +327,48 @@ export class DialogueRunner {
         this._typeTimer = null;
         this.hintTween?.stop();
         this.scene.input.off("pointerdown", this._clickHandler);
+    }
+
+    /**
+     * Positions a continue button beneath the dialogue box.
+     * If the button would overlap with the dialogue, lifts the dialogue box higher.
+     *
+     * @param {object} opts
+     * @param {number} [opts.scale=0.5] - button scale
+     * @param {number} [opts.gap] - gap between dialogue and button (defaults to 20 * dpr)
+     * @param {Function} [opts.onClick] - click handler
+     * @returns {{bg: Phaser.GameObjects.Image, label: Phaser.GameObjects.Text}} the button
+     */
+    positionContinueButton(opts = {}) {
+        const metrics = getResponsiveMetrics(this.scene);
+        const scale = opts.scale ?? 0.5;
+        const gap = opts.gap ?? Math.round(20 * metrics.dpr);
+
+        const buttonHeight = getContinueButtonHeight(this.scene, scale);
+        const buttonY = getBottomButtonY(metrics, buttonHeight);
+        const newDialogueY = getDialogueYAboveButton(metrics, buttonY, buttonHeight, gap);
+
+        if (newDialogueY !== this.config.box.y) {
+            this._moveDialogueVertically(newDialogueY - this.config.box.y);
+        }
+
+        // Hide the tap hint since the button is now the progression affordance
+        this.hintTween?.pause();
+        this.hintObj.setVisible(false);
+
+        return createContinueButton(this.scene, metrics.width / 2, buttonY, {
+            scale,
+            onClick: opts.onClick,
+        });
+    }
+
+    /** @private Move dialogue elements vertically by delta */
+    _moveDialogueVertically(deltaY) {
+        this.config.box.y += deltaY;
+        this._boxTop += deltaY;
+        this._boxBottom += deltaY;
+        this.boxObj.setY(this.config.box.y);
+        this.textObj.setY(this.textObj.y + deltaY);
+        this.hintObj.setY(this.hintObj.y + deltaY);
     }
 }

@@ -33,6 +33,9 @@ export default class IntroScene extends Phaser.Scene {
     create(data = {}) {
         updateCheckpoint("IntroScene", "intro.story");
         const metrics = getResponsiveMetrics(this);
+        const dialogueLift = Math.round(48 * metrics.dpr);
+        const dialogueHalfHeight = Math.round(metrics.dialogue.height / 2);
+        const dialogueY = Math.max(metrics.topInset + dialogueHalfHeight, metrics.dialogue.y - dialogueLift);
 
         // Crossfade to TikTok-style wedding music
         crossfadeMusic(this, "tiktok-music");
@@ -42,7 +45,7 @@ export default class IntroScene extends Phaser.Scene {
         this.runner = new DialogueRunner(this, {
             box: {
                 x: metrics.dialogue.x,
-                y: metrics.dialogue.y,
+                y: dialogueY,
                 w: metrics.dialogue.width,
                 h: metrics.dialogue.height,
             },
@@ -82,16 +85,13 @@ export default class IntroScene extends Phaser.Scene {
                 console.warn("Continue button already destroyed");
             }
         }
-        const {
-            buttonScale: BUTTON_SCALE,
-            width,
-            height,
-            bottomInset,
-        } = getResponsiveMetrics(this);
+        const { buttonScale: BUTTON_SCALE, dpr } = getResponsiveMetrics(this);
 
-        this.continueButton = createContinueButton(this, width / 2, height - bottomInset, {
+        // Use the dialogue runner's helper to position button beneath dialogue
+        this.continueButton = this.runner.positionContinueButton({
             scale: BUTTON_SCALE,
             onClick: () => goToScene(this, "MorningScene01"),
+            gap: Math.round(-20 * dpr),
         });
     }
 }

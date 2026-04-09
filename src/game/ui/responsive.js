@@ -53,7 +53,7 @@ const RESPONSIVE_RULES = Object.freeze({
             minTouchTarget: 86,
         }),
         dialogue: Object.freeze({
-            widthRatio: 0.9,
+            widthRatio: 0.95,
             height: 240,
         }),
         modal: Object.freeze({
@@ -93,8 +93,8 @@ const RESPONSIVE_RULES = Object.freeze({
             minTouchTarget: 58,
         }),
         dialogue: Object.freeze({
-            widthRatio: 0.68,
-            maxWidth: 860,
+            widthRatio: 0.8,
+            maxWidth: 1100,
             height: 150,
         }),
         modal: Object.freeze({
@@ -296,6 +296,53 @@ export function getResponsiveMetrics(sceneOrScale) {
         dpr,
         fs: (n) => `${Math.round(n * dpr)}px`,
     };
+}
+
+/**
+ * Calculates the safe Y position for a button at the bottom of the screen,
+ * ensuring it stays above the bottom inset (safe area).
+ *
+ * @param {object} metrics - from getResponsiveMetrics()
+ * @param {number} buttonHeight - button display height in pixels
+ * @param {number} [minPadding] - minimum padding from edge (defaults to 12 * dpr)
+ * @returns {number} the Y coordinate for the button center
+ */
+export function getBottomButtonY(metrics, buttonHeight, minPadding) {
+    const padding = minPadding ?? Math.round(12 * metrics.dpr);
+    const safeBottom = metrics.height - Math.max(metrics.bottomInset, padding);
+    // Button center Y = safe bottom minus half the button height so it sits above the inset
+    return safeBottom - buttonHeight / 2;
+}
+
+/**
+ * Calculates dialogue Y position that avoids overlapping with a bottom button.
+ * If the default dialogue position would overlap, lifts the dialogue higher.
+ *
+ * @param {object} metrics - from getResponsiveMetrics()
+ * @param {number} buttonY - the Y position of the button center
+ * @param {number} buttonHeight - button display height
+ * @param {number} [gap] - gap between dialogue and button (defaults to 20 * dpr)
+ * @returns {number} the Y coordinate for the dialogue box center
+ */
+export function getDialogueYAboveButton(metrics, buttonY, buttonHeight, gap) {
+    const minGap = gap ?? Math.round(20 * metrics.dpr);
+    const dialogueHalfHeight = metrics.dialogue.height / 2;
+    const buttonHalfHeight = buttonHeight / 2;
+
+    // The top of where the button sits (including its gap requirement)
+    const buttonEffectiveTop = buttonY - buttonHalfHeight - minGap;
+
+    // Default dialogue Y from metrics
+    const defaultDialogueY = metrics.dialogue.y;
+    const dialogueBottomAtDefault = defaultDialogueY + dialogueHalfHeight;
+
+    // If dialogue at default position would overlap with button+gap, lift it
+    if (dialogueBottomAtDefault > buttonEffectiveTop) {
+        // Position dialogue so its bottom is at buttonEffectiveTop
+        return buttonEffectiveTop - dialogueHalfHeight;
+    }
+
+    return defaultDialogueY;
 }
 
 export function bindResponsiveScene(scene, onChange) {
