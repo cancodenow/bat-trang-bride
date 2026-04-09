@@ -92,10 +92,11 @@ export default class FinishLevelScene extends Phaser.Scene {
                 instagramText.setUnderline(false);
             })
             .on("pointerdown", () => {
-                window.open("https://www.instagram.com/colamduc.heritage/", "_blank", "noopener,noreferrer");
+                const instagramUrl = import.meta.env.VITE_INSTAGRAM_URL || "https://www.instagram.com/colamduc.heritage/";
+                window.open(instagramUrl, "_blank", "noopener,noreferrer");
             });
 
-        this.add
+        const menuText = this.add
             .text(width / 2, panelY + Math.round(180 * dpr), "Check out our menu", {
                 fontSize: metrics.isPortrait ? fs(20) : fs(18),
                 color: "#f7d89c",
@@ -106,6 +107,23 @@ export default class FinishLevelScene extends Phaser.Scene {
             })
             .setOrigin(0.5)
             .setDepth(3);
+
+        const menuUrl = import.meta.env.VITE_MENU_URL;
+        if (menuUrl) {
+            menuText
+                .setInteractive({ useHandCursor: true })
+                .on("pointerover", () => {
+                    menuText.setColor("#fff4dc");
+                    menuText.setUnderline(true);
+                })
+                .on("pointerout", () => {
+                    menuText.setColor("#f7d89c");
+                    menuText.setUnderline(false);
+                })
+                .on("pointerdown", () => {
+                    window.open(menuUrl, "_blank", "noopener,noreferrer");
+                });
+        }
 
         const { bg: finishButton } = createFinishButton(this, width / 2, height - bottomInset - Math.round(55 * dpr), {
             scale: buttonScale,
