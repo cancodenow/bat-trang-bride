@@ -1050,20 +1050,15 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
 
         this.confirmButton.disableInteractive();
 
+        // Semi-transparent overlay only - no completion board
         this.add
             .rectangle(width / 2, height / 2, width, height, 0x000000, 0.6)
             .setDepth(199);
 
-        const layout = createCompletionBoard(this, "lv1-finish", {
-            depth: 200,
-            maxWidthRatio: 0.68,
-            maxHeightRatio: 0.56,
-            contentHeightRatio: 0.5,
-        });
-
+        // "Tap to continue" hint centered on screen
         const hint = this.add
-            .text(layout.centerX, layout.buttonY, "▼ Tap to continue", {
-                fontSize: this.metrics.fs(18),
+            .text(width / 2, height / 2, "▼ Tap to continue", {
+                fontSize: this.metrics.fs(22),
                 color: "#fff4c2",
                 fontFamily: "SVN-Pequena Neo",
                 stroke: "#6f5630",
