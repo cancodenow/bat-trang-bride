@@ -26,7 +26,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
 
     create() {
         updateCheckpoint("BargainBadEndingScene", "level1.bad-ending");
-        markBadEnding("bargainFail", { sceneKey: "BuyRibsIntroScene", checkpointId: "level1.buy-ribs-intro" });
+        markBadEnding("bargainFail", { sceneKey: "BargainScene", checkpointId: "level1.bargain-choice" });
         const metrics = getResponsiveMetrics(this);
         const { width, height, fs, dpr, buttonScale } = metrics;
 
@@ -65,12 +65,11 @@ export default class BargainBadEndingScene extends Phaser.Scene {
 
         // Restart button
         createTryAgainButton(this, width / 2, height / 2 + 180, {
-            onClick: () =>
-                goToScene(this, "BargainScene", { skipToChoice: "choice1" }),
+            onClick: () => goToScene(this, "BargainScene"),
             scale: buttonScale
         });
-        createDevSkipButton(this, "BuyRibsIntroScene");
-        // Back button uses progress to return to retry target (BuyRibsIntroScene)
+        createDevSkipButton(this, "BargainScene");
+        // Back button uses progress to return to retry target (BargainScene)
         createBackButton(this, "OpeningScene", { badEndingKey: "bargainFail" });
     }
 }

@@ -51,8 +51,8 @@ body {
 }
 
 #phaser-container {
-    width: 98vw;
-    height: 98vh;
+    width: 98svw;
+    height: 98svh;
     display: flex;
     justify-content: center;
     align-items: center;
