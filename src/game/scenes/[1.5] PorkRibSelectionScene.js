@@ -150,6 +150,8 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             })
             .setOrigin(0.5, 0);
 
+        this.createQuantityControls(sw / 2, Math.round(275 * dpr));
+
         // Check button
         const BUTTON_SCALE = 0.15;
         createImageButton(
@@ -159,6 +161,53 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             "",
             { textureKey: "lv1-opt-buy-check", scale: BUTTON_SCALE, onClick: () => this.checkSelection() },
         );
+    }
+
+    createQuantityControls(x, y) {
+        const { dpr, fs } = this.metrics;
+        const buttonWidth = Math.round(52 * dpr);
+        const buttonHeight = Math.round(44 * dpr);
+
+        const minusButton = createImageButton(this, x - Math.round(60 * dpr), y, "-", {
+            textureKey: "ui-missing-rib-minus",
+            width: buttonWidth,
+            height: buttonHeight,
+            fontSize: fs(24),
+            fontColor: "#ffffff",
+            bgColor: "#2a4a6a",
+            hoverBgColor: "#3a5a7a",
+            onClick: () => this.setQuantity(this.quantity - 1),
+        });
+
+        this.quantityValueText = this.add
+            .text(x, y, "0", {
+                fontSize: fs(22),
+                color: "#ffffff",
+                fontFamily: "SVN-Pequena Neo",
+                fontStyle: "bold",
+                align: "center",
+            })
+            .setOrigin(0.5);
+
+        const plusButton = createImageButton(this, x + Math.round(60 * dpr), y, "+", {
+            textureKey: "ui-missing-rib-plus",
+            width: buttonWidth,
+            height: buttonHeight,
+            fontSize: fs(24),
+            fontColor: "#ffffff",
+            bgColor: "#2a4a6a",
+            hoverBgColor: "#3a5a7a",
+            onClick: () => this.setQuantity(this.quantity + 1),
+        });
+
+        this.add.text(x, y + Math.round(42 * dpr), "Adjust pieces", {
+            fontSize: fs(13),
+            color: "#bb9882",
+            fontFamily: "SVN-Pequena Neo",
+            align: "center",
+        }).setOrigin(0.5);
+
+        this.quantityControls = [minusButton.bg, this.quantityValueText, plusButton.bg];
     }
 
     // ===================== RIB DISPLAY =====================
@@ -199,17 +248,17 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             })
             .setOrigin(0.5, 0);
 
-        img.on("pointerdown", () => {
-            if (this.quantity < this.TOTAL_PIECES) {
-                this.quantity++;
-                this.updateSidebar();
-            }
-        });
+        img.on("pointerdown", () => this.setQuantity(this.quantity + 1));
 
         img.on("pointerover", () =>
             img.setDisplaySize(imgSize + Math.round(14 * this.metrics.dpr), (imgSize + Math.round(14 * this.metrics.dpr)) * 0.85),
         );
         img.on("pointerout", () => img.setDisplaySize(imgSize, ribH));
+    }
+
+    setQuantity(nextQuantity) {
+        this.quantity = Phaser.Math.Clamp(nextQuantity, 0, this.TOTAL_PIECES);
+        this.updateSidebar();
     }
 
     updateSidebar() {
@@ -219,17 +268,18 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         this.selectedCountText.setText("Pieces: " + count);
         this.totalText.setText("Total: " + total + "K");
         this.totalText.setColor(total > this.MONEY ? "#ff6666" : "#ffffff");
+        this.quantityValueText.setText(String(count));
 
         if (count === 0) {
-            this.statusText.setText("Click the rib to add pieces.");
+            this.statusText.setText("Click the rib or use +/- to add pieces.");
             this.statusText.setColor("#bb9882");
         } else if (count < 5) {
             this.statusText.setText(
-                "You have selected " + (count * 0.2).toLocaleString() + " kg of pork ribs",
+                "You have selected " + (count * 0.2).toLocaleString() + " kg of pork ribs.\nChoose 1kg before checking.",
             );
             this.statusText.setColor("#ffffff");
         } else {
-            this.statusText.setText("Total exceeds budget!\nTry bargaining.");
+            this.statusText.setText("1kg selected, but total exceeds budget.\nBargaining is required.");
             this.statusText.setColor("#ff6666");
         }
     }
@@ -260,7 +310,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
             .text(
                 width / 2,
                 frameY,
-                "Let's keep within the budget, dear.\nDo you want to bargain?",
+                "That is 160K for 1kg of ribs,\nwhich is over your 130K budget.\nYou need to bargain.",
                 {
                     fontSize: fs(22),
                     color: "#ffffff",
@@ -275,21 +325,12 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         const YES_SCALE = 0.15;
         const { bg: yesBtn } = createImageButton(
             this,
-            width / 2 + Math.round(160 * dpr),
+            width / 2,
             frameY + Math.round(80 * dpr),
             "",
             { textureKey: "lv1-opt-ribs-yes", scale: YES_SCALE, onClick: () => goToScene(this, "BargainScene") },
         );
 
-        const NO_SCALE = 0.15;
-        const { bg: momBtn } = createImageButton(
-            this,
-            width / 2 - Math.round(160 * dpr),
-            frameY + Math.round(80 * dpr),
-            "",
-            { textureKey: "lv1-opt-no-bargain", scale: NO_SCALE, onClick: () => goToScene(this, "BargainBadEndingScene") },
-        );
-
-        container.add([msg, yesBtn, momBtn]);
+        container.add([msg, yesBtn]);
     }
 }
