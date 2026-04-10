@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import BootScene from "./game/scenes/BootScene.js";
 import SceneLoadingScene from "./game/scenes/SceneLoadingScene.js";
 import { getAnalytics, initAnalytics } from "./game/analytics";
-import { RAW_DPR, getOrientationGameSize, getSafeDevicePixelRatio, getSafeRenderResolution } from "./game/UIHelpers";
+import { RAW_DPR, getOrientationGameSize, getSafeDevicePixelRatio, getSafeRenderResolution, isMobileDevice } from "./game/UIHelpers";
 
 const baseGameSize = getOrientationGameSize();
 const SAFE_DPR = getSafeDevicePixelRatio();
@@ -18,6 +18,35 @@ function updateViewportCssVars() {
     const viewportHeight = Math.round(viewport?.height || window.innerHeight || 0);
 
     root.style.setProperty("--app-height", `${viewportHeight}px`);
+}
+
+function getViewportDimensions() {
+    const viewport = window.visualViewport;
+
+    return {
+        width: Math.round(viewport?.width || window.innerWidth || 0),
+        height: Math.round(viewport?.height || window.innerHeight || 0),
+    };
+}
+
+function getAutoCenterMode() {
+    const { width, height } = getViewportDimensions();
+    const isPortraitViewport = height > width;
+
+    return isMobileDevice() && isPortraitViewport
+        ? Phaser.Scale.CENTER_HORIZONTALLY
+        : Phaser.Scale.CENTER_BOTH;
+}
+
+function syncAutoCenter(scaleManager) {
+    const nextAutoCenter = getAutoCenterMode();
+
+    if (scaleManager.autoCenter === nextAutoCenter) {
+        return;
+    }
+
+    scaleManager.autoCenter = nextAutoCenter;
+    scaleManager.refresh();
 }
 
 const analytics = getAnalytics();
@@ -180,7 +209,7 @@ const config = {
     ],
     scale: {
         mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
+        autoCenter: getAutoCenterMode(),
     },
   title: "Bát Tràng's Bride"
 };
@@ -215,6 +244,7 @@ document.addEventListener("visibilitychange", () => {
 });
 window.addEventListener("resize", () => {
     updateViewportCssVars();
+    syncAutoCenter(game.scale);
     logLifecycle("[lifecycle] resize", {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -224,12 +254,22 @@ window.addEventListener("resize", () => {
         session: _sessionId,
     });
 });
-window.addEventListener("orientationchange", updateViewportCssVars);
-window.visualViewport?.addEventListener("resize", updateViewportCssVars);
-window.visualViewport?.addEventListener("scroll", updateViewportCssVars);
+window.addEventListener("orientationchange", () => {
+    updateViewportCssVars();
+    syncAutoCenter(game.scale);
+});
+window.visualViewport?.addEventListener("resize", () => {
+    updateViewportCssVars();
+    syncAutoCenter(game.scale);
+});
+window.visualViewport?.addEventListener("scroll", () => {
+    updateViewportCssVars();
+    syncAutoCenter(game.scale);
+});
 window.__BBB_ANALYTICS__ = analytics;
 
 game.events.once("ready", () => {
+    syncAutoCenter(game.scale);
     game.registry.set("__instrumentSceneLifecycle", instrumentSceneLifecycle);
 
     logLifecycle("[phaser] ready", {
