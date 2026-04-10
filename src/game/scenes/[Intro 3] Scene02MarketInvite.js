@@ -5,7 +5,6 @@ import {
     DialogueRunner,
     preloadCharacters,
     preloadSoundAssets,
-    createDevSkipButton,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
@@ -79,7 +78,7 @@ export default class Scene02MarketInvite extends Phaser.Scene {
             onComplete: () => this.showEndScreen(),
         });
 
-        createDevSkipButton(this, "TaskIntroScene");
+        // createDevSkipButton(this, "TaskIntroScene");
         createBackButton(this);
     }
 

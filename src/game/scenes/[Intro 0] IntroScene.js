@@ -6,7 +6,6 @@ import {
     preloadCharacters,
     preloadSoundAssets,
     DialogueRunner,
-    createDevSkipButton,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
@@ -61,7 +60,7 @@ export default class IntroScene extends Phaser.Scene {
             this.showContinueButton();
         }
 
-        createDevSkipButton(this, "MorningScene01");
+        // createDevSkipButton(this, "MorningScene01");
         createBackButton(this);
         // bindResponsiveScene(this, () =>
         //     this.scene.restart({

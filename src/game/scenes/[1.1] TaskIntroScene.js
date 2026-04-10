@@ -6,7 +6,6 @@ import {
     createFrame,
     preloadCharacters,
     preloadSoundAssets,
-    createDevSkipButton,
     createBackButton,
     addCoverBg,
     DialogueRunner,
@@ -73,7 +72,7 @@ export default class TaskIntroScene extends Phaser.Scene {
             onComplete: () => this.showFeastPanel(),
         });
 
-        createDevSkipButton(this, "MarketIngredientSelectionScene");
+        // createDevSkipButton(this, "MarketIngredientSelectionScene");
         createBackButton(this);
     }
 

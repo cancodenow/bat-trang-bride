@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadSoundAssets,
-    createDevSkipButton,
     getResponsiveMetrics,
     createTryAgainButton,
     playSFX,
@@ -67,6 +66,6 @@ export default class BadEndingScene extends Phaser.Scene {
         // Back button uses progress to return to retry target
         createBackButton(this, "OpeningScene", { badEndingKey: "introTikTok" });
 
-        createDevSkipButton(this, "MorningScene01");
+        // createDevSkipButton(this, "MorningScene01");
     }
 }

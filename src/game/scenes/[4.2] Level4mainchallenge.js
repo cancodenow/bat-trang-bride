@@ -6,7 +6,6 @@ import {
   createImageButton,
   createModalFrame,
   createCompletionBoard,
-  createDevSkipButton,
   createBackButton,
   getResponsiveMetrics,
   preloadSoundAssets,
@@ -165,7 +164,7 @@ export default class Level4MainChallengeScene extends Phaser.Scene {
     this._showHowToPlay();
 
     // ── Dev skip ─────────────────────────────────────────────────
-    createDevSkipButton(this, "Level4PassScene");
+    // createDevSkipButton(this, "Level4PassScene");
     createBackButton(this);
   }
 

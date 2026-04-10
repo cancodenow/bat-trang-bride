@@ -5,7 +5,6 @@ import {
     preloadLevelAssets,
     preloadSoundAssets,
     createModalFrame,
-    createDevSkipButton,
     createBackButton,
     addCoverBg,
     getResponsiveMetrics,
@@ -52,7 +51,7 @@ export default class PorkRibSelectionScene extends Phaser.Scene {
         this.createSidebar();
         this.createRibDisplay();
 
-        createDevSkipButton(this, "BargainScene");
+        // createDevSkipButton(this, "BargainScene");
         createBackButton(this);
     }
 

@@ -3,7 +3,6 @@ import {
     preloadAssetGroups,
     preloadUIAssets,
     createFinishButton,
-    createDevSkipButton,
     getResponsiveMetrics,
     preloadSoundAssets,
     playMusic,
@@ -131,6 +130,6 @@ export default class FinishLevelScene extends Phaser.Scene {
         });
         finishButton.setDepth(4);
 
-        createDevSkipButton(this, "OpeningScene");
+        // createDevSkipButton(this, "OpeningScene");
     }
 }

@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createDevSkipButton, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, goToScene, purgeLevelAssets } from "../UIHelpers";
+import { preloadUIAssets, preloadLevelAssets, DialogueRunner, preloadCharacters, createBackButton, getResponsiveMetrics, preloadSoundAssets, playMusic, goToScene, purgeLevelAssets } from "../UIHelpers";
 import { updateCheckpoint } from "../progress.js";
 
 export default class Level4IntroScene extends Phaser.Scene {
@@ -51,7 +51,7 @@ export default class Level4IntroScene extends Phaser.Scene {
       onComplete: () => this.showFamilyMeal(),
     });
 
-    createDevSkipButton(this, "Level4MainChallengeScene");
+    // createDevSkipButton(this, "Level4MainChallengeScene");
     createBackButton(this);
   }
 

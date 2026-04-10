@@ -3,7 +3,6 @@ import {
     preloadUIAssets,
     preloadSoundAssets,
     createImageButton,
-    createDevSkipButton,
     createBackButton,
     createTryAgainButton,
     getResponsiveMetrics,
@@ -68,7 +67,7 @@ export default class BargainBadEndingScene extends Phaser.Scene {
             onClick: () => goToScene(this, "BargainScene"),
             scale: buttonScale
         });
-        createDevSkipButton(this, "BargainScene");
+        // createDevSkipButton(this, "BargainScene");
         // Back button uses progress to return to retry target (BargainScene)
         createBackButton(this, "OpeningScene", { badEndingKey: "bargainFail" });
     }

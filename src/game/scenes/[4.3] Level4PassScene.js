@@ -3,7 +3,6 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     createFinishButton,
-    createDevSkipButton,
     createBackButton,
     createCompletionBoard,
     getResponsiveMetrics,
@@ -48,7 +47,7 @@ export default class Level4PassScene extends Phaser.Scene {
         });
         button.setDepth(depth + 1);
 
-        createDevSkipButton(this, "FinishLevelScene");
+        // createDevSkipButton(this, "FinishLevelScene");
         createBackButton(this);
     }
 }

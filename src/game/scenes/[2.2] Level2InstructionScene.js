@@ -4,7 +4,6 @@ import {
     preloadLevelAssets,
     createContinueButton,
     createModalFrame,
-    createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
     preloadSoundAssets,
@@ -40,7 +39,7 @@ export default class Level2InstructionScene extends Phaser.Scene {
             goToScene(this, "Level2CookingGuidedScene");
         }
 
-        createDevSkipButton(this, "Level2CookingGuidedScene");
+        // createDevSkipButton(this, "Level2CookingGuidedScene");
         createBackButton(this);
     }
 

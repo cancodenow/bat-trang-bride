@@ -4,7 +4,6 @@ import {
     preloadLevelAssets,
     DialogueRunner,
     preloadCharacters,
-    createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
     addCoverBg,
@@ -63,7 +62,7 @@ export default class Level2IntroScene extends Phaser.Scene {
             onComplete: () => this.showEndScreen(),
         });
 
-        createDevSkipButton(this, "Level2CookingGuidedScene");
+        // createDevSkipButton(this, "Level2CookingGuidedScene");
         createBackButton(this);
     }
 

@@ -5,7 +5,6 @@ import {
     preloadLevelAssets,
     preloadSoundAssets,
     DialogueRunner,
-    createDevSkipButton,
     preloadCharacters,
     createBackButton,
     addCoverBg,
@@ -94,7 +93,7 @@ export default class BargainScene extends Phaser.Scene {
             this.showChoices();
         }
 
-        createDevSkipButton(this, "Level1PassScene");
+        // createDevSkipButton(this, "Level1PassScene");
         createBackButton(this);
     }
 

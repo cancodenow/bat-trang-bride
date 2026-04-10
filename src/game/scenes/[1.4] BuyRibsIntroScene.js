@@ -3,7 +3,6 @@ import {
     preloadAssetGroups,
     preloadUIAssets,
     preloadLevelAssets,
-    createDevSkipButton,
     preloadCharacters,
     createBackButton,
     addCoverBg,
@@ -66,7 +65,7 @@ export default class BuyRibsIntroScene extends Phaser.Scene {
             onComplete: () => this.showActionButton(),
         });
 
-        createDevSkipButton(this, "PorkRibSelectionScene");
+        // createDevSkipButton(this, "PorkRibSelectionScene");
         createBackButton(this);
     }
 

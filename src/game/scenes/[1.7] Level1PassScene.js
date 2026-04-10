@@ -4,7 +4,6 @@ import {
     preloadUIAssets,
     preloadLevelAssets,
     preloadSoundAssets,
-    createDevSkipButton,
     createBackButton,
     createCompletionBoard,
     addCoverBg,
@@ -41,7 +40,7 @@ export default class Level1PassScene extends Phaser.Scene {
             button: { scale: buttonScale, onClick: () => goToScene(this, "Level2IntroScene") },
         });
 
-        createDevSkipButton(this, "Level2IntroScene");
+        // createDevSkipButton(this, "Level2IntroScene");
         createBackButton(this);
     }
 }

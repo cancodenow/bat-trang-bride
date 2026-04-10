@@ -9,7 +9,6 @@ import {
     createModalFrame,
     createCompletionBoard,
     createDishCard,
-    createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
     bindResponsiveScene,
@@ -229,7 +228,7 @@ export default class MarketIngredientSelectionScene extends Phaser.Scene {
         this.setupMarketScrolling();
         this.updateSidebar();
         this.updateBasketPanel();
-        createDevSkipButton(this, "BuyRibsIntroScene");
+        // createDevSkipButton(this, "BuyRibsIntroScene");
         createBackButton(this);
     }
 

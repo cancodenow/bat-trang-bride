@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import {
-    createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
     preloadSoundAssets,
@@ -86,7 +85,7 @@ export default class Level2CookingChallengeScene extends Phaser.Scene {
     this.filledAnswers = {};
     this.selectedBlank = null;
 
-    createDevSkipButton(this, "CookingChallengeCompleteScene");
+    // createDevSkipButton(this, "CookingChallengeCompleteScene");
     createBackButton(this);
     this.loadDish(0);
   }

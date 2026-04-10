@@ -4,7 +4,6 @@ import {
     preloadLevelAssets,
     createContinueButton,
     createModalFrame,
-    createDevSkipButton,
     createBackButton,
     getResponsiveMetrics,
     preloadSoundAssets,
@@ -220,7 +219,7 @@ export default class Level2CookingGuidedScene extends Phaser.Scene {
         this.add.image(this.W / 2, this.H / 2, "lv2-cl1-bg-start").setDisplaySize(this.W, this.H).setDepth(0);
         this.add.rectangle(this.W / 2, this.H / 2, this.W, this.H, 0x000000, 0.35).setDepth(1);
 
-        createDevSkipButton(this, "CookingChallengeCompleteScene");
+        // createDevSkipButton(this, "CookingChallengeCompleteScene");
         createBackButton(this);
         this.restoreViewFromState();
     }

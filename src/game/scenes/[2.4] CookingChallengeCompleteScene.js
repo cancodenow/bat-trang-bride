@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import {
     preloadUIAssets,
     preloadLevelAssets,
-    createDevSkipButton,
     createBackButton,
     createCompletionBoard,
     getResponsiveMetrics,
@@ -42,7 +41,7 @@ export default class CookingChallengeCompleteScene extends Phaser.Scene {
             button: { scale: buttonScale, onClick: () => goToScene(this, "Level3IntroScene") },
         });
 
-        createDevSkipButton(this, "Level3IntroScene");
+        // createDevSkipButton(this, "Level3IntroScene");
         createBackButton(this);
     }
 }

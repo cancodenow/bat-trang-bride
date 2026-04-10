@@ -4,7 +4,6 @@ import {
     preloadUIAssets,
     preloadSoundAssets,
     createImageButton,
-    createDevSkipButton,
     addCoverBg,
     getResponsiveMetrics,
     bindResponsiveScene,
@@ -46,6 +45,6 @@ export default class OpeningScene extends Phaser.Scene {
         startButton.bg.setPosition(buttonX, buttonY);
         startButton.label.setPosition(buttonX, buttonY);
 
-        createDevSkipButton(this, "IntroScene");
+        // createDevSkipButton(this, "IntroScene");
     }
 }

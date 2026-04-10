@@ -5,7 +5,6 @@ import {
     preloadLevelAssets,
     preloadCharacters,
     preloadSoundAssets,
-    createDevSkipButton,
     createBackButton,
     addCoverBg,
     DialogueRunner,
@@ -110,7 +109,7 @@ export default class MorningScene01 extends Phaser.Scene {
             },
         });
 
-        createDevSkipButton(this, "Scene02MarketInvite");
+        // createDevSkipButton(this, "Scene02MarketInvite");
         createBackButton(this);
     }
 
