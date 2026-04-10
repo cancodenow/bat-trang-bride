@@ -35,7 +35,7 @@ function getAutoCenterMode() {
 
     return isMobileDevice() && isPortraitViewport
         ? Phaser.Scale.CENTER_HORIZONTALLY
-        : Phaser.Scale.CENTER_BOTH;
+        : Phaser.Scale.CENTER_VERTICALLY;
 }
 
 function syncAutoCenter(scaleManager) {
